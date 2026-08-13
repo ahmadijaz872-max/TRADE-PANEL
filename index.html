@@ -5,92 +5,141 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trade Panel</title>
     <style>
+        * {
+            box-sizing: border-box;
+        }
         body {
-            background-color: #121212;
+            background-color: #0d0e12;
             color: #ffffff;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             margin: 0;
-            padding: 20px;
+            padding: 15px;
             display: flex;
             flex-direction: column;
             align-items: center;
         }
         .container {
             width: 100%;
-            max-width: 400px;
+            max-width: 420px;
+        }
+        /* Live Time Bar */
+        .time-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #16181e;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 12px;
+            color: #8892b0;
+            border: 1px solid #20242f;
+        }
+        .time-val {
+            color: #00BFFF;
+            font-weight: bold;
+            font-family: monospace;
         }
         h2 {
             color: #00BFFF;
             text-align: center;
-            margin-bottom: 20px;
-            font-size: 24px;
+            margin: 0 0 15px 0;
+            font-size: 22px;
             letter-spacing: 1px;
+            text-transform: uppercase;
         }
         .card {
-            background-color: #1E1E24;
-            padding: 15px;
-            border-radius: 10px;
+            background: linear-gradient(145deg, #16181e, #1b1e26);
+            padding: 16px;
+            border-radius: 12px;
             text-align: center;
-            margin-bottom: 20px;
-            border: 1px solid #2A2A35;
+            margin-bottom: 15px;
+            border: 1px solid #262a36;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
         .card p {
-            color: #888;
+            color: #8892b0;
             margin: 0;
             font-size: 11px;
-            letter-spacing: 0.5px;
+            letter-spacing: 1px;
         }
         .card h1 {
             color: #FFD700;
-            margin: 5px 0 0 0;
-            font-size: 32px;
+            margin: 6px 0 0 0;
+            font-size: 34px;
+            font-family: monospace;
         }
         .btn {
             width: 100%;
-            padding: 12px;
+            padding: 14px;
             border-radius: 8px;
             border: none;
-            background-color: #008CBA;
+            background: linear-gradient(90deg, #008CBA, #005F73);
             color: white;
             font-weight: bold;
             font-size: 15px;
             cursor: pointer;
             margin-bottom: 15px;
+            box-shadow: 0 4px 10px rgba(0, 140, 186, 0.3);
+            transition: transform 0.1s;
         }
         .btn:active {
-            opacity: 0.8;
+            transform: scale(0.98);
         }
         .divider {
-            border-top: 1px solid #333;
+            border-top: 1px solid #20242f;
             margin: 15px 0;
+        }
+        /* Stats Box Styling */
+        .stats-box {
+            background-color: #16181e;
+            border-radius: 10px;
+            padding: 12px 16px;
+            border: 1px solid #20242f;
         }
         .stat-row {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 12px;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #1c1f2b;
             font-size: 14px;
         }
+        .stat-row:last-child {
+            border-bottom: none;
+        }
         .stat-label {
-            color: #aaa;
+            color: #a8b2d1;
         }
         .stat-val {
             color: #00E676;
             font-weight: bold;
+            font-family: monospace;
+            font-size: 16px;
+        }
+        /* Yellow Highlight for Withdrawal */
+        .stat-val-yellow {
+            color: #FFD700 !important;
+            font-weight: bold;
+            font-family: monospace;
+            font-size: 16px;
         }
         .btn-group {
             display: flex;
             gap: 10px;
-            margin-top: 10px;
+            margin-top: 15px;
         }
         .btn-green {
-            background-color: #00A86B;
+            background: linear-gradient(90deg, #00A86B, #006644);
+            box-shadow: 0 4px 10px rgba(0, 168, 107, 0.3);
         }
         .btn-blue {
-            background-color: #008080;
+            background: linear-gradient(90deg, #008080, #004D4D);
+            box-shadow: 0 4px 10px rgba(0, 128, 128, 0.3);
         }
         .info-box {
-            background-color: #1E293B;
-            border: 1px solid #38BDF8;
+            background-color: #111a2e;
+            border: 1px solid #1e3a8a;
             color: #38BDF8;
             padding: 12px;
             border-radius: 8px;
@@ -99,7 +148,7 @@
         }
         .progress-bar {
             width: 100%;
-            background-color: #333;
+            background-color: #1e293b;
             border-radius: 5px;
             overflow: hidden;
             margin-top: 10px;
@@ -110,27 +159,61 @@
             width: 0%;
             transition: width 1s linear;
         }
+        /* Important Instructions Footer */
+        .instructions-card {
+            background-color: #16181e;
+            border: 1px dashed #333a4d;
+            border-radius: 8px;
+            padding: 12px 15px;
+            margin-top: 20px;
+            font-size: 11px;
+            color: #8892b0;
+            line-height: 1.5;
+        }
+        .instructions-card h4 {
+            color: #FFD700;
+            margin: 0 0 6px 0;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .instructions-card ul {
+            margin: 0;
+            padding-left: 15px;
+        }
+        .instructions-card li {
+            margin-bottom: 4px;
+        }
+
         .modal {
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.85);
             justify-content: center;
             align-items: center;
+            z-index: 1000;
         }
         .modal-content {
-            background: #1E1E24;
+            background: #16181e;
             padding: 20px;
             border-radius: 10px;
             text-align: center;
-            max-width: 300px;
-            border: 1px solid #444;
+            max-width: 320px;
+            border: 1px solid #2d3748;
         }
     </style>
 </head>
 <body>
 
 <div class="container">
+    <!-- Live Pakistan Time Header -->
+    <div class="time-bar">
+        <span>PAKISTAN STANDARD TIME (PKT)</span>
+        <span class="time-val" id="pkt-time">--:--:--</span>
+    </div>
+
     <h2>INVESTOR TRADER PANEL</h2>
 
     <div class="card">
@@ -142,18 +225,39 @@
         <button class="btn" onclick="startMining()">🚀 MINE (30s CHART)</button>
     </div>
 
-    <div class="divider"></div>
-
-    <div class="stat-row"><span class="stat-label">Current Amount</span><span class="stat-val">$10,500.00</span></div>
-    <div class="stat-row"><span class="stat-label">Deposit Amount</span><span class="stat-val">$8,000.00</span></div>
-    <div class="stat-row"><span class="stat-label">Live Equity</span><span class="stat-val">$11,250.50</span></div>
-    <div class="stat-row"><span class="stat-label">Live Withdrawal</span><span class="stat-val">$2,500.00</span></div>
-
-    <div class="divider"></div>
+    <!-- Stats Table with Roll-Up Animation -->
+    <div class="stats-box">
+        <div class="stat-row">
+            <span class="stat-label">Current Amount</span>
+            <span class="stat-val" id="val-current">$0.00</span>
+        </div>
+        <div class="stat-row">
+            <span class="stat-label">Deposit Amount</span>
+            <span class="stat-val" id="val-deposit">$0.00</span>
+        </div>
+        <div class="stat-row">
+            <span class="stat-label">Live Equity</span>
+            <span class="stat-val" id="val-equity">$0.00</span>
+        </div>
+        <div class="stat-row">
+            <span class="stat-label">Live Withdrawal</span>
+            <span class="stat-val-yellow" id="val-withdrawal">$0.00</span>
+        </div>
+    </div>
 
     <div class="btn-group">
         <button class="btn btn-green" onclick="showModal('Deposit Address: 0x71C...4f9')">Add Funds</button>
-        <button class="btn btn-blue" onclick="showModal('Legal Terms & Rules Document')">Rules & Legal PDF</button>
+        <button class="btn btn-blue" onclick="showModal('Rules & Legal Terms: All trades are subject to risk parameters and automated evaluation conditions.')">Rules & Legal PDF</button>
+    </div>
+
+    <!-- Important Instructions Footer -->
+    <div class="instructions-card">
+        <h4>⚠️ IMPORTANT INSTRUCTIONS</h4>
+        <ul>
+            <li>Market spreads and live equity fluctuate in real-time.</li>
+            <li>Withdrawals are processed within official session clearing hours.</li>
+            <li>Ensure account safety parameters are maintained during active mining.</li>
+        </ul>
     </div>
 </div>
 
@@ -162,6 +266,52 @@
 </div>
 
 <script>
+    // 1. Live Pakistan Time
+    function updatePKTTime() {
+        const options = { timeZone: 'Asia/Karachi', hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit' };
+        const pktTimeString = new Date().toLocaleTimeString('en-US', options);
+        document.getElementById('pkt-time').innerText = pktTimeString;
+    }
+    setInterval(updatePKTTime, 1000);
+    updatePKTTime();
+
+    // 2. Count-Up Animation on Load
+    function animateValue(id, start, end, duration, prefix = "$", suffix = "") {
+        let obj = document.getElementById(id);
+        let startTimestamp = null;
+        const step = (timestamp) => {
+            if (!startTimestamp) startTimestamp = timestamp;
+            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+            let currentVal = (progress * (end - start) + start).toFixed(2);
+            obj.innerText = prefix + currentVal + suffix;
+            if (progress < 1) {
+                window.requestAnimationFrame(step);
+            }
+        };
+        window.requestAnimationFrame(step);
+    }
+
+    // Trigger Number Counter on Page Load
+    window.onload = () => {
+        animateValue("val-current", 0, 108.00, 1200);
+        animateValue("val-deposit", 0, 100.00, 1000);
+        animateValue("val-equity", 0, 110.50, 1500);
+        animateValue("val-withdrawal", 0, 25.00, 800);
+
+        // Start Live Equity Fluctuation After Animation
+        setTimeout(startEquityFluctuation, 1600);
+    };
+
+    // 3. Live Fluctuation Between 110.00 and 111.00
+    function startEquityFluctuation() {
+        setInterval(() => {
+            // Generate Random Number Between 110.00 and 111.00
+            let randomEquity = (Math.random() * (111.00 - 110.00) + 110.00).toFixed(2);
+            document.getElementById("val-equity").innerText = "$" + randomEquity;
+        }, 1500); // Har 1.5 second baad hilega
+    }
+
+    // 4. Mining Logic
     function startMining() {
         const section = document.getElementById('mining-section');
         section.innerHTML = `
