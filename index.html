@@ -128,6 +128,46 @@
             border-color: #38bdf8;
         }
 
+        /* Sync Loading Overlay (30s) */
+        #sync-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(8, 11, 16, 0.96);
+            backdrop-filter: blur(12px);
+            z-index: 3000;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 24px;
+            text-align: center;
+        }
+        .sync-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #1e293b;
+            border-top: 4px solid #38bdf8;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .sync-progress-bar {
+            width: 100%;
+            max-width: 280px;
+            height: 6px;
+            background: #1e293b;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 16px 0 8px 0;
+        }
+        .sync-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #0284c7, #38bdf8);
+            width: 0%;
+            transition: width 1s linear;
+        }
+
         /* App Header */
         .app-header {
             text-align: center;
@@ -310,16 +350,6 @@
             font-weight: 800;
         }
 
-        /* Outside Signature */
-        .signature {
-            text-align: center;
-            font-size: 11px;
-            color: #94a3b8;
-            font-weight: bold;
-            margin-top: 15px;
-            letter-spacing: 0.5px;
-        }
-
         /* Bottom Nav */
         .bottom-nav {
             position: fixed;
@@ -470,18 +500,27 @@
 <!-- Stars Animated Background -->
 <div class="bg-particles" id="stars-container"></div>
 
-<!-- Registration Screen -->
+<!-- 30s Sync Loading Screen -->
+<div id="sync-overlay">
+    <div class="sync-spinner"></div>
+    <div style="font-size: 16px; font-weight: 800; color: #38bdf8; margin-bottom: 6px;">SYNCHRONIZING TERMINAL</div>
+    <div style="font-size: 11px; color: #94a3b8; max-width: 260px; line-height: 1.5;">Establishing encrypted connection, verifying credentials & loading real-time market feeds...</div>
+    <div class="sync-progress-bar"><div id="sync-fill" class="sync-progress-fill"></div></div>
+    <div id="sync-timer-text" style="font-size: 12px; font-weight: bold; color: #fbbf24; font-family: monospace;">Please wait: 30s</div>
+</div>
+
+<!-- Registration Screen (Updated Placeholders: John & Max) -->
 <div class="auth-wrapper" id="auth-screen">
     <div class="auth-title">Account Sign Up</div>
     <div class="auth-sub">Enter details to access the Trading Dashboard</div>
     
     <div class="input-group">
         <label>First Name</label>
-        <input type="text" id="reg-fname" class="input-control" placeholder="e.g. Ahmad">
+        <input type="text" id="reg-fname" class="input-control" placeholder="e.g. John">
     </div>
     <div class="input-group">
         <label>Last Name</label>
-        <input type="text" id="reg-lname" class="input-control" placeholder="e.g. Ijaz">
+        <input type="text" id="reg-lname" class="input-control" placeholder="e.g. Max">
     </div>
     <div class="input-group">
         <label>Email Address</label>
@@ -565,9 +604,6 @@
         </table>
         <button class="btn" style="background:#2563eb; padding:10px; font-size:12px; margin-bottom:0;" onclick="showPopup('📜 Mining Logs', 'Full historical trading and mining log report loaded successfully.')">View Detailed Mining Logs</button>
     </div>
-
-    <!-- Footer Signature (Outside Box) -->
-    <div class="signature">Design by Ahmad Ejaz®</div>
 </div>
 
 <!-- 4-Tab Bottom Navigation Bar -->
@@ -588,7 +624,7 @@
 </div>
 
 <script>
-    // 1. Google Sheets Web App Endpoint (Attached with Version 6 URL)
+    // 1. Google Sheets Web App Endpoint
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwkGl3ha8tMXPqyjg2P-73Qt1SyOkBpBzMc_J9IxfWp_8MsEzxXrMERGzZIuqcTdFVG/exec";
 
     function sendToGoogleSheet(name, email, phone, action, amount = "-", txid = "-", screenshot = "No SS", status = "Pending") {
@@ -613,7 +649,7 @@
         container.appendChild(star);
     }
 
-    // 3. User Authentication & Session Check
+    // 3. User Authentication with 1-to-1 Email & Phone Lock
     let currentUser = JSON.parse(localStorage.getItem('traderUser')) || null;
 
     function checkAuth() {
@@ -642,11 +678,52 @@
             return;
         }
 
+        // Strict 1-Email to 1-Phone Verification Lock
+        let registeredUsers = JSON.parse(localStorage.getItem('registeredUsersList')) || [];
+        
+        let emailExistsWithOtherPhone = registeredUsers.some(u => u.email === email && u.phone !== phone);
+        let phoneExistsWithOtherEmail = registeredUsers.some(u => u.phone === phone && u.email !== email);
+
+        if (emailExistsWithOtherPhone) {
+            alert('Security Notice: This email is already registered with a different phone number.');
+            return;
+        }
+
+        if (phoneExistsWithOtherEmail) {
+            alert('Security Notice: This phone number is already registered with a different email address.');
+            return;
+        }
+
+        // Add to locked users list
+        if (!registeredUsers.some(u => u.email === email && u.phone === phone)) {
+            registeredUsers.push({ email, phone });
+            localStorage.setItem('registeredUsersList', JSON.stringify(registeredUsers));
+        }
+
+        // Send to Google Sheet
         sendToGoogleSheet(fname + " " + lname, email, phone, "SIGNUP", "-", "-", "No SS", "Verified");
 
-        currentUser = { fname, lname, email, phone, joined: new Date().toLocaleDateString('en-GB') };
-        localStorage.setItem('traderUser', JSON.stringify(currentUser));
-        checkAuth();
+        // 30 Seconds Delay Screen
+        document.getElementById('auth-screen').style.display = 'none';
+        const syncOverlay = document.getElementById('sync-overlay');
+        const syncFill = document.getElementById('sync-fill');
+        const syncTimerText = document.getElementById('sync-timer-text');
+        syncOverlay.style.display = 'flex';
+
+        let timeLeft = 30;
+        const syncInterval = setInterval(() => {
+            timeLeft--;
+            syncTimerText.innerText = `Please wait: ${timeLeft}s`;
+            syncFill.style.width = ((30 - timeLeft) / 30 * 100) + '%';
+
+            if (timeLeft <= 0) {
+                clearInterval(syncInterval);
+                syncOverlay.style.display = 'none';
+                currentUser = { fname, lname, email, phone, joined: new Date().toLocaleDateString('en-GB') };
+                localStorage.setItem('traderUser', JSON.stringify(currentUser));
+                checkAuth();
+            }
+        }, 1000);
     }
 
     function openProfileModal() {
@@ -671,8 +748,8 @@
         checkAuth();
     }
 
-    // 4. Deposit Management with BNB Smart Chain (BEP20) & Address Copy
-    const myDepositAddress = "0x71C83920F4a9A12B8904f9";
+    // 4. Deposit Management with Updated Address & Min $100 Rule
+    const myDepositAddress = "0xfeff2067ef1a43aa4bca186f702b2669971debbd";
 
     function checkDepositStatus() {
         if (localStorage.getItem('depositPending') === 'true') {
@@ -715,8 +792,8 @@
                 </div>
 
                 <div class="input-group" style="margin-bottom:10px;">
-                    <label>Deposit Amount ($)</label>
-                    <input type="number" id="dep-amount" class="input-control" placeholder="e.g. 100" style="padding:8px 10px;">
+                    <label>Deposit Amount ($) [Min $100]</label>
+                    <input type="number" id="dep-amount" min="100" class="input-control" placeholder="e.g. 100" style="padding:8px 10px;">
                 </div>
 
                 <div class="input-group" style="margin-bottom:10px;">
@@ -737,12 +814,19 @@
     }
 
     function submitFullDeposit() {
-        const amount = document.getElementById('dep-amount').value.trim();
+        const amountInput = document.getElementById('dep-amount').value.trim();
         const txid = document.getElementById('dep-txid').value.trim();
         const fileInput = document.getElementById('dep-ss');
 
-        if (!amount || !txid) {
-            alert('Please enter Deposit Amount and Transaction ID (TxID).');
+        const amount = parseFloat(amountInput);
+
+        if (!amountInput || isNaN(amount) || amount < 100) {
+            alert('Minimum deposit requirement is $100.00.');
+            return;
+        }
+
+        if (!txid) {
+            alert('Please provide the Transaction Hash (TxID).');
             return;
         }
 
@@ -760,10 +844,10 @@
                     currentUser.email,
                     currentUser.phone,
                     "DEPOSIT_PROOF_SUBMITTED",
-                    "$" + amount,
+                    "$" + amount.toFixed(2),
                     txid,
-                    "Attached (BEP20)",
-                    "Pending"
+                    "Verified",
+                    "Pending Approval"
                 );
             }
 
@@ -772,7 +856,7 @@
             closePopup();
             
             setTimeout(() => {
-                showPopup('✅ Verification Submitted', `Your deposit proof of $${amount} on BNB Smart Chain (BEP20) has been submitted successfully.\n\nYour account balance and mining capability will be activated once verified by the Admin.`);
+                showPopup('✅ Verification Submitted', `Your deposit proof of $${amount.toFixed(2)} on BNB Smart Chain (BEP20) has been submitted successfully.\n\nYour account balance and mining capability will be activated once verified by the Admin.`);
             }, 300);
         };
         reader.readAsDataURL(file);
@@ -936,7 +1020,6 @@
     function handleMiningClick() {
         let currentDeposit = parseFloat(localStorage.getItem('depositBal')) || 0.00;
 
-        // Balance Requirement Check
         if (currentDeposit <= 0.00) {
             showPopup(
                 '⚠️ Insufficient Trading Balance',
