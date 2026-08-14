@@ -10,7 +10,7 @@
             -webkit-tap-highlight-color: transparent;
         }
         body {
-            background: linear-gradient(180deg, #022c36 0%, #031e2e 40%, #011420 100%);
+            background: radial-gradient(circle at 50% 50%, #0c1825, #080b10);
             color: #f8fafc;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             margin: 0;
@@ -19,6 +19,27 @@
             flex-direction: column;
             align-items: center;
             min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Particles Background */
+        .bg-particles {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .star {
+            position: absolute;
+            background: #ffffff;
+            border-radius: 50%;
+            opacity: 0.3;
+            animation: twinkle var(--duration) infinite ease-in-out;
+        }
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.2; transform: scale(0.8); }
+            50% { opacity: 0.8; transform: scale(1.2); }
         }
 
         /* Top Yellow Ticker Banner */
@@ -50,45 +71,16 @@
             width: 100%;
             max-width: 420px;
             padding: 14px 14px 90px 14px;
+            z-index: 1;
         }
 
-        /* Header Section */
-        .app-header {
-            text-align: center;
-            margin-bottom: 14px;
-        }
-        .app-header h2 {
-            margin: 0;
-            font-size: 20px;
-            font-weight: 800;
-            letter-spacing: 1px;
-            color: #ffffff;
-            text-transform: uppercase;
-        }
-        .sub-header {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 6px;
-            font-size: 11px;
-            color: #94a3b8;
-            margin-top: 4px;
-        }
-        .status-dot {
-            height: 7px; width: 7px;
-            background-color: #10b981;
-            border-radius: 50%;
-            display: inline-block;
-            box-shadow: 0 0 6px #10b981;
-        }
-        .subtitle-text {
-            font-size: 11px;
-            color: #38bdf8;
-            margin-top: 2px;
-            letter-spacing: 0.5px;
-        }
+        /* App Header */
+        .app-header { text-align: center; margin-bottom: 14px; }
+        .app-header h2 { margin: 0; font-size: 20px; font-weight: 800; letter-spacing: 1px; color: #ffffff; text-transform: uppercase; }
+        .sub-header { display: flex; justify-content: center; align-items: center; gap: 6px; font-size: 11px; color: #94a3b8; margin-top: 4px; }
+        .status-dot { height: 7px; width: 7px; background-color: #10b981; border-radius: 50%; box-shadow: 0 0 6px #10b981; }
 
-        /* Real-time Price Panel */
+        /* Card Setup */
         .card {
             background: rgba(10, 25, 41, 0.85);
             backdrop-filter: blur(12px);
@@ -99,23 +91,10 @@
             border: 1px solid rgba(255, 215, 0, 0.25);
             box-shadow: 0 8px 24px rgba(0,0,0,0.4);
         }
-        .card p {
-            color: #e2e8f0;
-            margin: 0;
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 1px;
-        }
-        .card h1 {
-            color: #fbbf24;
-            margin: 6px 0 0 0;
-            font-size: 34px;
-            font-weight: 800;
-            font-family: monospace;
-            text-shadow: 0 0 10px rgba(251, 191, 36, 0.25);
-        }
+        .card p { color: #e2e8f0; margin: 0; font-size: 11px; font-weight: 700; letter-spacing: 1px; }
+        .card h1 { color: #fbbf24; margin: 6px 0 0 0; font-size: 34px; font-weight: 800; font-family: monospace; }
 
-        /* Teal-Blue Mini Chart Button */
+        /* Animated Buttons (Micro Interactions) */
         .btn {
             width: 100%;
             padding: 14px;
@@ -128,294 +107,174 @@
             cursor: pointer;
             margin-bottom: 16px;
             box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
+            transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.15s ease;
+        }
+        .btn:active {
+            transform: scale(0.96);
+            box-shadow: 0 2px 8px rgba(2, 132, 199, 0.2);
         }
 
-        /* Key Metrics Cards (2x2 Color-Coded Grid) */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 16px;
-        }
-        .metric-card {
-            border-radius: 10px;
-            padding: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-        }
-        .metric-title {
-            font-size: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
-            margin-bottom: 4px;
-            opacity: 0.9;
-        }
-        .metric-value {
-            font-size: 17px;
-            font-weight: 800;
-            font-family: monospace;
-        }
-
-        /* Card Color Schemes */
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+        .metric-card { border-radius: 10px; padding: 12px; }
+        .metric-title { font-size: 10px; font-weight: 700; text-transform: uppercase; margin-bottom: 4px; opacity: 0.9; }
+        .metric-value { font-size: 17px; font-weight: 800; font-family: monospace; }
+        
         .card-lime { background-color: #0d3822; border: 1px solid #10b981; color: #4ade80; }
         .card-lightblue { background-color: #0c334c; border: 1px solid #0284c7; color: #38bdf8; }
         .card-softblue { background-color: #122b46; border: 1px solid #3b82f6; color: #60a5fa; }
         .card-gold { background-color: #3b2d08; border: 1px solid #d97706; color: #fbbf24; }
 
-        /* Action Buttons */
-        .btn-group {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 18px;
-        }
+        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 18px; }
+        
         .btn-green {
-            background: #059669;
-            color: #ffffff;
-            border: none;
-            padding: 12px;
-            border-radius: 8px;
-            font-weight: 700;
-            font-size: 13px;
+            background: #059669; color: #ffffff; border: none; padding: 12px; border-radius: 8px; font-weight: 700; font-size: 13px;
+            cursor: pointer; transition: transform 0.15s ease;
         }
-        .btn-white {
-            background: #ffffff;
-            color: #0f172a;
-            border: none;
-            padding: 12px;
-            border-radius: 8px;
-            font-weight: 700;
-            font-size: 13px;
-        }
+        .btn-green:active { transform: scale(0.95); }
 
-        /* Detailed Daily Mining History Section (White Card Theme) */
-        .history-card {
-            background-color: #ffffff;
-            color: #0f172a;
-            border-radius: 14px;
-            padding: 16px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        .btn-white {
+            background: #ffffff; color: #0f172a; border: none; padding: 12px; border-radius: 8px; font-weight: 700; font-size: 13px;
+            cursor: pointer; transition: transform 0.15s ease;
         }
-        .history-header {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-weight: 800;
-            font-size: 14px;
-            color: #0f172a;
-            margin-bottom: 4px;
-        }
-        .history-subtitle {
-            font-size: 10px;
-            color: #64748b;
-            line-height: 1.4;
-            margin-bottom: 12px;
-        }
-        .history-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 11px;
-            margin-bottom: 12px;
-        }
-        .history-table th {
-            text-align: left;
-            padding: 6px 4px;
-            border-bottom: 2px solid #e2e8f0;
-            color: #475569;
-            font-weight: 700;
-        }
-        .history-table td {
-            padding: 8px 4px;
-            border-bottom: 1px solid #f1f5f9;
-            font-size: 10.5px;
-        }
+        .btn-white:active { transform: scale(0.95); }
+
+        .history-card { background-color: #ffffff; color: #0f172a; border-radius: 14px; padding: 16px; box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
+        .history-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 12px; }
+        .history-table th { text-align: left; padding: 6px 4px; border-bottom: 2px solid #e2e8f0; color: #475569; font-weight: 700; }
+        .history-table td { padding: 8px 4px; border-bottom: 1px solid #f1f5f9; font-size: 10.5px; }
         .p-profit { color: #16a34a; font-weight: 800; }
         .p-loss { color: #dc2626; font-weight: 800; }
 
         .btn-full-log {
-            width: 100%;
-            background: #2563eb;
-            color: white;
-            border: none;
-            padding: 10px;
-            border-radius: 8px;
-            font-weight: 700;
-            font-size: 12px;
-            cursor: pointer;
+            width: 100%; background: #2563eb; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: 700; font-size: 12px;
+            cursor: pointer; transition: transform 0.15s ease;
         }
+        .btn-full-log:active { transform: scale(0.97); }
 
-        /* 4-Tab Bottom Navigation Bar */
-        .bottom-nav {
-            position: fixed;
-            bottom: 0; left: 0; width: 100%;
-            background: rgba(3, 20, 32, 0.96);
-            backdrop-filter: blur(16px);
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            display: flex;
-            justify-content: space-around;
-            padding: 8px 0;
-            z-index: 900;
-        }
-        .nav-tab {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: #64748b;
-            font-size: 10px;
-            cursor: pointer;
-            width: 25%;
-        }
+        /* Bottom Nav Buttons Animation */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(3, 20, 32, 0.96); backdrop-filter: blur(16px); border-top: 1px solid rgba(255, 255, 255, 0.1); display: flex; justify-content: space-around; padding: 8px 0; z-index: 900; }
+        .nav-tab { display: flex; flex-direction: column; align-items: center; color: #64748b; font-size: 10px; cursor: pointer; transition: transform 0.15s ease, color 0.15s ease; }
+        .nav-tab:active { transform: scale(0.9); }
         .nav-tab.active { color: #38bdf8; font-weight: 700; }
-        .nav-tab-icon { font-size: 16px; margin-bottom: 2px; }
 
-        .info-box {
-            background: #0f172a; border: 1px solid #0284c7; color: #38bdf8;
-            padding: 12px; border-radius: 10px; text-align: center; margin-bottom: 14px;
-        }
+        .info-box { background: #0f172a; border: 1px solid #0284c7; color: #38bdf8; padding: 12px; border-radius: 10px; text-align: center; margin-bottom: 14px; }
         .progress-bar { width: 100%; background: #1e293b; border-radius: 4px; overflow: hidden; height: 6px; margin-top: 6px; }
         .progress-fill { height: 100%; background: #38bdf8; width: 0%; transition: width 1s linear; }
 
-        /* Modal Popup */
+        /* POPUP MODAL ANIMATION ENGINE */
         .modal {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px);
-            justify-content: center; align-items: center; z-index: 2000; padding: 20px;
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            padding: 20px;
+            opacity: 0;
+            transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .modal.active-modal {
+            display: flex;
+            opacity: 1;
         }
         .modal-content {
-            background: #0f172a; padding: 20px; border-radius: 14px; text-align: center;
-            max-width: 320px; width: 100%; border: 1px solid #1e293b;
+            background: #0f172a;
+            padding: 22px;
+            border-radius: 16px;
+            text-align: center;
+            max-width: 320px;
+            width: 100%;
+            border: 1px solid #1e293b;
+            transform: scale(0.7);
+            transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .modal.active-modal .modal-content {
+            transform: scale(1);
         }
     </style>
 </head>
 <body>
 
-<!-- Yellow Ticker Banner -->
-<div class="top-ticker">
-    <div class="ticker-text">🚀 SPECIAL OFFER: DEPOSIT $200 AND GET AN INSTANT $5 BONUS IMMEDIATELY! LIMITED TIME OFFER! 🚀</div>
-</div>
+<div class="top-ticker"><div class="ticker-text">🚀 SPECIAL OFFER: DEPOSIT $200 AND GET AN INSTANT $5 BONUS IMMEDIATELY! LIMITED TIME OFFER! 🚀</div></div>
+<div class="bg-particles" id="stars-container"></div>
 
 <div class="main-wrapper">
-    <!-- Header -->
     <div class="app-header">
         <h2>INVESTOR TRADER PANEL</h2>
         <div class="sub-header">
             <span class="status-dot"></span>
             <span style="color:#10b981; font-weight:700;">LIVE MARKET</span>
             <span>|</span>
-            <span id="live-datetime" style="font-family:monospace; font-weight:600;">06:15:09 AM | 14 Aug 2026</span>
+            <span id="live-datetime" style="font-family:monospace;">06:15:09 AM | 14 Aug 2026</span>
         </div>
-        <div class="subtitle-text">Institutional Trading Terminal</div>
     </div>
 
-    <!-- Real-Time Gold Price Panel -->
     <div class="card">
         <p>GOLD (XAU/USD) REAL-TIME</p>
         <h1 id="gold-price">$4203.00</h1>
     </div>
 
-    <!-- Mini Chart Button -->
-    <div id="mining-section">
-        <button class="btn" onclick="handleMiningClick()">🚀 MINI (15s CHART)</button>
-    </div>
+    <div id="mining-section"><button class="btn" onclick="handleMiningClick()">🚀 MINI (15s CHART)</button></div>
 
-    <!-- Key Metrics Cards (2x2 Color-Coded Grid) -->
     <div class="stats-grid">
-        <div class="metric-card card-lime">
-            <div class="metric-title">Current Amount</div>
-            <div class="metric-value" id="val-current">$109.00</div>
-        </div>
-        <div class="metric-card card-lightblue">
-            <div class="metric-title">Deposit Amount</div>
-            <div class="metric-value" id="val-deposit">$100.00</div>
-        </div>
-        <div class="metric-card card-softblue">
-            <div class="metric-title">Live Equity</div>
-            <div class="metric-value" id="val-equity">$111.15</div>
-        </div>
-        <div class="metric-card card-gold">
-            <div class="metric-title">Live Withdrawal</div>
-            <div class="metric-value" id="val-withdrawal">$26.00</div>
-        </div>
+        <div class="metric-card card-lime"><div class="metric-title">Current Amount</div><div class="metric-value" id="val-current">$109.00</div></div>
+        <div class="metric-card card-lightblue"><div class="metric-title">Deposit Amount</div><div class="metric-value" id="val-deposit">$100.00</div></div>
+        <div class="metric-card card-softblue"><div class="metric-title">Live Equity</div><div class="metric-value" id="val-equity">$111.15</div></div>
+        <div class="metric-card card-gold"><div class="metric-title">Live Withdrawal</div><div class="metric-value" id="val-withdrawal">$26.00</div></div>
     </div>
 
-    <!-- Action Buttons -->
     <div class="btn-group">
-        <button class="btn-green" onclick="showPopup('Add Funds', 'Deposit Address:\n0x71C83920F4a9A12B8904f9\n\nNetwork: TRC20 / BEP20')">Add Funds</button>
-        <button class="btn-white" onclick="showPopup('Rules & Legal Terms', 'All trades are subject to automated evaluation risk parameters and clearance rules.')">RULES & LEGAL PDF</button>
+        <button class="btn-green" onclick="showPopup('⚡ Add Funds', 'Deposit Address:\n0x71C83920F4a9A12B8904f9\n\nNetwork: TRC20 / BEP20')">Add Funds</button>
+        <button class="btn-white" onclick="showPopup('⚖️ Rules & Legal Terms', 'All trades are subject to automated evaluation risk parameters and clearance rules.')">RULES & LEGAL PDF</button>
     </div>
 
-    <!-- Detailed Daily Mining History Section -->
     <div class="history-card">
-        <div class="history-header">⛏️ DAILY MINING HISTORY</div>
-        <div class="history-subtitle">
-            Tracking results from the very beginning. Each day shows the net mined profit/loss from your primary mining operations. Started mining on: <b>10 Aug 2026</b>.
-        </div>
-
+        <div style="font-weight:800; font-size:14px; margin-bottom:10px;">⛏️ DAILY MINING HISTORY</div>
         <table class="history-table">
-            <thead>
-                <tr>
-                    <th>DATE</th>
-                    <th>TYPE</th>
-                    <th>ASSET</th>
-                    <th>P/L</th>
-                </tr>
-            </thead>
-            <tbody id="history-rows">
-                <tr>
-                    <td>Aug 13, 11:59 PM</td>
-                    <td>DAILY MINE</td>
-                    <td>MINING OPT 1</td>
-                    <td class="p-profit">+$0.95</td>
-                </tr>
-                <tr>
-                    <td>Aug 12, 11:59 PM</td>
-                    <td>DAILY MINE</td>
-                    <td>MINING OPT 1</td>
-                    <td class="p-profit">+$1.05</td>
-                </tr>
-                <tr>
-                    <td>Aug 11, 11:59 PM</td>
-                    <td>DAILY MINE</td>
-                    <td>MINING OPT 1</td>
-                    <td class="p-loss">-$0.10</td>
-                </tr>
+            <thead><tr><th>DATE</th><th>TYPE</th><th>ASSET</th><th>P/L</th></tr></thead>
+            <tbody>
+                <tr><td>Aug 13, 11:59 PM</td><td>DAILY MINE</td><td>MINING OPT 1</td><td class="p-profit">+$0.95</td></tr>
+                <tr><td>Aug 12, 11:59 PM</td><td>DAILY MINE</td><td>MINING OPT 1</td><td class="p-profit">+$1.05</td></tr>
+                <tr><td>Aug 11, 11:59 PM</td><td>DAILY MINE</td><td>MINING OPT 1</td><td class="p-loss">-$0.10</td></tr>
             </tbody>
         </table>
-
-        <button class="btn-full-log" onclick="showPopup('Detailed Mining Logs', 'Full historical log report loaded successfully.')">View Detailed Mining Logs</button>
+        <button class="btn-full-log" onclick="showPopup('📜 Mining Logs', 'Full historical log report loaded successfully.')">View Detailed Mining Logs</button>
     </div>
 </div>
 
-<!-- Bottom Navigation Bar (4 Tabs) -->
 <div class="bottom-nav">
-    <div class="nav-tab" onclick="showPopup('Quotes Market', 'Gold: $4203.00\nSilver: $29.45\nSP500: $5540.20')">
-        <span class="nav-tab-icon">📊</span>
-        <span>Quotes</span>
-    </div>
-    <div class="nav-tab active">
-        <span class="nav-tab-icon">🚀</span>
-        <span>Mini Chart</span>
-    </div>
-    <div class="nav-tab" onclick="showPopup('History Log', 'Deposit History: $100.00\nMined Profit Log: +$2.90')">
-        <span class="nav-tab-icon">📜</span>
-        <span>History</span>
-    </div>
-    <div class="nav-tab" onclick="showPopup('Account Settings', 'User Profile: Investor\nStatus: Verified Active')">
-        <span class="nav-tab-icon">💬</span>
-        <span>More</span>
-    </div>
+    <div class="nav-tab" onclick="showPopup('📊 Quotes Market', 'Gold: $4203.00\nSilver: $29.45\nSP500: $5540.20')"><span style="font-size:16px;">📊</span><span>Quotes</span></div>
+    <div class="nav-tab active"><span style="font-size:16px;">🚀</span><span>Mini Chart</span></div>
+    <div class="nav-tab" onclick="showPopup('📜 History Log', 'Deposit Record: $100.00\nMined Profit: +$2.90')"><span style="font-size:16px;">📜</span><span>History</span></div>
+    <div class="nav-tab" onclick="showPopup('💬 Settings', 'User Status: Verified Investor')"><span style="font-size:16px;">💬</span><span>More</span></div>
 </div>
 
-<!-- Modal Popup -->
+<!-- Modal Popup with Animation Wrapper -->
 <div id="modal" class="modal">
     <div class="modal-content">
-        <div style="font-size: 16px; font-weight: 700; color: #f8fafc; margin-bottom: 8px;" id="modal-title">Notice</div>
-        <div style="font-size: 12px; color: #94a3b8; line-height: 1.5; white-space: pre-line; margin-bottom: 16px;" id="modal-body">Content...</div>
-        <button class="btn" style="margin-bottom:0; padding:10px;" onclick="closePopup()">Acknowledge</button>
+        <div id="modal-title" style="font-weight:700; margin-bottom:10px; color:#f8fafc; font-size:16px;">Notice</div>
+        <div id="modal-body" style="font-size:12px; margin-bottom:18px; color:#94a3b8; white-space:pre-line; line-height:1.5;"></div>
+        <button class="btn" onclick="closePopup()" style="margin-bottom:0; padding:10px;">Cancel</button>
     </div>
 </div>
 
 <script>
-    // Live Balances
+    // Particle Stars
+    const container = document.getElementById('stars-container');
+    for (let i = 0; i < 40; i++) {
+        const star = document.createElement('div');
+        star.className = 'star';
+        star.style.width = Math.random() * 3 + 'px';
+        star.style.height = star.style.width;
+        star.style.top = Math.random() * 100 + '%';
+        star.style.left = Math.random() * 100 + '%';
+        star.style.setProperty('--duration', (Math.random() * 3 + 2) + 's');
+        container.appendChild(star);
+    }
+
+    // Dynamic Balances
     let currentBal = parseFloat(localStorage.getItem('currentBal')) || 109.00;
     let equityBal = parseFloat(localStorage.getItem('equityBal')) || 111.15;
     let withdrawalBal = parseFloat(localStorage.getItem('withdrawalBal')) || 26.00;
@@ -424,7 +283,7 @@
     document.getElementById('val-equity').innerText = "$" + equityBal.toFixed(2);
     document.getElementById('val-withdrawal').innerText = "$" + withdrawalBal.toFixed(2);
 
-    // Live Clock & Date
+    // Live Clock Engine
     function updateClock() {
         const now = new Date();
         const timeStr = now.toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -448,12 +307,25 @@
         document.getElementById("val-equity").innerText = "$" + (equityBal + offset).toFixed(2);
     }, 1500);
 
-    // Mining & 24h Restriction
+    // Smooth Pop-up Animation Controllers
+    const modalElem = document.getElementById('modal');
+
+    function showPopup(title, body) {
+        document.getElementById('modal-title').innerText = title;
+        document.getElementById('modal-body').innerText = body;
+        modalElem.classList.add('active-modal');
+    }
+
+    function closePopup() {
+        modalElem.classList.remove('active-modal');
+    }
+
+    // Mining Logic
     function handleMiningClick() {
         const lastMineTime = localStorage.getItem('lastMiningTimestamp');
         const currentTime = new Date().getTime();
-        if (lastMineTime && (currentTime - lastMineTime < 24 * 60 * 60 * 1000)) {
-            showPopup('Mining Limit Reached', 'Sorry, you have already mined for today. Please try again after 24 hours.');
+        if (lastMineTime && (currentTime - lastMineTime < 86400000)) {
+            showPopup('🛑 Mining Limit Reached', 'Sorry, you have already mined for today. Please try again after 24 hours.');
         } else {
             executeMiningProcess();
         }
@@ -482,7 +354,6 @@
                 clearInterval(interval);
                 localStorage.setItem('lastMiningTimestamp', new Date().getTime());
                 
-                // Add Profit
                 currentBal += 1.00;
                 equityBal += 1.00;
                 withdrawalBal += 1.00;
@@ -508,17 +379,6 @@
         document.getElementById('mining-section').innerHTML = `
             <button class="btn" onclick="handleMiningClick()">🚀 MINI (15s CHART)</button>
         `;
-    }
-
-    // Modal Control
-    function showPopup(title, body) {
-        document.getElementById('modal-title').innerText = title;
-        document.getElementById('modal-body').innerText = body;
-        document.getElementById('modal').style.display = 'flex';
-    }
-
-    function closePopup() {
-        document.getElementById('modal').style.display = 'none';
     }
 </script>
 
