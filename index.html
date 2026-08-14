@@ -471,6 +471,42 @@
             text-align: left;
         }
 
+        /* Rules Modal Styling */
+        .rules-container {
+            text-align: left;
+            font-size: 11.5px;
+            color: #cbd5e1;
+            line-height: 1.6;
+            max-height: 70vh;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+        .rules-container h3 {
+            color: #38bdf8;
+            font-size: 13px;
+            margin: 14px 0 6px 0;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 4px;
+        }
+        .rules-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10.5px;
+            margin-bottom: 12px;
+        }
+        .rules-table th {
+            background: #1e293b;
+            color: #fbbf24;
+            padding: 6px;
+            border: 1px solid #334155;
+            text-align: left;
+        }
+        .rules-table td {
+            padding: 6px;
+            border: 1px solid #334155;
+            color: #e2e8f0;
+        }
+
         /* Animated Popup Modal */
         .modal {
             display: none;
@@ -570,7 +606,7 @@
         <button class="btn-change-pair" onclick="openPairSelectModal()">🔄 CHANGE PAIR</button>
     </div>
 
-    <!-- Mining Action Section (Fixed to MINE) -->
+    <!-- Mining Action Section -->
     <div id="mining-section">
         <button class="btn" onclick="handleMiningClick()">🚀 MINE (15s CHART)</button>
     </div>
@@ -598,7 +634,7 @@
     <!-- Add Funds & Rules Group -->
     <div class="btn-group">
         <button class="btn-green" id="deposit-btn" onclick="openDepositModal()">Add Funds</button>
-        <button class="btn-white" onclick="showPopup('⚖️ Rules & Legal Terms', 'All trades are subject to automated evaluation risk parameters, security clearance, and official session clearance.')">RULES & LEGAL PDF</button>
+        <button class="btn-white" onclick="openRulesModal()">RULES & LEGAL PDF</button>
     </div>
 
     <!-- Yellow Withdraw Button in Center -->
@@ -748,7 +784,7 @@
                 <div style="display:flex; justify-content:space-between; border-bottom:1px solid #334155; padding:6px 0;"><span style="color:#94a3b8;">Full Name:</span><span style="color:#fff; font-weight:bold;">${currentUser.fname} ${currentUser.lname}</span></div>
                 <div style="display:flex; justify-content:space-between; border-bottom:1px solid #334155; padding:6px 0;"><span style="color:#94a3b8;">Email:</span><span style="color:#fff; font-weight:bold;">${currentUser.email}</span></div>
                 <div style="display:flex; justify-content:space-between; border-bottom:1px solid #334155; padding:6px 0;"><span style="color:#94a3b8;">Phone:</span><span style="color:#fff; font-weight:bold;">${currentUser.phone}</span></div>
-                <div style="display:flex; justify-content:space-between; border-bottom:1px solid #334155; padding:6px 0;"><span style="color:#94a3b8;">Status:</span><span style="color:#10b981; font-weight:bold;">Verified Trader</span></div>
+                <div style="display:flex; justify-content:space-between; border-bottom:1px solid #334155; padding:6px 0;"><span style="color:#10b981; font-weight:bold;">Verified Trader</span></div>
             </div>
             <button class="btn" onclick="handleLogout()" style="background:#dc2626; margin-top:15px; margin-bottom:0;">Sign Out</button>
         `;
@@ -882,7 +918,6 @@
         let currentDeposit = parseFloat(localStorage.getItem('depositBal')) || 0.00;
         let currentAmount = parseFloat(localStorage.getItem('currentBal')) || 0.00;
 
-        // Check if $100 cycle completed
         if (currentDeposit < 100.00 && currentAmount < 100.00) {
             showPopup(
                 '⚠️ Withdrawal Requirement',
@@ -891,7 +926,6 @@
             return;
         }
 
-        // If cycle completed, open withdrawal request form
         let withdrawHtml = `
             <div style="text-align:left; font-size:12px; color:#cbd5e1; line-height:1.5;">
                 <p style="margin:0 0 6px 0; font-weight:bold; color:#f8fafc;">Withdrawal Gateway (BEP20 USDT):</p>
@@ -939,7 +973,65 @@
         }, 300);
     }
 
-    // 6. Persistent Balances Engine
+    // 6. Rules & Legal Modal System
+    function openRulesModal() {
+        let rulesHtml = `
+            <div class="rules-container">
+                <div style="text-align:center; font-weight:800; color:#fbbf24; font-size:13px; margin-bottom:8px;">
+                    SMART STAKE PANEL — TERMS, RULES & GUIDELINES
+                </div>
+                <p style="font-size:11px; margin-bottom:12px; color:#94a3b8;">
+                    Welcome to Smart Stake Panel. Please read the operational rules, deposit conditions, and profit-sharing guidelines carefully before participating.
+                </p>
+
+                <h3>1. Quick Overview & Key Highlights</h3>
+                <table class="rules-table">
+                    <tr><th>Feature</th><th>Details / Policy</th></tr>
+                    <tr><td><b>Minimum Initial Deposit</b></td><td>$100 (Activates the Smart Mining feature)</td></tr>
+                    <tr><td><b>Deposit Processing Time</b></td><td>Up to 6 Hours (Subject to blockchain & proof verification)</td></tr>
+                    <tr><td><b>Daily Returns Model</b></td><td>Dynamic & Market-Linked (Varies daily based on live trading)</td></tr>
+                    <tr><td><b>Minimum Regular Withdrawal</b></td><td>$50 (Applicable after the first full cycle completion)</td></tr>
+                    <tr><td><b>Withdrawal Processing Time</b></td><td>24 – 48 Hours</td></tr>
+                    <tr><td><b>Trading Mechanism</b></td><td>100% Real Copy-Trading / Asset Allocation</td></tr>
+                </table>
+
+                <h3>2. Deposit & Account Activation Rules</h3>
+                <ul style="padding-left:16px; margin:0 0 10px 0;">
+                    <li><b>Minimum Funding Requirement:</b> To activate the core earning engine, a minimum deposit of $100 is required.</li>
+                    <li><b>Smart Mining Activation:</b> Once the $100 deposit is approved, the central "Mine" button will be unlocked on your dashboard. Users must activate/click "Mine" daily to harvest dynamic profits.</li>
+                    <li><b>Network & Address Verification:</b> Always double-check the deposit wallet address and selected blockchain network (BEP20) before sending funds. Deposits sent to incorrect addresses or incompatible networks cannot be recovered.</li>
+                    <li><b>Proof of Payment:</b> Users must upload an authentic, clear screenshot and valid Transaction Hash (TxID). Providing manipulated or duplicate screenshots will lead to permanent account suspension.</li>
+                    <li><b>Approval Timeline:</b> Manual and automated verification takes between 1 to 6 hours to reflect in your panel balance.</li>
+                </ul>
+
+                <h3>3. Dynamic Daily Profit & Trading Structure</h3>
+                <ul style="padding-left:16px; margin:0 0 10px 0;">
+                    <li><b>Real-Market Execution:</b> Smart Stake Panel operates via genuine live copy-trading algorithms and expert execution.</li>
+                    <li><b>Dynamic Returns:</b> Returns are not fixed. Daily profits fluctuate in real time according to market conditions (e.g., $1.00 on Day 1, $2.00 on Day 2, $0.50 on Day 3, etc.).</li>
+                    <li><b>Capital Protection Model:</b> Capital is managed under strict risk-management parameters to protect the principal balance while generating sustainable market returns.</li>
+                </ul>
+
+                <h3>4. Withdrawal Lifecycle & Capital Lock Policy</h3>
+                <ul style="padding-left:16px; margin:0 0 10px 0;">
+                    <li><b>First Cycle Completion:</b> To maintain strategy liquidity, initial deposits undergo a full cycle until cumulative profits equal the initial capital base.</li>
+                    <li><b>Standard Minimum Withdrawal:</b> Once the initial milestone is reached, subsequent regular withdrawals have a minimum threshold of $50.</li>
+                    <li><b>Early Capital Exit / Account Termination:</b> If a user requests an early account closure before completing the full operational cycle, they are permitted to withdraw all accumulated profits generated up to that date, and the account will be closed.</li>
+                    <li><b>Payout Timelines:</b> All withdrawal requests are processed within a 24 to 48 hour security clearance window.</li>
+                </ul>
+
+                <h3>5. Security, Fair Use & Platform Compliance</h3>
+                <ul style="padding-left:16px; margin:0 0 10px 0;">
+                    <li><b>Single Account Policy:</b> Only one account is permitted per user/IP. Creating multiple accounts to manipulate referral or mining systems will result in an immediate freeze of balances.</li>
+                    <li><b>Network Transaction Fees:</b> Standard blockchain gas/network fees apply to external withdrawals and are deducted automatically at the time of payout.</li>
+                    <li><b>Support & Dispute Resolution:</b> For unresolved deposits or payout queries exceeding the designated timeframes (6 hours for deposits / 48 hours for withdrawals), users must contact official customer support with their registered email and Transaction Hash (TxID).</li>
+                </ul>
+            </div>
+        `;
+        showPopup('⚖️ Terms & Operational Guidelines', '');
+        document.getElementById('modal-body').innerHTML = rulesHtml;
+    }
+
+    // 7. Persistent Balances Engine
     function loadSavedBalances() {
         let currentBal = parseFloat(localStorage.getItem('currentBal')) || 0.00;
         let depositBal = parseFloat(localStorage.getItem('depositBal')) || 0.00;
@@ -952,7 +1044,7 @@
         document.getElementById('val-withdrawal').innerText = "$" + withdrawalBal.toFixed(2);
     }
 
-    // 7. Market Rates Engine (Live Feeds)
+    // 8. Market Rates Engine (Live Feeds)
     let currentPair = 'GOLD';
     let livePrices = { GOLD: 4203.00, SILVER: 29.45, SP500: 5540.20 };
 
@@ -1015,7 +1107,7 @@
         document.getElementById('modal-body').innerHTML = quotesHtml;
     }
 
-    // 8. Live Candlestick Canvas Chart
+    // 9. Live Candlestick Canvas Chart
     function openNativeChartModal() {
         let chartHtml = `
             <div style="background:#020617; padding:10px; border-radius:10px; text-align:center;">
@@ -1058,7 +1150,7 @@
         }
     }
 
-    // 9. Live Clock
+    // 10. Live Clock
     function updateClock() {
         const now = new Date();
         const timeStr = now.toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -1068,7 +1160,7 @@
     setInterval(updateClock, 1000);
     updateClock();
 
-    // 10. Mining Engine (Requires Positive Balance)
+    // 11. Mining Engine
     function loadMiningHistory() {
         let historyLogs = JSON.parse(localStorage.getItem('userMiningHistory')) || [];
         const tbody = document.getElementById('history-rows');
