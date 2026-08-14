@@ -5,145 +5,442 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Investor Trader Panel</title>
     <style>
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
         body {
             background: radial-gradient(circle at 50% 50%, #0c1825, #080b10);
             color: #f8fafc;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center;
-            min-height: 100vh; overflow-x: hidden; position: relative;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
         }
 
         /* Particles Background */
-        .bg-particles { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
-        .star { position: absolute; background: #ffffff; border-radius: 50%; opacity: 0.3; animation: twinkle var(--duration) infinite ease-in-out; }
-        @keyframes twinkle { 0%, 100% { opacity: 0.2; transform: scale(0.8); } 50% { opacity: 0.8; transform: scale(1.2); } }
+        .bg-particles {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .star {
+            position: absolute;
+            background: #ffffff;
+            border-radius: 50%;
+            opacity: 0.3;
+            animation: twinkle var(--duration) infinite ease-in-out;
+        }
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.2; transform: scale(0.8); }
+            50% { opacity: 0.8; transform: scale(1.2); }
+        }
 
         /* Top Yellow Ticker Banner */
         .top-ticker {
-            width: 100%; background-color: #FFD700; color: #000000; font-weight: 800; font-size: 11px; padding: 7px 0;
-            overflow: hidden; white-space: nowrap; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(255, 215, 0, 0.3);
+            width: 100%;
+            background-color: #FFD700;
+            color: #000000;
+            font-weight: 800;
+            font-size: 11px;
+            padding: 7px 0;
+            overflow: hidden;
+            white-space: nowrap;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(255, 215, 0, 0.3);
         }
-        .ticker-text { display: inline-block; padding-left: 100%; animation: ticker 16s linear infinite; }
-        @keyframes ticker { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-100%, 0, 0); } }
+        .ticker-text {
+            display: inline-block;
+            padding-left: 100%;
+            animation: ticker 16s linear infinite;
+        }
+        @keyframes ticker {
+            0% { transform: translate3d(0, 0, 0); }
+            100% { transform: translate3d(-100%, 0, 0); }
+        }
 
-        .main-wrapper { width: 100%; max-width: 420px; padding: 14px 14px 90px 14px; z-index: 1; display: none; }
+        .main-wrapper {
+            width: 100%;
+            max-width: 420px;
+            padding: 14px 14px 90px 14px;
+            z-index: 1;
+            display: none;
+        }
 
-        /* Auth Screen */
+        /* Registration Screen */
         .auth-wrapper {
-            width: 100%; max-width: 380px; padding: 24px; margin-top: 30px; z-index: 2;
-            background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 18px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center;
+            width: 100%;
+            max-width: 380px;
+            padding: 24px;
+            margin-top: 30px;
+            z-index: 2;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 18px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            text-align: center;
         }
-        .auth-title { font-size: 22px; font-weight: 800; color: #38bdf8; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px; }
-        .auth-sub { font-size: 12px; color: #94a3b8; margin-bottom: 20px; }
-        .input-group { margin-bottom: 14px; text-align: left; }
-        .input-group label { display: block; font-size: 11px; color: #cbd5e1; margin-bottom: 5px; font-weight: 600; }
+        .auth-title {
+            font-size: 22px;
+            font-weight: 800;
+            color: #38bdf8;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .auth-sub {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-bottom: 20px;
+        }
+        .input-group {
+            margin-bottom: 14px;
+            text-align: left;
+        }
+        .input-group label {
+            display: block;
+            font-size: 11px;
+            color: #cbd5e1;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
         .input-control {
-            width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #334155;
-            background: #0f172a; color: #f8fafc; font-size: 13px; outline: none;
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #334155;
+            background: #0f172a;
+            color: #f8fafc;
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .input-control:focus {
+            border-color: #38bdf8;
         }
 
-        .app-header { text-align: center; margin-bottom: 14px; }
-        .app-header h2 { margin: 0; font-size: 20px; font-weight: 800; letter-spacing: 1px; color: #ffffff; text-transform: uppercase; }
-        .sub-header { display: flex; justify-content: center; align-items: center; gap: 6px; font-size: 11px; color: #94a3b8; margin-top: 4px; }
-        .status-dot { height: 7px; width: 7px; background-color: #10b981; border-radius: 50%; box-shadow: 0 0 6px #10b981; }
+        /* App Header */
+        .app-header {
+            text-align: center;
+            margin-bottom: 14px;
+        }
+        .app-header h2 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            color: #ffffff;
+            text-transform: uppercase;
+        }
+        .sub-header {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            color: #94a3b8;
+            margin-top: 4px;
+        }
+        .status-dot {
+            height: 7px;
+            width: 7px;
+            background-color: #10b981;
+            border-radius: 50%;
+            box-shadow: 0 0 6px #10b981;
+        }
 
-        /* Price Panel Card */
+        /* Active Price Card */
         .card {
-            background: rgba(10, 25, 41, 0.85); backdrop-filter: blur(12px); padding: 16px; border-radius: 14px;
-            text-align: center; margin-bottom: 14px; border: 1px solid rgba(255, 215, 0, 0.25); box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+            background: rgba(10, 25, 41, 0.85);
+            backdrop-filter: blur(12px);
+            padding: 16px;
+            border-radius: 14px;
+            text-align: center;
+            margin-bottom: 14px;
+            border: 1px solid rgba(255, 215, 0, 0.25);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
         }
-        .card p { color: #e2e8f0; margin: 0; font-size: 11px; font-weight: 700; letter-spacing: 1px; }
-        .card h1 { color: #fbbf24; margin: 6px 0 8px 0; font-size: 34px; font-weight: 800; font-family: monospace; }
+        .card p {
+            color: #e2e8f0;
+            margin: 0;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        .card h1 {
+            color: #fbbf24;
+            margin: 6px 0 8px 0;
+            font-size: 34px;
+            font-weight: 800;
+            font-family: monospace;
+        }
         
         .btn-change-pair {
-            background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid #0284c7;
-            padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: 700; cursor: pointer;
+            background: rgba(56, 189, 248, 0.15);
+            color: #38bdf8;
+            border: 1px solid #0284c7;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-change-pair:active {
+            transform: scale(0.95);
         }
 
+        /* Action Buttons */
         .btn {
-            width: 100%; padding: 14px; border-radius: 10px; border: none; background: linear-gradient(135deg, #0284c7, #0891b2);
-            color: #ffffff; font-weight: 700; font-size: 14px; cursor: pointer; margin-bottom: 16px; box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
+            width: 100%;
+            padding: 14px;
+            border-radius: 10px;
+            border: none;
+            background: linear-gradient(135deg, #0284c7, #0891b2);
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
             transition: transform 0.15s ease;
         }
-        .btn:active { transform: scale(0.96); }
+        .btn:active {
+            transform: scale(0.96);
+        }
 
-        /* Metrics 2x2 Grid */
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
-        .metric-card { border-radius: 10px; padding: 12px; }
-        .metric-title { font-size: 10px; font-weight: 700; text-transform: uppercase; margin-bottom: 4px; opacity: 0.9; }
-        .metric-value { font-size: 17px; font-weight: 800; font-family: monospace; }
+        /* 2x2 Metric Cards Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .metric-card {
+            border-radius: 10px;
+            padding: 12px;
+        }
+        .metric-title {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+            opacity: 0.9;
+        }
+        .metric-value {
+            font-size: 17px;
+            font-weight: 800;
+            font-family: monospace;
+        }
         
         .card-lime { background-color: #0d3822; border: 1px solid #10b981; color: #4ade80; }
         .card-lightblue { background-color: #0c334c; border: 1px solid #0284c7; color: #38bdf8; }
         .card-softblue { background-color: #122b46; border: 1px solid #3b82f6; color: #60a5fa; }
         .card-gold { background-color: #3b2d08; border: 1px solid #d97706; color: #fbbf24; }
 
-        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 18px; }
-        .btn-green { background: #059669; color: #ffffff; border: none; padding: 12px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; }
-        .btn-white { background: #ffffff; color: #0f172a; border: none; padding: 12px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; }
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+        .btn-green {
+            background: #059669;
+            color: #ffffff;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            transition: transform 0.15s ease;
+        }
+        .btn-green:active { transform: scale(0.95); }
+
+        .btn-white {
+            background: #ffffff;
+            color: #0f172a;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            transition: transform 0.15s ease;
+        }
+        .btn-white:active { transform: scale(0.95); }
 
         /* Daily Mining History White Card */
-        .history-card { background-color: #ffffff; color: #0f172a; border-radius: 14px; padding: 16px; box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
-        .history-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 12px; }
-        .history-table th { text-align: left; padding: 6px 4px; border-bottom: 2px solid #e2e8f0; color: #475569; font-weight: 700; }
-        .history-table td { padding: 8px 4px; border-bottom: 1px solid #f1f5f9; font-size: 10.5px; }
-        .p-profit { color: #16a34a; font-weight: 800; }
+        .history-card {
+            background-color: #ffffff;
+            color: #0f172a;
+            border-radius: 14px;
+            padding: 16px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+            margin-bottom: 12px;
+        }
+        .history-table th {
+            text-align: left;
+            padding: 6px 4px;
+            border-bottom: 2px solid #e2e8f0;
+            color: #475569;
+            font-weight: 700;
+        }
+        .history-table td {
+            padding: 8px 4px;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 10.5px;
+        }
+        .p-profit {
+            color: #16a34a;
+            font-weight: 800;
+        }
 
-        .signature { text-align: center; font-size: 11px; color: #94a3b8; font-weight: bold; margin-top: 14px; letter-spacing: 0.5px; }
+        /* Outside Signature */
+        .signature {
+            text-align: center;
+            font-size: 11px;
+            color: #94a3b8;
+            font-weight: bold;
+            margin-top: 15px;
+            letter-spacing: 0.5px;
+        }
 
         /* Bottom Nav */
         .bottom-nav {
-            position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(3, 20, 32, 0.98); backdrop-filter: blur(16px);
-            border-top: 1px solid rgba(255, 255, 255, 0.1); display: none; justify-content: space-around; padding: 8px 0; z-index: 900;
+            position: fixed;
+            bottom: 0; left: 0; width: 100%;
+            background: rgba(3, 20, 32, 0.98);
+            backdrop-filter: blur(16px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: none;
+            justify-content: space-around;
+            padding: 8px 0;
+            z-index: 900;
         }
-        .nav-tab { display: flex; flex-direction: column; align-items: center; color: #64748b; font-size: 10px; cursor: pointer; }
+        .nav-tab {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #64748b;
+            font-size: 10px;
+            cursor: pointer;
+            transition: transform 0.15s ease;
+        }
+        .nav-tab:active { transform: scale(0.9); }
         .nav-tab.active { color: #38bdf8; font-weight: 700; }
 
-        .quote-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.08); font-size: 13px; }
+        .quote-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            font-size: 13px;
+        }
         .quote-symbol { font-weight: bold; color: #f8fafc; }
         .quote-price { font-family: monospace; font-weight: bold; color: #10b981; }
 
         .pair-option-btn {
-            width: 100%; padding: 12px; margin-bottom: 8px; background: #1e293b; color: #fff; border: 1px solid #334155;
-            border-radius: 8px; font-weight: bold; text-align: left; cursor: pointer; display: flex; justify-content: space-between;
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 8px;
+            background: #1e293b;
+            color: #fff;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            font-weight: bold;
+            text-align: left;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            transition: background 0.2s;
         }
+        .pair-option-btn:active { background: #334155; }
 
-        /* Modal Blur */
+        /* Animated Popup Modal */
         .modal {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px); justify-content: center; align-items: center; z-index: 2000; padding: 15px;
-            opacity: 0; transition: opacity 0.25s ease;
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            padding: 15px;
+            opacity: 0;
+            transition: opacity 0.25s ease;
         }
-        .modal.active-modal { display: flex; opacity: 1; }
+        .modal.active-modal {
+            display: flex;
+            opacity: 1;
+        }
         .modal-content {
-            background: #0f172a; padding: 20px; border-radius: 16px; text-align: center; max-width: 380px; width: 100%; border: 1px solid #1e293b;
-            transform: scale(0.7); transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+            background: #0f172a;
+            padding: 22px;
+            border-radius: 16px;
+            text-align: center;
+            max-width: 380px;
+            width: 100%;
+            border: 1px solid #1e293b;
+            transform: scale(0.7);
+            transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
-        .modal.active-modal .modal-content { transform: scale(1); }
+        .modal.active-modal .modal-content {
+            transform: scale(1);
+        }
     </style>
 </head>
 <body>
 
-<div class="top-ticker"><div class="ticker-text">🚀 SPECIAL OFFER: DEPOSIT $200 AND GET AN INSTANT $5 BONUS IMMEDIATELY! LIMITED TIME OFFER! 🚀</div></div>
+<!-- Top Yellow Running Ticker -->
+<div class="top-ticker">
+    <div class="ticker-text">🚀 SPECIAL OFFER: DEPOSIT $200 AND GET AN INSTANT $5 BONUS IMMEDIATELY! LIMITED TIME OFFER! 🚀</div>
+</div>
+
+<!-- Stars Animated Background -->
 <div class="bg-particles" id="stars-container"></div>
 
-<!-- Registration Screen -->
+<!-- Registration Screen (Default View for New Users) -->
 <div class="auth-wrapper" id="auth-screen">
     <div class="auth-title">Account Sign Up</div>
     <div class="auth-sub">Enter details to access the Trading Dashboard</div>
     
-    <div class="input-group"><label>First Name</label><input type="text" id="reg-fname" class="input-control" placeholder="e.g. Ahmad"></div>
-    <div class="input-group"><label>Last Name</label><input type="text" id="reg-lname" class="input-control" placeholder="e.g. Ijaz"></div>
-    <div class="input-group"><label>Email Address</label><input type="email" id="reg-email" class="input-control" placeholder="name@example.com"></div>
-    <div class="input-group"><label>Phone Number</label><input type="tel" id="reg-phone" class="input-control" placeholder="+92 300 0000000"></div>
+    <div class="input-group">
+        <label>First Name</label>
+        <input type="text" id="reg-fname" class="input-control" placeholder="e.g. Ahmad">
+    </div>
+    <div class="input-group">
+        <label>Last Name</label>
+        <input type="text" id="reg-lname" class="input-control" placeholder="e.g. Ijaz">
+    </div>
+    <div class="input-group">
+        <label>Email Address</label>
+        <input type="email" id="reg-email" class="input-control" placeholder="name@example.com">
+    </div>
+    <div class="input-group">
+        <label>Phone Number</label>
+        <input type="tel" id="reg-phone" class="input-control" placeholder="+92 300 0000000">
+    </div>
 
     <button class="btn" onclick="handleRegistration()" style="margin-top: 10px;">Register & Access Panel</button>
 </div>
 
-<!-- Main Dashboard -->
+<!-- Main Application Dashboard -->
 <div class="main-wrapper" id="main-dashboard">
     <div class="app-header">
         <h2>INVESTOR TRADER PANEL</h2>
@@ -155,45 +452,70 @@
         </div>
     </div>
 
-    <!-- Active Price Card -->
+    <!-- Active Asset Real-time Price Card -->
     <div class="card">
         <p id="active-asset-title">GOLD (XAU/USD) REAL-TIME</p>
         <h1 id="active-asset-price">$4203.00</h1>
         <button class="btn-change-pair" onclick="openPairSelectModal()">🔄 CHANGE PAIR</button>
     </div>
 
-    <div id="mining-section"><button class="btn" onclick="handleMiningClick()">🚀 MINI (15s CHART)</button></div>
+    <!-- Mining Action Section -->
+    <div id="mining-section">
+        <button class="btn" onclick="handleMiningClick()">🚀 MINI (15s CHART)</button>
+    </div>
 
+    <!-- 2x2 Metric Cards Grid -->
     <div class="stats-grid">
-        <div class="metric-card card-lime"><div class="metric-title">Current Amount</div><div class="metric-value" id="val-current">$109.00</div></div>
-        <div class="metric-card card-lightblue"><div class="metric-title">Deposit Amount</div><div class="metric-value" id="val-deposit">$100.00</div></div>
-        <div class="metric-card card-softblue"><div class="metric-title">Live Equity</div><div class="metric-value" id="val-equity">$111.15</div></div>
-        <div class="metric-card card-gold"><div class="metric-title">Live Withdrawal</div><div class="metric-value" id="val-withdrawal">$26.00</div></div>
+        <div class="metric-card card-lime">
+            <div class="metric-title">Current Amount</div>
+            <div class="metric-value" id="val-current">$109.00</div>
+        </div>
+        <div class="metric-card card-lightblue">
+            <div class="metric-title">Deposit Amount</div>
+            <div class="metric-value" id="val-deposit">$100.00</div>
+        </div>
+        <div class="metric-card card-softblue">
+            <div class="metric-title">Live Equity</div>
+            <div class="metric-value" id="val-equity">$111.15</div>
+        </div>
+        <div class="metric-card card-gold">
+            <div class="metric-title">Live Withdrawal</div>
+            <div class="metric-value" id="val-withdrawal">$26.00</div>
+        </div>
     </div>
 
+    <!-- Add Funds & Rules Group -->
     <div class="btn-group">
-        <button class="btn-green" onclick="handleDepositClick()">Add Funds</button>
-        <button class="btn-white" onclick="showPopup('⚖️ Rules & Legal Terms', 'All trades are subject to automated evaluation risk parameters and clearance rules.')">RULES & LEGAL PDF</button>
+        <button class="btn-green" id="deposit-btn" onclick="openDepositModal()">Add Funds</button>
+        <button class="btn-white" onclick="showPopup('⚖️ Rules & Legal Terms', 'All trades are subject to automated evaluation risk parameters, security clearance, and official session clearance.')">RULES & LEGAL PDF</button>
     </div>
 
-    <!-- Mining History Section -->
+    <!-- Daily Mining History Section -->
     <div class="history-card">
         <div style="font-weight:800; font-size:14px; margin-bottom:6px;">⛏️ DAILY MINING HISTORY</div>
         <div style="font-size:10px; color:#64748b; margin-bottom:10px;" id="mining-start-date">Started mining on: Not Started Yet</div>
         
         <table class="history-table">
-            <thead><tr><th>DATE</th><th>TYPE</th><th>ASSET</th><th>P/L</th></tr></thead>
+            <thead>
+                <tr>
+                    <th>DATE</th>
+                    <th>TYPE</th>
+                    <th>ASSET</th>
+                    <th>P/L</th>
+                </tr>
+            </thead>
             <tbody id="history-rows">
                 <tr id="empty-history-row"><td colspan="4" style="text-align:center; color:#94a3b8; padding:12px;">No mining history recorded yet.</td></tr>
             </tbody>
         </table>
-        <button class="btn" style="background:#2563eb; padding:10px; font-size:12px; margin-bottom:0;" onclick="showPopup('📜 Mining Logs', 'Full historical log report loaded.')">View Detailed Mining Logs</button>
+        <button class="btn" style="background:#2563eb; padding:10px; font-size:12px; margin-bottom:0;" onclick="showPopup('📜 Mining Logs', 'Full historical trading and mining log report loaded successfully.')">View Detailed Mining Logs</button>
     </div>
 
+    <!-- Footer Signature (Outside Box) -->
     <div class="signature">Design by Ahmad Ejaz®</div>
 </div>
 
-<!-- Bottom Nav -->
+<!-- 4-Tab Bottom Navigation Bar -->
 <div class="bottom-nav" id="bottom-navbar">
     <div class="nav-tab" onclick="openQuotesModal()"><span style="font-size:16px;">📊</span><span>Quotes</span></div>
     <div class="nav-tab active" onclick="openNativeChartModal()"><span style="font-size:16px;">📈</span><span>Mine Chart</span></div>
@@ -201,6 +523,7 @@
     <div class="nav-tab" onclick="openProfileModal()"><span style="font-size:16px;">👤</span><span>Profile</span></div>
 </div>
 
+<!-- Reusable Animated Modal System -->
 <div id="modal" class="modal">
     <div class="modal-content">
         <div id="modal-title" style="font-weight:700; margin-bottom:10px; color:#f8fafc; font-size:16px;">Notice</div>
@@ -210,27 +533,19 @@
 </div>
 
 <script>
-    // Your Active Google Script Web App URL
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxH6VIGiL7f1U0xKYQwT29godghNf4Rg2SehknHYfgeIcN3NlH6-_JNLrH9OlsBOcWUSQ/exec";
+    // 1. Google Sheets Web App Endpoint (Pre-linked)
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwKEpfb4QBTPwaw0wwY6FnQRpWTbVm8nETMrStGbhSHJ5yPN4gberYzVwO9Jtap4LA/exec";
 
     function sendToGoogleSheet(name, email, phone, action, amount = "-", mining = "-") {
-        const formData = new URLSearchParams();
-        formData.append("name", name);
-        formData.append("email", email);
-        formData.append("phone", phone);
-        formData.append("action", action);
-        formData.append("amount", amount);
-        formData.append("mining", mining);
-
         fetch(GOOGLE_SCRIPT_URL, {
             method: "POST",
             mode: "no-cors",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: formData.toString()
-        }).catch(err => console.log("Sync Log:", err));
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name, email, phone, action, amount, mining })
+        });
     }
 
-    // Stars Generator
+    // 2. Star Particle Animations
     const container = document.getElementById('stars-container');
     for (let i = 0; i < 40; i++) {
         const star = document.createElement('div');
@@ -243,7 +558,7 @@
         container.appendChild(star);
     }
 
-    // Session Management
+    // 3. User Authentication & Session Check
     let currentUser = JSON.parse(localStorage.getItem('traderUser')) || null;
 
     function checkAuth() {
@@ -253,6 +568,7 @@
             document.getElementById('bottom-navbar').style.display = 'flex';
             loadMiningHistory();
             loadSavedBalances();
+            checkDepositStatus();
         } else {
             document.getElementById('auth-screen').style.display = 'block';
             document.getElementById('main-dashboard').style.display = 'none';
@@ -271,18 +587,12 @@
             return;
         }
 
-        sendToGoogleSheet(fname + " " + lname, email, phone, "SIGNUP", "-", "-");
+        // Send to Google Sheet
+        sendToGoogleSheet(fname + " " + lname, email, phone, "SIGNUP", "-");
 
         currentUser = { fname, lname, email, phone, joined: new Date().toLocaleDateString('en-GB') };
         localStorage.setItem('traderUser', JSON.stringify(currentUser));
         checkAuth();
-    }
-
-    function handleDepositClick() {
-        if (currentUser) {
-            sendToGoogleSheet(currentUser.fname + " " + currentUser.lname, currentUser.email, currentUser.phone, "DEPOSIT_REQUEST", "$100.00", "-");
-        }
-        showPopup('⚡ Deposit Funds', 'Deposit Address:\n0x71C83920F4a9A12B8904f9\n\nNetwork: TRC20 / BEP20\n\nAdmin has been notified of your request!');
     }
 
     function openProfileModal() {
@@ -307,7 +617,50 @@
         checkAuth();
     }
 
-    // Balances
+    // 4. Deposit Management with Anti-Spam / Pending Status
+    function checkDepositStatus() {
+        if (localStorage.getItem('depositPending') === 'true') {
+            const btn = document.getElementById('deposit-btn');
+            if (btn) {
+                btn.innerText = "Pending Approval...";
+                btn.style.background = "#d97706";
+            }
+        }
+    }
+
+    function openDepositModal() {
+        if (localStorage.getItem('depositPending') === 'true') {
+            showPopup('⚠️ Request Pending', 'Your previous deposit request is currently under review by Admin. Please wait for approval.');
+            return;
+        }
+
+        let depositHtml = `
+            <div style="text-align:left; font-size:12px; color:#cbd5e1; line-height:1.6;">
+                <p style="margin:0 0 8px 0;"><b>Deposit USDT (TRC20 / BEP20):</b></p>
+                <div style="background:#1e293b; padding:8px; border-radius:6px; font-family:monospace; font-size:11px; word-break:break-all; border:1px dashed #38bdf8; margin-bottom:12px;">
+                    0x71C83920F4a9A12B8904f9
+                </div>
+                <p style="font-size:11px; color:#94a3b8; margin-bottom:14px;">Transfer funds to the above address and click Confirm to notify the admin.</p>
+                <button class="btn" style="background:#059669; margin-bottom:0;" onclick="submitDepositRequest()">Confirm Deposit ($100.00)</button>
+            </div>
+        `;
+        showPopup('⚡ Deposit Funds', '');
+        document.getElementById('modal-body').innerHTML = depositHtml;
+    }
+
+    function submitDepositRequest() {
+        if (currentUser) {
+            sendToGoogleSheet(currentUser.fname + " " + currentUser.lname, currentUser.email, currentUser.phone, "DEPOSIT_REQUEST", "$100.00");
+        }
+        localStorage.setItem('depositPending', 'true');
+        checkDepositStatus();
+        closePopup();
+        setTimeout(() => {
+            showPopup('✅ Deposit Submitted', 'Your deposit request for $100.00 has been sent to Admin for verification.');
+        }, 300);
+    }
+
+    // 5. Persistent Balances Engine
     function loadSavedBalances() {
         let currentBal = parseFloat(localStorage.getItem('currentBal')) || 109.00;
         let depositBal = parseFloat(localStorage.getItem('depositBal')) || 100.00;
@@ -320,7 +673,7 @@
         document.getElementById('val-withdrawal').innerText = "$" + withdrawalBal.toFixed(2);
     }
 
-    // Market Rates
+    // 6. Market Rates Engine (Binance Gold + Correlated Silver & SP500)
     let currentPair = 'GOLD';
     let livePrices = { GOLD: 4203.00, SILVER: 29.45, SP500: 5540.20 };
 
@@ -334,8 +687,8 @@
         } catch (e) {
             livePrices.GOLD += (Math.random() * 0.6 - 0.3);
         }
-        livePrices.SILVER += (Math.random() * 0.04 - 0.02);
-        livePrices.SP500 += (Math.random() * 1.0 - 0.5);
+        livePrices.SILVER = (livePrices.GOLD * 0.007) + (Math.random() * 0.05);
+        livePrices.SP500 = 5540.00 + (Math.random() * 2.0 - 1.0);
 
         updateActiveDisplayPrice();
     }
@@ -383,7 +736,7 @@
         document.getElementById('modal-body').innerHTML = quotesHtml;
     }
 
-    // Interactive Lightweight Candlestick Chart
+    // 7. Lightweight Live 1M Candlestick Canvas Chart
     function openNativeChartModal() {
         let chartHtml = `
             <div style="background:#020617; padding:10px; border-radius:10px; text-align:center;">
@@ -402,7 +755,7 @@
         const ctx = canvas.getContext('2d');
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        let startX = 20;
+        let startX = 15;
         for (let i = 0; i < 12; i++) {
             let isGreen = Math.random() > 0.4;
             let open = Math.random() * 80 + 40;
@@ -426,7 +779,7 @@
         }
     }
 
-    // Live Clock
+    // 8. Live Clock
     function updateClock() {
         const now = new Date();
         const timeStr = now.toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -436,7 +789,7 @@
     setInterval(updateClock, 1000);
     updateClock();
 
-    // Mining Engine & History
+    // 9. Persistent Mining History
     function loadMiningHistory() {
         let historyLogs = JSON.parse(localStorage.getItem('userMiningHistory')) || [];
         const tbody = document.getElementById('history-rows');
@@ -498,6 +851,7 @@
                 const now = new Date();
                 localStorage.setItem('lastMiningTimestamp', now.getTime());
                 
+                // Add to Local Logs
                 let historyLogs = JSON.parse(localStorage.getItem('userMiningHistory')) || [];
                 const newLog = {
                     date: now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }),
@@ -508,10 +862,12 @@
                 historyLogs.unshift(newLog);
                 localStorage.setItem('userMiningHistory', JSON.stringify(historyLogs));
 
+                // Send to Google Sheet
                 if (currentUser) {
-                    sendToGoogleSheet(currentUser.fname + " " + currentUser.lname, currentUser.email, currentUser.phone, "MINING_PROFIT", "+$1.00", currentPair);
+                    sendToGoogleSheet(currentUser.fname + " " + currentUser.lname, currentUser.email, currentUser.phone, "MINING_PROFIT", "$1.00", currentPair);
                 }
 
+                // Update Balances
                 let currentBal = (parseFloat(localStorage.getItem('currentBal')) || 109.00) + 1.0;
                 let equityBal = (parseFloat(localStorage.getItem('equityBal')) || 111.15) + 1.0;
                 let withdrawalBal = (parseFloat(localStorage.getItem('withdrawalBal')) || 26.00) + 1.0;
@@ -539,7 +895,7 @@
         `;
     }
 
-    // Modal Controls
+    // Modal Control System
     const modalElem = document.getElementById('modal');
     function showPopup(title, body) {
         document.getElementById('modal-title').innerText = title;
