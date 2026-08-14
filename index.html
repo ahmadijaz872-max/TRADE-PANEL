@@ -470,7 +470,7 @@
 <!-- Stars Animated Background -->
 <div class="bg-particles" id="stars-container"></div>
 
-<!-- Registration Screen (Default View for New Users) -->
+<!-- Registration Screen -->
 <div class="auth-wrapper" id="auth-screen">
     <div class="auth-title">Account Sign Up</div>
     <div class="auth-sub">Enter details to access the Trading Dashboard</div>
@@ -588,15 +588,15 @@
 </div>
 
 <script>
-    // 1. Google Sheets Web App Endpoint
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwKEpfb4QBTPwaw0wwY6FnQRpWTbVm8nETMrStGbhSHJ5yPN4gberYzVwO9Jtap4LA/exec";
+    // 1. Google Sheets Web App Endpoint (Attached with Version 6 URL)
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwkGl3ha8tMXPqyjg2P-73Qt1SyOkBpBzMc_J9IxfWp_8MsEzxXrMERGzZIuqcTdFVG/exec";
 
-    function sendToGoogleSheet(name, email, phone, action, amount = "-", txid = "-", screenshot = "") {
+    function sendToGoogleSheet(name, email, phone, action, amount = "-", txid = "-", screenshot = "No SS", status = "Pending") {
         fetch(GOOGLE_SCRIPT_URL, {
             method: "POST",
             mode: "no-cors",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name, email, phone, action, amount, txid, screenshot })
+            body: JSON.stringify({ name, email, phone, action, amount, txid, screenshot, status })
         });
     }
 
@@ -642,7 +642,7 @@
             return;
         }
 
-        sendToGoogleSheet(fname + " " + lname, email, phone, "SIGNUP", "-");
+        sendToGoogleSheet(fname + " " + lname, email, phone, "SIGNUP", "-", "-", "No SS", "Verified");
 
         currentUser = { fname, lname, email, phone, joined: new Date().toLocaleDateString('en-GB') };
         localStorage.setItem('traderUser', JSON.stringify(currentUser));
@@ -762,7 +762,8 @@
                     "DEPOSIT_PROOF_SUBMITTED",
                     "$" + amount,
                     txid,
-                    "Attached (BEP20)"
+                    "Attached (BEP20)",
+                    "Pending"
                 );
             }
 
@@ -990,7 +991,7 @@
                 localStorage.setItem('userMiningHistory', JSON.stringify(historyLogs));
 
                 if (currentUser) {
-                    sendToGoogleSheet(currentUser.fname + " " + currentUser.lname, currentUser.email, currentUser.phone, "MINING_PROFIT", "$1.00", "-", "No SS");
+                    sendToGoogleSheet(currentUser.fname + " " + currentUser.lname, currentUser.email, currentUser.phone, "MINING_PROFIT", "$1.00", "-", "No SS", "Completed");
                 }
 
                 let currentBal = (parseFloat(localStorage.getItem('currentBal')) || 0.00) + 1.0;
