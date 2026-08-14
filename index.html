@@ -6,145 +6,495 @@
     <title>Investor Trader Panel</title>
     <style>
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { 
-            background: radial-gradient(circle at 50% 50%, #0c1825, #080b10); 
-            color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; 
-            margin: 0; padding: 0; min-height: 100vh; display: flex; flex-direction: column; align-items: center; 
+        body {
+            background: radial-gradient(circle at 50% 50%, #0c1825, #080b10);
+            color: #f8fafc;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center;
+            min-height: 100vh; overflow-x: hidden; position: relative;
         }
 
-        /* Stars Background */
-        .bg-particles { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
-        .star { position: absolute; background: #ffffff; border-radius: 50%; opacity: 0.3; animation: twinkle var(--duration) infinite ease-in-out; }
-        @keyframes twinkle { 0%, 100% { opacity: 0.2; transform: scale(0.8); } 50% { opacity: 0.8; transform: scale(1.2); } }
-
-        /* Ticker & Wrapper */
-        .top-ticker { width: 100%; background-color: #FFD700; color: #000000; font-weight: 800; font-size: 11px; padding: 7px 0; overflow: hidden; white-space: nowrap; position: sticky; top: 0; z-index: 1000; }
+        /* Top Yellow Ticker Banner */
+        .top-ticker {
+            width: 100%; background-color: #FFD700; color: #000000; font-weight: 800; font-size: 11px; padding: 7px 0;
+            overflow: hidden; white-space: nowrap; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(255, 215, 0, 0.3);
+        }
         .ticker-text { display: inline-block; padding-left: 100%; animation: ticker 16s linear infinite; }
         @keyframes ticker { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-100%, 0, 0); } }
-        .main-wrapper { width: 100%; max-width: 420px; padding: 16px; z-index: 1; }
 
-        /* Auth Screen */
-        .auth-wrapper { width: 100%; max-width: 380px; padding: 24px; margin-top: 40px; background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(16px); border-radius: 18px; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; }
-        .input-control { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: #fff; margin-bottom: 10px; }
+        .main-wrapper { width: 100%; max-width: 420px; padding: 14px 14px 90px 14px; z-index: 1; display: none; }
 
-        /* UI Elements */
-        .card { background: rgba(10, 25, 41, 0.85); backdrop-filter: blur(12px); padding: 16px; border-radius: 14px; text-align: center; margin-bottom: 14px; border: 1px solid rgba(255, 215, 0, 0.2); }
-        .card h1 { color: #fbbf24; font-size: 30px; font-family: monospace; margin: 5px 0; }
-        .btn { width: 100%; padding: 14px; border-radius: 10px; border: none; background: linear-gradient(135deg, #0284c7, #0891b2); color: white; font-weight: 700; cursor: pointer; }
+        /* Registration Screen */
+        .auth-wrapper {
+            width: 100%; max-width: 380px; padding: 24px; margin-top: 30px; z-index: 2;
+            background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 18px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center;
+        }
+        .auth-title { font-size: 22px; font-weight: 800; color: #38bdf8; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px; }
+        .auth-sub { font-size: 12px; color: #94a3b8; margin-bottom: 20px; }
+        .input-group { margin-bottom: 14px; text-align: left; }
+        .input-group label { display: block; font-size: 11px; color: #cbd5e1; margin-bottom: 5px; font-weight: 600; }
+        .input-control {
+            width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #334155;
+            background: #0f172a; color: #f8fafc; font-size: 13px; outline: none;
+        }
+
+        .app-header { text-align: center; margin-bottom: 14px; }
+        .app-header h2 { margin: 0; font-size: 20px; font-weight: 800; letter-spacing: 1px; color: #ffffff; text-transform: uppercase; }
+        .sub-header { display: flex; justify-content: center; align-items: center; gap: 6px; font-size: 11px; color: #94a3b8; margin-top: 4px; }
+        .status-dot { height: 7px; width: 7px; background-color: #10b981; border-radius: 50%; box-shadow: 0 0 6px #10b981; }
+
+        /* Price Panel Card */
+        .card {
+            background: rgba(10, 25, 41, 0.85); backdrop-filter: blur(12px); padding: 16px; border-radius: 14px;
+            text-align: center; margin-bottom: 14px; border: 1px solid rgba(255, 215, 0, 0.25); box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+        }
+        .card p { color: #e2e8f0; margin: 0; font-size: 11px; font-weight: 700; letter-spacing: 1px; }
+        .card h1 { color: #fbbf24; margin: 6px 0 8px 0; font-size: 34px; font-weight: 800; font-family: monospace; }
         
-        .history-card { background-color: #ffffff; color: #0f172a; border-radius: 14px; padding: 16px; margin-top: 15px; }
-        .history-table { width: 100%; border-collapse: collapse; font-size: 11px; }
-        .history-table th { text-align: left; padding: 8px 4px; border-bottom: 1px solid #ccc; color: #666; }
-        .history-table td { padding: 8px 4px; border-bottom: 1px solid #f1f5f9; }
-        .p-profit { color: #16a34a; font-weight: bold; }
+        .btn-change-pair {
+            background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid #0284c7;
+            padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: 700; cursor: pointer;
+        }
 
-        .signature { text-align: center; font-size: 10px; color: #64748b; font-weight: bold; margin-top: 10px; }
+        .btn {
+            width: 100%; padding: 14px; border-radius: 10px; border: none; background: linear-gradient(135deg, #0284c7, #0891b2);
+            color: #ffffff; font-weight: 700; font-size: 14px; cursor: pointer; margin-bottom: 16px; box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
+        }
+        .btn:active { transform: scale(0.97); }
 
-        /* Modal Blur Effect */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); justify-content: center; align-items: center; z-index: 2000; }
-        .modal-content { background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(15px); padding: 20px; border-radius: 16px; border: 1px solid #334155; width: 90%; max-width: 320px; text-align: center; }
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+        .metric-card { border-radius: 10px; padding: 12px; }
+        .metric-title { font-size: 10px; font-weight: 700; text-transform: uppercase; margin-bottom: 4px; opacity: 0.9; }
+        .metric-value { font-size: 17px; font-weight: 800; font-family: monospace; }
+        
+        .card-lime { background-color: #0d3822; border: 1px solid #10b981; color: #4ade80; }
+        .card-lightblue { background-color: #0c334c; border: 1px solid #0284c7; color: #38bdf8; }
+        .card-softblue { background-color: #122b46; border: 1px solid #3b82f6; color: #60a5fa; }
+        .card-gold { background-color: #3b2d08; border: 1px solid #d97706; color: #fbbf24; }
 
-        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(3, 20, 32, 0.95); backdrop-filter: blur(16px); display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #334155; }
-        .nav-tab { color: #64748b; font-size: 10px; text-align: center; cursor: pointer; }
-        .nav-tab.active { color: #38bdf8; }
+        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 18px; }
+        .btn-green { background: #059669; color: #ffffff; border: none; padding: 12px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; }
+        .btn-white { background: #ffffff; color: #0f172a; border: none; padding: 12px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; }
+
+        .history-card { background-color: #ffffff; color: #0f172a; border-radius: 14px; padding: 16px; box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
+        .history-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 12px; }
+        .history-table th { text-align: left; padding: 6px 4px; border-bottom: 2px solid #e2e8f0; color: #475569; font-weight: 700; }
+        .history-table td { padding: 8px 4px; border-bottom: 1px solid #f1f5f9; font-size: 10.5px; }
+        .p-profit { color: #16a34a; font-weight: 800; }
+
+        .btn-full-log { width: 100%; background: #2563eb; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: 700; font-size: 12px; cursor: pointer; }
+
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(3, 20, 32, 0.98); backdrop-filter: blur(16px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1); display: none; justify-content: space-around; padding: 8px 0; z-index: 900;
+        }
+        .nav-tab { display: flex; flex-direction: column; align-items: center; color: #64748b; font-size: 10px; cursor: pointer; }
+        .nav-tab.active { color: #38bdf8; font-weight: 700; }
+
+        .quote-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.08); font-size: 13px; }
+        .quote-symbol { font-weight: bold; color: #f8fafc; }
+        .quote-price { font-family: monospace; font-weight: bold; color: #10b981; }
+
+        .pair-option-btn {
+            width: 100%; padding: 12px; margin-bottom: 8px; background: #1e293b; color: #fff; border: 1px solid #334155;
+            border-radius: 8px; font-weight: bold; text-align: left; cursor: pointer; display: flex; justify-content: space-between;
+        }
+
+        /* POPUP MODAL ANIMATION */
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px); justify-content: center; align-items: center; z-index: 2000; padding: 15px;
+        }
+        .modal.active-modal { display: flex; }
+        .modal-content {
+            background: #0f172a; padding: 20px; border-radius: 16px; text-align: center; max-width: 380px; width: 100%; border: 1px solid #1e293b;
+        }
     </style>
 </head>
 <body>
 
-<div class="top-ticker"><div class="ticker-text">🚀 SPECIAL OFFER: DEPOSIT $200 AND GET AN INSTANT $5 BONUS! LIMITED TIME OFFER! 🚀</div></div>
-<div class="bg-particles" id="stars-container"></div>
+<div class="top-ticker"><div class="ticker-text">🚀 SPECIAL OFFER: DEPOSIT $200 AND GET AN INSTANT $5 BONUS IMMEDIATELY! LIMITED TIME OFFER! 🚀</div></div>
 
-<!-- Auth Screen -->
+<!-- Registration Screen -->
 <div class="auth-wrapper" id="auth-screen">
-    <h2 style="color:#38bdf8">LOGIN / REGISTER</h2>
-    <input type="text" id="reg-fname" class="input-control" placeholder="First Name">
-    <input type="text" id="reg-lname" class="input-control" placeholder="Last Name">
-    <input type="email" id="reg-email" class="input-control" placeholder="Email">
-    <input type="tel" id="reg-phone" class="input-control" placeholder="Phone">
-    <button class="btn" onclick="handleRegistration()">Get Started</button>
+    <div class="auth-title">Account Sign Up</div>
+    <div class="auth-sub">Enter details to access the Trading Dashboard</div>
+    
+    <div class="input-group"><label>First Name</label><input type="text" id="reg-fname" class="input-control" placeholder="e.g. Ahmad"></div>
+    <div class="input-group"><label>Last Name</label><input type="text" id="reg-lname" class="input-control" placeholder="e.g. Ijaz"></div>
+    <div class="input-group"><label>Email Address</label><input type="email" id="reg-email" class="input-control" placeholder="name@example.com"></div>
+    <div class="input-group"><label>Phone Number</label><input type="tel" id="reg-phone" class="input-control" placeholder="+92 300 0000000"></div>
+
+    <button class="btn" onclick="handleRegistration()" style="margin-top: 10px;">Register & Access Panel</button>
 </div>
 
 <!-- Main Dashboard -->
-<div class="main-wrapper" id="main-dashboard" style="display:none;">
+<div class="main-wrapper" id="main-dashboard">
+    <div class="app-header">
+        <h2>INVESTOR TRADER PANEL</h2>
+        <div class="sub-header">
+            <span class="status-dot"></span>
+            <span style="color:#10b981; font-weight:700;">LIVE MARKET</span>
+            <span>|</span>
+            <span id="live-datetime" style="font-family:monospace;">--:--:-- | -- --- ----</span>
+        </div>
+    </div>
+
+    <!-- Active Price Card -->
     <div class="card">
         <p id="active-asset-title">GOLD (XAU/USD) REAL-TIME</p>
-        <h1 id="active-asset-price">$0.00</h1>
+        <h1 id="active-asset-price">$4203.00</h1>
+        <button class="btn-change-pair" onclick="openPairSelectModal()">🔄 CHANGE PAIR</button>
     </div>
 
-    <div id="mining-section"><button class="btn" onclick="handleMiningClick()">🚀 MINE (15s CHART)</button></div>
+    <div id="mining-section"><button class="btn" onclick="handleMiningClick()">🚀 MINI (15s CHART)</button></div>
 
+    <div class="stats-grid">
+        <div class="metric-card card-lime"><div class="metric-title">Current Amount</div><div class="metric-value" id="val-current">$109.00</div></div>
+        <div class="metric-card card-lightblue"><div class="metric-title">Deposit Amount</div><div class="metric-value" id="val-deposit">$100.00</div></div>
+        <div class="metric-card card-softblue"><div class="metric-title">Live Equity</div><div class="metric-value" id="val-equity">$111.15</div></div>
+        <div class="metric-card card-gold"><div class="metric-title">Live Withdrawal</div><div class="metric-value" id="val-withdrawal">$26.00</div></div>
+    </div>
+
+    <div class="btn-group">
+        <button class="btn-green" onclick="showPopup('⚡ Add Funds', 'Deposit Address:\n0x71C83920F4a9A12B8904f9\n\nNetwork: TRC20 / BEP20')">Add Funds</button>
+        <button class="btn-white" onclick="showPopup('⚖️ Rules & Legal Terms', 'All trades are subject to automated evaluation risk parameters and clearance rules.')">RULES & LEGAL PDF</button>
+    </div>
+
+    <!-- Mining History Section -->
     <div class="history-card">
-        <div style="font-weight:800; font-size:14px; margin-bottom:10px;">⛏️ DAILY MINING HISTORY</div>
+        <div style="font-weight:800; font-size:14px; margin-bottom:6px;">⛏️ DAILY MINING HISTORY</div>
+        <div style="font-size:10px; color:#64748b; margin-bottom:10px;" id="mining-start-date">Started mining on: Not Started Yet</div>
+        
         <table class="history-table">
             <thead><tr><th>DATE</th><th>TYPE</th><th>ASSET</th><th>P/L</th></tr></thead>
-            <tbody id="history-rows"></tbody>
+            <tbody id="history-rows">
+                <tr id="empty-history-row"><td colspan="4" style="text-align:center; color:#94a3b8; padding:12px;">No mining history recorded yet.</td></tr>
+            </tbody>
         </table>
+        <button class="btn-full-log" onclick="showPopup('📜 Mining Logs', 'Full historical log report loaded.')">View Detailed Mining Logs</button>
     </div>
-    <div class="signature">Design by Ahmad Ejaz®</div>
 </div>
 
+<!-- Bottom Nav -->
 <div class="bottom-nav" id="bottom-navbar">
-    <div class="nav-tab" onclick="alert('Quotes Loaded')">📊<br>Quotes</div>
-    <div class="nav-tab active">🚀<br>Mine</div>
-    <div class="nav-tab" onclick="alert('History Loaded')">📜<br>History</div>
-    <div class="nav-tab" onclick="handleLogout()">👤<br>Logout</div>
+    <div class="nav-tab" onclick="openQuotesModal()"><span style="font-size:16px;">📊</span><span>Quotes</span></div>
+    <div class="nav-tab active" onclick="openNativeChartModal()"><span style="font-size:16px;">📈</span><span>Mine Chart</span></div>
+    <div class="nav-tab" onclick="showPopup('📜 History Log', 'Deposit Record: $100.00\nMined Profit History Loaded.')"><span style="font-size:16px;">📜</span><span>History</span></div>
+    <div class="nav-tab" onclick="openProfileModal()"><span style="font-size:16px;">👤</span><span>Profile</span></div>
 </div>
 
 <div id="modal" class="modal">
     <div class="modal-content">
-        <div id="modal-title" style="font-weight:bold; margin-bottom:10px;">Notice</div>
-        <div id="modal-body" style="font-size:12px; margin-bottom:15px;"></div>
-        <button class="btn" onclick="closePopup()" style="background:#dc2626;">Cancel</button>
+        <div id="modal-title" style="font-weight:700; margin-bottom:10px; color:#f8fafc; font-size:16px;">Notice</div>
+        <div id="modal-body" style="font-size:12px; margin-bottom:18px; color:#94a3b8; white-space:pre-line; line-height:1.5;"></div>
+        <button class="btn" onclick="closePopup()" style="margin-bottom:0; padding:10px;">Cancel</button>
     </div>
 </div>
 
 <script>
-    // Stars
-    const container = document.getElementById('stars-container');
-    for(let i=0; i<40; i++) {
-        const star = document.createElement('div');
-        star.className = 'star';
-        star.style.width = Math.random()*3+'px'; star.style.height = star.style.width;
-        star.style.top = Math.random()*100+'%'; star.style.left = Math.random()*100+'%';
-        star.style.setProperty('--duration', (Math.random()*3+2)+'s');
-        container.appendChild(star);
+    // User Session Lock & Persistence
+    let currentUser = JSON.parse(localStorage.getItem('traderUser')) || null;
+
+    function checkAuth() {
+        if (currentUser) {
+            document.getElementById('auth-screen').style.display = 'none';
+            document.getElementById('main-dashboard').style.display = 'block';
+            document.getElementById('bottom-navbar').style.display = 'flex';
+            loadMiningHistory();
+            loadSavedBalances();
+        } else {
+            document.getElementById('auth-screen').style.display = 'block';
+            document.getElementById('main-dashboard').style.display = 'none';
+            document.getElementById('bottom-navbar').style.display = 'none';
+        }
     }
 
-    // Logic
     function handleRegistration() {
-        const user = { name: document.getElementById('reg-fname').value };
-        localStorage.setItem('traderUser', JSON.stringify(user));
-        location.reload();
+        const fname = document.getElementById('reg-fname').value.trim();
+        const lname = document.getElementById('reg-lname').value.trim();
+        const email = document.getElementById('reg-email').value.trim();
+        const phone = document.getElementById('reg-phone').value.trim();
+
+        if (!fname || !lname || !email || !phone) {
+            alert('Please fill in all fields to complete registration.');
+            return;
+        }
+
+        currentUser = { fname, lname, email, phone, joined: new Date().toLocaleDateString('en-GB') };
+        localStorage.setItem('traderUser', JSON.stringify(currentUser));
+        checkAuth();
     }
 
-    function handleLogout() { localStorage.clear(); location.reload(); }
-
-    if(localStorage.getItem('traderUser')) {
-        document.getElementById('auth-screen').style.display = 'none';
-        document.getElementById('main-dashboard').style.display = 'block';
-        document.getElementById('bottom-navbar').style.display = 'flex';
-        loadHistory();
+    function openProfileModal() {
+        if (!currentUser) return;
+        let profileHtml = `
+            <div style="text-align:left; font-size:12px; line-height:1.8;">
+                <div style="display:flex; justify-content:space-between; border-bottom:1px solid #334155; padding:6px 0;"><span style="color:#94a3b8;">Full Name:</span><span style="color:#fff; font-weight:bold;">${currentUser.fname} ${currentUser.lname}</span></div>
+                <div style="display:flex; justify-content:space-between; border-bottom:1px solid #334155; padding:6px 0;"><span style="color:#94a3b8;">Email:</span><span style="color:#fff; font-weight:bold;">${currentUser.email}</span></div>
+                <div style="display:flex; justify-content:space-between; border-bottom:1px solid #334155; padding:6px 0;"><span style="color:#94a3b8;">Phone:</span><span style="color:#fff; font-weight:bold;">${currentUser.phone}</span></div>
+                <div style="display:flex; justify-content:space-between; border-bottom:1px solid #334155; padding:6px 0;"><span style="color:#94a3b8;">Status:</span><span style="color:#10b981; font-weight:bold;">Verified Trader</span></div>
+            </div>
+            <button class="btn" onclick="handleLogout()" style="background:#dc2626; margin-top:15px; margin-bottom:0;">Sign Out</button>
+        `;
+        showPopup('👤 User Profile', '');
+        document.getElementById('modal-body').innerHTML = profileHtml;
     }
 
-    function loadHistory() {
-        let history = JSON.parse(localStorage.getItem('miningLogs')) || [];
-        let rows = document.getElementById('history-rows');
-        rows.innerHTML = history.length ? '' : '<tr><td colspan="4" style="text-align:center;">No history yet.</td></tr>';
-        history.forEach(log => {
-            rows.innerHTML += `<tr><td>${log.date}</td><td>MINE</td><td>GOLD</td><td class="p-profit">+$1.00</td></tr>`;
-        });
+    function handleLogout() {
+        localStorage.removeItem('traderUser');
+        currentUser = null;
+        closePopup();
+        checkAuth();
+    }
+
+    // Persistent Balances
+    function loadSavedBalances() {
+        let currentBal = parseFloat(localStorage.getItem('currentBal')) || 109.00;
+        let depositBal = parseFloat(localStorage.getItem('depositBal')) || 100.00;
+        let equityBal = parseFloat(localStorage.getItem('equityBal')) || 111.15;
+        let withdrawalBal = parseFloat(localStorage.getItem('withdrawalBal')) || 26.00;
+
+        document.getElementById('val-current').innerText = "$" + currentBal.toFixed(2);
+        document.getElementById('val-deposit').innerText = "$" + depositBal.toFixed(2);
+        document.getElementById('val-equity').innerText = "$" + equityBal.toFixed(2);
+        document.getElementById('val-withdrawal').innerText = "$" + withdrawalBal.toFixed(2);
+    }
+
+    // Market Prices Engine
+    let currentPair = 'GOLD';
+    let livePrices = { GOLD: 4203.00, SILVER: 29.45, SP500: 5540.20 };
+
+    async function fetchLiveMarketData() {
+        try {
+            const response = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=PAXGUSDT');
+            const data = await response.json();
+            if (data && data.price) {
+                livePrices.GOLD = parseFloat(data.price);
+            }
+        } catch (e) {
+            livePrices.GOLD += (Math.random() * 0.6 - 0.3);
+        }
+        livePrices.SILVER += (Math.random() * 0.04 - 0.02);
+        livePrices.SP500 += (Math.random() * 1.0 - 0.5);
+
+        updateActiveDisplayPrice();
+    }
+    setInterval(fetchLiveMarketData, 3000);
+
+    function updateActiveDisplayPrice() {
+        const titleElem = document.getElementById('active-asset-title');
+        const priceElem = document.getElementById('active-asset-price');
+
+        if (currentPair === 'GOLD') {
+            titleElem.innerText = 'GOLD (XAU/USD) REAL-TIME';
+            priceElem.innerText = '$' + livePrices.GOLD.toFixed(2);
+        } else if (currentPair === 'SILVER') {
+            titleElem.innerText = 'SILVER (XAG/USD) REAL-TIME';
+            priceElem.innerText = '$' + livePrices.SILVER.toFixed(2);
+        } else if (currentPair === 'SP500') {
+            titleElem.innerText = 'S&P 500 (SP500) REAL-TIME';
+            priceElem.innerText = '$' + livePrices.SP500.toFixed(2);
+        }
+    }
+
+    function openPairSelectModal() {
+        let pairHtml = `
+            <div class="pair-option-btn" onclick="selectPair('GOLD')"><span>🏆 GOLD (XAU/USD)</span><span style="color:#10b981;">$${livePrices.GOLD.toFixed(2)}</span></div>
+            <div class="pair-option-btn" onclick="selectPair('SILVER')"><span>🥈 SILVER (XAG/USD)</span><span style="color:#10b981;">$${livePrices.SILVER.toFixed(2)}</span></div>
+            <div class="pair-option-btn" onclick="selectPair('SP500')"><span>📈 S&P 500 (SP500)</span><span style="color:#10b981;">$${livePrices.SP500.toFixed(2)}</span></div>
+        `;
+        showPopup('🔄 Select Market Asset', '');
+        document.getElementById('modal-body').innerHTML = pairHtml;
+    }
+
+    function selectPair(pairKey) {
+        currentPair = pairKey;
+        updateActiveDisplayPrice();
+        closePopup();
+    }
+
+    function openQuotesModal() {
+        let quotesHtml = `
+            <div class="quote-row"><span class="quote-symbol">GOLD (XAUUSD)</span><span class="quote-price">$${livePrices.GOLD.toFixed(2)}</span></div>
+            <div class="quote-row"><span class="quote-symbol">SILVER (XAGUSD)</span><span class="quote-price">$${livePrices.SILVER.toFixed(2)}</span></div>
+            <div class="quote-row"><span class="quote-symbol">S&P 500 (SP500)</span><span class="quote-price">$${livePrices.SP500.toFixed(2)}</span></div>
+        `;
+        showPopup('📊 Real-Time Market Quotes', '');
+        document.getElementById('modal-body').innerHTML = quotesHtml;
+    }
+
+    // Lightweight Native Canvas Chart (Fast - Zero Lag)
+    function openNativeChartModal() {
+        let chartHtml = `
+            <div style="background:#020617; padding:10px; border-radius:10px; text-align:center;">
+                <div style="font-size:12px; color:#38bdf8; font-weight:bold; margin-bottom:8px;">📈 Live 1M Candlestick Feed (${currentPair})</div>
+                <canvas id="liveChartCanvas" width="300" height="180" style="width:100%; height:180px;"></canvas>
+            </div>
+        `;
+        showPopup(`1M Chart (${currentPair})`, '');
+        document.getElementById('modal-body').innerHTML = chartHtml;
+        drawNativeChart();
+    }
+
+    function drawNativeChart() {
+        const canvas = document.getElementById('liveChartCanvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Draw Candlesticks Simulation
+        let startX = 20;
+        for (let i = 0; i < 12; i++) {
+            let isGreen = Math.random() > 0.4;
+            let open = Math.random() * 80 + 40;
+            let close = isGreen ? open + Math.random() * 30 : open - Math.random() * 30;
+            let high = Math.max(open, close) + Math.random() * 15;
+            let low = Math.min(open, close) - Math.random() * 15;
+
+            ctx.strokeStyle = isGreen ? '#10b981' : '#ef4444';
+            ctx.fillStyle = isGreen ? '#10b981' : '#ef4444';
+
+            // Wick
+            ctx.beginPath();
+            ctx.moveTo(startX + 8, canvas.height - high);
+            ctx.lineTo(startX + 8, canvas.height - low);
+            ctx.stroke();
+
+            // Candle Body
+            let bodyY = canvas.height - Math.max(open, close);
+            let bodyH = Math.abs(open - close) || 4;
+            ctx.fillRect(startX, bodyY, 16, bodyH);
+
+            startX += 22;
+        }
+    }
+
+    // Live Clock Engine
+    function updateClock() {
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+        document.getElementById('live-datetime').innerText = `${timeStr} | ${dateStr}`;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // Persistent Mining Engine & History
+    function loadMiningHistory() {
+        let historyLogs = JSON.parse(localStorage.getItem('userMiningHistory')) || [];
+        const tbody = document.getElementById('history-rows');
+        const startDateElem = document.getElementById('mining-start-date');
+
+        if (historyLogs.length === 0) {
+            tbody.innerHTML = '<tr id="empty-history-row"><td colspan="4" style="text-align:center; color:#94a3b8; padding:12px;">No mining history recorded yet.</td></tr>';
+            startDateElem.innerText = 'Started mining on: Not Started Yet';
+        } else {
+            startDateElem.innerText = `Started mining on: ${historyLogs[historyLogs.length - 1].date}`;
+            let rowsHtml = '';
+            historyLogs.forEach(log => {
+                rowsHtml += `
+                    <tr>
+                        <td>${log.date} ${log.time}</td>
+                        <td>DAILY MINE</td>
+                        <td>${log.asset}</td>
+                        <td class="p-profit">+${log.profit}</td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = rowsHtml;
+        }
     }
 
     function handleMiningClick() {
-        let logs = JSON.parse(localStorage.getItem('miningLogs')) || [];
-        logs.push({date: new Date().toLocaleDateString()});
-        localStorage.setItem('miningLogs', JSON.stringify(logs));
-        alert("Mining Success!");
-        location.reload();
+        const lastMineTime = localStorage.getItem('lastMiningTimestamp');
+        const currentTime = new Date().getTime();
+        if (lastMineTime && (currentTime - lastMineTime < 86400000)) {
+            showPopup('🛑 Mining Limit Reached', 'Sorry, you have already mined for today. Please try again after 24 hours.');
+        } else {
+            executeMiningProcess();
+        }
     }
 
-    function showPopup(t, b) { document.getElementById('modal-title').innerText=t; document.getElementById('modal-body').innerText=b; document.getElementById('modal').style.display='flex'; }
-    function closePopup() { document.getElementById('modal').style.display='none'; }
+    function executeMiningProcess() {
+        const section = document.getElementById('mining-section');
+        section.innerHTML = `
+            <div style="background:#0f172a; border:1px solid #0284c7; color:#38bdf8; padding:12px; border-radius:10px; text-align:center; margin-bottom:14px;">
+                <div style="font-weight: 600; font-size:12px;">⚡ LIVE CANDLESTICK CHART MINING IN PROGRESS...</div>
+                <h3 id="timer" style="margin: 6px 0; color: #fff;">Time Remaining: 15s</h3>
+                <div style="width:100%; background:#1e293b; border-radius:4px; overflow:hidden; height:6px; margin-top:6px;">
+                    <div id="p-fill" style="height:100%; background:#38bdf8; width:0%; transition: width 1s linear;"></div>
+                </div>
+            </div>
+        `;
+
+        let time = 15;
+        const timerElem = document.getElementById('timer');
+        const fillElem = document.getElementById('p-fill');
+
+        const interval = setInterval(() => {
+            time--;
+            timerElem.innerText = `Time Remaining: ${time}s`;
+            fillElem.style.width = ((15 - time) / 15 * 100) + '%';
+
+            if (time <= 0) {
+                clearInterval(interval);
+                const now = new Date();
+                localStorage.setItem('lastMiningTimestamp', now.getTime());
+                
+                // Retrieve & Update Logs Permanently
+                let historyLogs = JSON.parse(localStorage.getItem('userMiningHistory')) || [];
+                const newLog = {
+                    date: now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }),
+                    time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    asset: currentPair,
+                    profit: '$1.00'
+                };
+                historyLogs.unshift(newLog);
+                localStorage.setItem('userMiningHistory', JSON.stringify(historyLogs));
+
+                // Persistent Balance Additions
+                let currentBal = (parseFloat(localStorage.getItem('currentBal')) || 109.00) + 1.0;
+                let equityBal = (parseFloat(localStorage.getItem('equityBal')) || 111.15) + 1.0;
+                let withdrawalBal = (parseFloat(localStorage.getItem('withdrawalBal')) || 26.00) + 1.0;
+
+                localStorage.setItem('currentBal', currentBal);
+                localStorage.setItem('equityBal', equityBal);
+                localStorage.setItem('withdrawalBal', withdrawalBal);
+
+                loadSavedBalances();
+                loadMiningHistory();
+
+                section.innerHTML = `
+                    <div style="background:#0f172a; border:1px solid #10b981; color:#10b981; padding:12px; border-radius:10px; text-align:center; margin-bottom:14px;">
+                        🎉 SUCCESS! You Have Successfully Made $1
+                    </div>
+                    <button class="btn" onclick="resetMiningUI()">Back to Dashboard</button>
+                `;
+            }
+        }, 1000);
+    }
+
+    function resetMiningUI() {
+        document.getElementById('mining-section').innerHTML = `
+            <button class="btn" onclick="handleMiningClick()">🚀 MINI (15s CHART)</button>
+        `;
+    }
+
+    // Modal Control
+    const modalElem = document.getElementById('modal');
+    function showPopup(title, body) {
+        document.getElementById('modal-title').innerText = title;
+        document.getElementById('modal-body').innerText = body;
+        modalElem.classList.add('active-modal');
+    }
+    function closePopup() { modalElem.classList.remove('active-modal'); }
+
+    // Init Auth on Load
+    window.onload = checkAuth;
 </script>
+
 </body>
 </html>
