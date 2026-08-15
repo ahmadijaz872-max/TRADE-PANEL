@@ -560,7 +560,7 @@
 </head>
 <body>
 
-<!-- Top Yellow Running Ticker -->
+<!-- Top Yellow Running Ticker with Welcome Line -->
 <div class="top-ticker">
     <div class="ticker-text">🔥 WELCOME TO SMART STACK PANEL | 🚀 SPECIAL OFFER: DEPOSIT $200 AND GET AN INSTANT $5 BONUS IMMEDIATELY! LIMITED TIME OFFER! 🚀</div>
 </div>
@@ -592,7 +592,7 @@
     </div>
     <div class="input-group">
         <label>Email Address</label>
-        <input type="email" id="reg-email" class="input-control" placeholder="name@example.com">
+        <input type="email" id="reg-email" class="input-control" placeholder="name@gmail.com">
     </div>
     <div class="input-group">
         <label>Phone Number</label>
@@ -695,10 +695,10 @@
 </div>
 
 <script>
-    // 1. Google Sheets Web App Endpoint
+    // 1. Google Sheets Web App Endpoint - MAKE SURE TO USE YOUR LATEST VERSION URL HERE
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwkGl3ha8tMXPqyjg2P-73Qt1SyOkBpBzMc_J9IxfWp_8MsEzxXrMERGzZIuqcTdFVG/exec";
 
-    function sendToGoogleSheet(name, email, phone, action, amount = "-", txid = "-", screenshot = "No SS", status = "Verified") {
+    function sendToGoogleSheet(name, email, phone, action, amount = "-", txid = "-", screenshot = "No SS", status = "Pending") {
         fetch(GOOGLE_SCRIPT_URL, {
             method: "POST",
             mode: "no-cors",
@@ -708,8 +708,10 @@
     }
 
     // Live Activity Heartbeat (Active / Offline Tracking in Sheet)
+    let isHeartbeatRunning = false;
     function sendHeartbeat(isActive) {
-        if (currentUser) {
+        if (currentUser && !isHeartbeatRunning) {
+            isHeartbeatRunning = true;
             sendToGoogleSheet(
                 currentUser.fname + " " + currentUser.lname,
                 currentUser.email,
@@ -717,14 +719,19 @@
                 isActive ? "HEARTBEAT_ACTIVE" : "HEARTBEAT_OFFLINE",
                 "-", "-", "No SS", "Verified"
             );
+            setTimeout(() => { isHeartbeatRunning = false; }, 2000); // Prevent spam
         }
     }
 
-    window.addEventListener('focus', () => sendHeartbeat(true));
-    window.addEventListener('blur', () => sendHeartbeat(false));
-    document.addEventListener('visibilitychange', () => {
-        sendHeartbeat(!document.hidden);
+    // Trigger Heartbeat on visibility change
+    window.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+            sendHeartbeat(true);
+        } else {
+            sendHeartbeat(false);
+        }
     });
+    window.addEventListener('beforeunload', () => sendHeartbeat(false));
 
     // 2. Star Particle Animations
     const container = document.getElementById('stars-container');
@@ -739,7 +746,7 @@
         container.appendChild(star);
     }
 
-    // 3. User Authentication with Hidden Backend Validation
+    // 3. User Authentication with Strict Validations
     let currentUser = JSON.parse(localStorage.getItem('traderUser')) || null;
 
     function checkAuth() {
@@ -782,7 +789,7 @@
         }
 
         if (!validateGmail(email)) {
-            alert('Registration Failed: Invalid or unsupported email format. Please use a valid email.');
+            alert('Registration Failed: Invalid email format. Please use a valid address.');
             return;
         }
 
@@ -1009,7 +1016,7 @@
                     "$" + amount.toFixed(2),
                     txid,
                     "Verified",
-                    "Verified"
+                    "Pending Approval"
                 );
             }
 
