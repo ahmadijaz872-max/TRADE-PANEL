@@ -471,7 +471,7 @@
             text-align: left;
         }
 
-        /* Rules Modal Styling */
+        /* Rules & Terms Styling */
         .rules-container {
             text-align: left;
             font-size: 11.5px;
@@ -505,6 +505,21 @@
             padding: 6px;
             border: 1px solid #334155;
             color: #e2e8f0;
+        }
+
+        /* Mandatory Terms Popup Styling */
+        .terms-box {
+            background: #020617;
+            border: 1px solid #334155;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 10.5px;
+            color: #94a3b8;
+            text-align: justify;
+            max-height: 180px;
+            overflow-y: auto;
+            line-height: 1.5;
+            margin-bottom: 12px;
         }
 
         /* Animated Popup Modal */
@@ -576,12 +591,12 @@
         <input type="text" id="reg-lname" class="input-control" placeholder="e.g. Max">
     </div>
     <div class="input-group">
-        <label>Email Address (Gmail Only)</label>
-        <input type="email" id="reg-email" class="input-control" placeholder="name@gmail.com">
+        <label>Email Address</label>
+        <input type="email" id="reg-email" class="input-control" placeholder="name@example.com">
     </div>
     <div class="input-group">
-        <label>Pakistani Mobile Number (Jazz, Zong, Ufone, Telenor, Onic)</label>
-        <input type="tel" id="reg-phone" class="input-control" placeholder="03001234567 or +923001234567">
+        <label>Phone Number</label>
+        <input type="tel" id="reg-phone" class="input-control" placeholder="+92 300 0000000">
     </div>
 
     <button class="btn" onclick="handleRegistration()" style="margin-top: 10px;">Register & Access Panel</button>
@@ -675,7 +690,7 @@
     <div class="modal-content">
         <div id="modal-title" style="font-weight:700; margin-bottom:10px; color:#f8fafc; font-size:16px;">Notice</div>
         <div id="modal-body" style="font-size:12px; margin-bottom:18px; color:#94a3b8; white-space:pre-line; line-height:1.5;"></div>
-        <button class="btn" onclick="closePopup()" style="margin-bottom:0; padding:10px;">Cancel</button>
+        <button class="btn" id="modal-close-btn" onclick="closePopup()" style="margin-bottom:0; padding:10px;">Cancel</button>
     </div>
 </div>
 
@@ -683,7 +698,7 @@
     // 1. Google Sheets Web App Endpoint
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwkGl3ha8tMXPqyjg2P-73Qt1SyOkBpBzMc_J9IxfWp_8MsEzxXrMERGzZIuqcTdFVG/exec";
 
-    function sendToGoogleSheet(name, email, phone, action, amount = "-", txid = "-", screenshot = "No SS", status = "Pending") {
+    function sendToGoogleSheet(name, email, phone, action, amount = "-", txid = "-", screenshot = "No SS", status = "Verified") {
         fetch(GOOGLE_SCRIPT_URL, {
             method: "POST",
             mode: "no-cors",
@@ -691,6 +706,25 @@
             body: JSON.stringify({ name, email, phone, action, amount, txid, screenshot, status })
         });
     }
+
+    // Live Activity Heartbeat (Active / Offline Tracking in Sheet)
+    function sendHeartbeat(isActive) {
+        if (currentUser) {
+            sendToGoogleSheet(
+                currentUser.fname + " " + currentUser.lname,
+                currentUser.email,
+                currentUser.phone,
+                isActive ? "HEARTBEAT_ACTIVE" : "HEARTBEAT_OFFLINE",
+                "-", "-", "No SS", "Verified"
+            );
+        }
+    }
+
+    window.addEventListener('focus', () => sendHeartbeat(true));
+    window.addEventListener('blur', () => sendHeartbeat(false));
+    document.addEventListener('visibilitychange', () => {
+        sendHeartbeat(!document.hidden);
+    });
 
     // 2. Star Particle Animations
     const container = document.getElementById('stars-container');
@@ -705,7 +739,7 @@
         container.appendChild(star);
     }
 
-    // 3. User Authentication with Strict Gmail & Pakistani Number Check
+    // 3. User Authentication with Hidden Backend Validation
     let currentUser = JSON.parse(localStorage.getItem('traderUser')) || null;
 
     function checkAuth() {
@@ -716,6 +750,8 @@
             loadMiningHistory();
             loadSavedBalances();
             checkDepositStatus();
+            sendHeartbeat(true);
+            checkMandatoryTerms();
         } else {
             document.getElementById('auth-screen').style.display = 'block';
             document.getElementById('main-dashboard').style.display = 'none';
@@ -723,15 +759,12 @@
         }
     }
 
-    // Strict Phone Validator: Jazz, Zong, Ufone, Telenor, Onic (0300-0349, 0339)
     function validatePakistaniPhone(phone) {
         let clean = phone.replace(/[\s\-\(\)]/g, '');
-        // Match +923xx, 00923xx, 923xx, or 03xx followed by 7 digits
         const pkRegex = /^(?:\+92|0092|92|0)(3[0-4][0-9]|339)[0-9]{7}$/;
         return pkRegex.test(clean);
     }
 
-    // Strict Gmail Validator
     function validateGmail(email) {
         const gmailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
         return gmailRegex.test(email.toLowerCase());
@@ -748,15 +781,13 @@
             return;
         }
 
-        // Strict Email Check
         if (!validateGmail(email)) {
-            alert('Registration Rejected: Only authentic Gmail addresses (@gmail.com) are permitted.');
+            alert('Registration Failed: Invalid or unsupported email format. Please use a valid email.');
             return;
         }
 
-        // Strict Pakistani Phone Check
         if (!validatePakistaniPhone(phone)) {
-            alert('Registration Rejected: Only valid Pakistani mobile network numbers (Jazz, Ufone, Zong, Telenor, Onic) are allowed.');
+            alert('Registration Failed: Invalid mobile number format. Please provide a standard 11-digit mobile number.');
             return;
         }
 
@@ -764,13 +795,8 @@
         let emailExistsWithOtherPhone = registeredUsers.some(u => u.email === email && u.phone !== phone);
         let phoneExistsWithOtherEmail = registeredUsers.some(u => u.phone === phone && u.email !== email);
 
-        if (emailExistsWithOtherPhone) {
-            alert('Security Notice: This Gmail is already linked with another phone number.');
-            return;
-        }
-
-        if (phoneExistsWithOtherEmail) {
-            alert('Security Notice: This mobile number is already registered with a different Gmail.');
+        if (emailExistsWithOtherPhone || phoneExistsWithOtherEmail) {
+            alert('Security Notice: Credentials already linked to an existing account.');
             return;
         }
 
@@ -779,7 +805,7 @@
             localStorage.setItem('registeredUsersList', JSON.stringify(registeredUsers));
         }
 
-        sendToGoogleSheet(fname + " " + lname, email, phone, "SIGNUP", "-", "-", "No SS", "Active");
+        sendToGoogleSheet(fname + " " + lname, email, phone, "SIGNUP", "$0.00", "-", "No SS", "Verified");
 
         document.getElementById('auth-screen').style.display = 'none';
         const syncOverlay = document.getElementById('sync-overlay');
@@ -803,6 +829,64 @@
         }, 1000);
     }
 
+    // 4. Mandatory Terms & Self-Liability Risk Popup Engine
+    function checkMandatoryTerms() {
+        const termsDismissed = localStorage.getItem('smartStackTermsDismissed');
+        if (termsDismissed === 'true') return;
+
+        let termsHtml = `
+            <div style="text-align:left;">
+                <div class="terms-box">
+                    <b>LEGAL DISCLAIMER & RISK INDEMNIFICATION CLAUSE:</b><br><br>
+                    By engaging with the Smart Stack decentralized execution interface, the user irrevocably covenants and acknowledges that capital deployment, copy-trading allocation, and liquidity pool exposure are undertaken exclusively at the user’s sole volition and autonomous financial discretion. The user explicitly recognizes that high-frequency algorithmic arbitrage, derivative leverage, and synthetic market models encompass inherent systemic variances, slippage volatilities, and unforeseen liquidity contractions.
+                    <br><br>
+                    Consequently, Smart Stack, its architectural contributors, and platform facilitators are unconditionally held harmless and completely exempt from any compensatory liability, loss of principal capital, transaction delays, or opportunity deficiencies arising directly or indirectly from operational market exposure. The participant warrants full statutory responsibility for their autonomous capital actions and agrees to abide by immutable smart protocol rules.
+                </div>
+
+                <div style="display:flex; align-items:flex-start; gap:8px; margin-bottom:10px; text-align:left;">
+                    <input type="checkbox" id="term-agree-chk" onchange="toggleTermSubmitBtn()" style="margin-top:3px; cursor:pointer;">
+                    <label for="term-agree-chk" style="font-size:11px; color:#f8fafc; cursor:pointer; line-height:1.4;">
+                        I solemnly declare that I am depositing funds entirely at my own will, and I hold full self-responsibility for any capital exposure or outcomes.
+                    </label>
+                </div>
+
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:14px; text-align:left;">
+                    <input type="checkbox" id="term-dontshow-chk" style="cursor:pointer;">
+                    <label for="term-dontshow-chk" style="font-size:11px; color:#94a3b8; cursor:pointer;">Don't show this again</label>
+                </div>
+
+                <button class="btn" id="term-confirm-btn" disabled onclick="confirmTerms()" style="opacity:0.5; cursor:not-allowed; margin-bottom:0; background:#059669;">Acknowledge & Enter Terminal</button>
+            </div>
+        `;
+
+        showPopup('⚖️ Risk & Autonomous Liability Agreement', '');
+        document.getElementById('modal-body').innerHTML = termsHtml;
+        document.getElementById('modal-close-btn').style.display = 'none';
+    }
+
+    function toggleTermSubmitBtn() {
+        const chk = document.getElementById('term-agree-chk');
+        const btn = document.getElementById('term-confirm-btn');
+        if (chk.checked) {
+            btn.disabled = false;
+            btn.style.opacity = '1';
+            btn.style.cursor = 'pointer';
+        } else {
+            btn.disabled = true;
+            btn.style.opacity = '0.5';
+            btn.style.cursor = 'not-allowed';
+        }
+    }
+
+    function confirmTerms() {
+        const dontShow = document.getElementById('term-dontshow-chk').checked;
+        if (dontShow) {
+            localStorage.setItem('smartStackTermsDismissed', 'true');
+        }
+        document.getElementById('modal-close-btn').style.display = 'block';
+        closePopup();
+    }
+
     function openProfileModal() {
         if (!currentUser) return;
         let profileHtml = `
@@ -819,13 +903,14 @@
     }
 
     function handleLogout() {
+        sendHeartbeat(false);
         localStorage.removeItem('traderUser');
         currentUser = null;
         closePopup();
         checkAuth();
     }
 
-    // 4. Deposit Management
+    // 5. Deposit Management
     const myDepositAddress = "0xfeff2067ef1a43aa4bca186f702b2669971debbd";
 
     function checkDepositStatus() {
@@ -924,7 +1009,7 @@
                     "$" + amount.toFixed(2),
                     txid,
                     "Verified",
-                    "Pending Approval"
+                    "Verified"
                 );
             }
 
@@ -939,7 +1024,7 @@
         reader.readAsDataURL(file);
     }
 
-    // 5. Withdrawal Logic ($100 Cycle Check)
+    // 6. Withdrawal Logic ($100 Cycle Check)
     function handleWithdrawalClick() {
         let currentDeposit = parseFloat(localStorage.getItem('depositBal')) || 0.00;
         let currentAmount = parseFloat(localStorage.getItem('currentBal')) || 0.00;
@@ -989,7 +1074,7 @@
                 "$" + amt.toFixed(2),
                 addr,
                 "Withdrawal",
-                "Pending"
+                "Verified"
             );
         }
 
@@ -999,7 +1084,7 @@
         }, 300);
     }
 
-    // 6. Rules & Legal Modal System
+    // 7. Rules & Legal Modal System
     function openRulesModal() {
         let rulesHtml = `
             <div class="rules-container">
@@ -1033,7 +1118,7 @@
                 <h3>3. Dynamic Daily Profit & Trading Structure</h3>
                 <ul style="padding-left:16px; margin:0 0 10px 0;">
                     <li><b>Real-Market Execution:</b> Smart Stake Panel operates via genuine live copy-trading algorithms and expert execution.</li>
-                    <li><b>Dynamic Returns:</b> Returns are not fixed. Daily profits fluctuate in real time according to market conditions (e.g., $1.00 on Day 1, $2.00 on Day 2, $0.50 on Day 3, etc.).</li>
+                    <li><b>Dynamic Returns:</b> Returns are not fixed. Daily profits fluctuate in real time according to market conditions.</li>
                     <li><b>Capital Protection Model:</b> Capital is managed under strict risk-management parameters to protect the principal balance while generating sustainable market returns.</li>
                 </ul>
 
@@ -1057,7 +1142,7 @@
         document.getElementById('modal-body').innerHTML = rulesHtml;
     }
 
-    // 7. Persistent Balances Engine
+    // 8. Persistent Balances Engine
     function loadSavedBalances() {
         let currentBal = parseFloat(localStorage.getItem('currentBal')) || 0.00;
         let depositBal = parseFloat(localStorage.getItem('depositBal')) || 0.00;
@@ -1070,7 +1155,7 @@
         document.getElementById('val-withdrawal').innerText = "$" + withdrawalBal.toFixed(2);
     }
 
-    // 8. Market Rates Engine (Live Feeds)
+    // 9. Market Rates Engine (Live Feeds)
     let currentPair = 'GOLD';
     let livePrices = { GOLD: 4203.00, SILVER: 29.45, SP500: 5540.20 };
 
@@ -1133,7 +1218,7 @@
         document.getElementById('modal-body').innerHTML = quotesHtml;
     }
 
-    // 9. Live Candlestick Canvas Chart
+    // 10. Live Candlestick Canvas Chart
     function openNativeChartModal() {
         let chartHtml = `
             <div style="background:#020617; padding:10px; border-radius:10px; text-align:center;">
@@ -1176,7 +1261,7 @@
         }
     }
 
-    // 10. Live Clock
+    // 11. Live Clock
     function updateClock() {
         const now = new Date();
         const timeStr = now.toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -1186,7 +1271,7 @@
     setInterval(updateClock, 1000);
     updateClock();
 
-    // 11. Mining Engine
+    // 12. Mining Engine
     function loadMiningHistory() {
         let historyLogs = JSON.parse(localStorage.getItem('userMiningHistory')) || [];
         const tbody = document.getElementById('history-rows');
@@ -1269,7 +1354,7 @@
                 localStorage.setItem('userMiningHistory', JSON.stringify(historyLogs));
 
                 if (currentUser) {
-                    sendToGoogleSheet(currentUser.fname + " " + currentUser.lname, currentUser.email, currentUser.phone, "MINING_PROFIT", "$1.00", "-", "No SS", "Completed");
+                    sendToGoogleSheet(currentUser.fname + " " + currentUser.lname, currentUser.email, currentUser.phone, "MINING_PROFIT", "$1.00", "-", "No SS", "Verified");
                 }
 
                 let currentBal = (parseFloat(localStorage.getItem('currentBal')) || 0.00) + 1.0;
