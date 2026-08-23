@@ -321,7 +321,7 @@
         }
         .btn-yellow-withdraw:active { transform: scale(0.96); }
 
-        /* Daily Mining History White Card */
+        /* Daily Trading History White Card */
         .history-card {
             background-color: #ffffff;
             color: #0f172a;
@@ -447,13 +447,80 @@
         .modal.active-modal .modal-content {
             transform: scale(1);
         }
+
+        /* 1m Low Frame Trade Chart Component */
+        .trade-chart-box {
+            background: #080d14;
+            border: 1px solid #1e293b;
+            border-radius: 12px;
+            padding: 10px;
+            margin-bottom: 15px;
+            position: relative;
+        }
+        .chart-header-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: #94a3b8;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        .chart-canvas {
+            width: 100%;
+            height: 140px;
+            display: block;
+        }
+        .trade-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 10px;
+        }
+        .btn-trade-up {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 10px;
+            font-weight: 800;
+            font-size: 14px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+            transition: transform 0.15s ease;
+        }
+        .btn-trade-up:active { transform: scale(0.95); }
+        
+        .btn-trade-down {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 10px;
+            font-weight: 800;
+            font-size: 14px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+            transition: transform 0.15s ease;
+        }
+        .btn-trade-down:active { transform: scale(0.95); }
+
+        .trade-status-badge {
+            font-size: 11px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            background: #1e293b;
+            color: #fbbf24;
+            display: inline-block;
+            margin-bottom: 12px;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
 
 <!-- Top Yellow Running Ticker -->
 <div class="top-ticker">
-    <div class="ticker-text">🔥 WELCOME TO SMART STACK PANEL | 🚀 REFER FRIENDS & GET $1 INSTANT BONUS + $0.01 PER MINE COMMISSION! 🚀</div>
+    <div class="ticker-text">🔥 WELCOME TO SMART STACK PANEL | 🚀 REFER FRIENDS & GET $1 INSTANT BONUS + $0.01 PER TRADE COMMISSION! 🚀</div>
 </div>
 
 <!-- Stars Animated Background -->
@@ -509,15 +576,15 @@
         </div>
     </div>
 
-    <!-- Active Asset Real-time Price Card (Pair Changing Removed) -->
+    <!-- Active Asset Real-time Price Card -->
     <div class="card">
         <p id="active-asset-title">GOLD (XAU/USD) REAL-TIME</p>
         <h1 id="active-asset-price">$4203.00</h1>
     </div>
 
-    <!-- Mining Action Section -->
+    <!-- Trade Action Section (Replaced MINE with TRADE) -->
     <div id="mining-section">
-        <button class="btn" onclick="handleMiningClick()">🚀 MINE (15s CHART)</button>
+        <button class="btn" id="trade-home-btn" onclick="open1mTradeModal()">📊 TRADE (1M CHART)</button>
     </div>
 
     <!-- 2x2 Metric Cards Grid -->
@@ -549,10 +616,10 @@
     <!-- Yellow Withdraw Button in Center -->
     <button class="btn-yellow-withdraw" onclick="handleWithdrawalClick()">💰 WITHDRAW FUNDS</button>
 
-    <!-- Daily Mining History Section -->
+    <!-- Daily Trading History Section -->
     <div class="history-card">
-        <div style="font-weight:800; font-size:14px; margin-bottom:6px;">⛏️ DAILY MINING HISTORY</div>
-        <div style="font-size:10px; color:#64748b; margin-bottom:10px;" id="mining-start-date">Started mining on: Not Started Yet</div>
+        <div style="font-weight:800; font-size:14px; margin-bottom:6px;">📊 DAILY TRADING HISTORY</div>
+        <div style="font-size:10px; color:#64748b; margin-bottom:10px;" id="mining-start-date">Trading session status: Ready</div>
         
         <table class="history-table">
             <thead>
@@ -564,17 +631,17 @@
                 </tr>
             </thead>
             <tbody id="history-rows">
-                <tr id="empty-history-row"><td colspan="4" style="text-align:center; color:#94a3b8; padding:12px;">No mining history recorded yet.</td></tr>
+                <tr id="empty-history-row"><td colspan="4" style="text-align:center; color:#94a3b8; padding:12px;">No trading history recorded yet.</td></tr>
             </tbody>
         </table>
-        <button class="btn" style="background:#2563eb; padding:10px; font-size:12px; margin-bottom:0;" onclick="showPopup('📜 Mining Logs', 'Full historical trading and mining log report loaded successfully.')">View Detailed Mining Logs</button>
+        <button class="btn" style="background:#2563eb; padding:10px; font-size:12px; margin-bottom:0;" onclick="showPopup('📜 Trade Logs', 'Full historical trading log report loaded successfully.')">View Detailed Trade Logs</button>
     </div>
 </div>
 
-<!-- 4-Tab Bottom Navigation Bar (Quotes replaced with Referrals) -->
+<!-- 4-Tab Bottom Navigation Bar -->
 <div class="bottom-nav" id="bottom-navbar">
     <div class="nav-tab" onclick="openReferralsModal()"><span style="font-size:16px;">👥</span><span>Referrals</span></div>
-    <div class="nav-tab active" onclick="openNativeChartModal()"><span style="font-size:16px;">📈</span><span>Mine Chart</span></div>
+    <div class="nav-tab active" onclick="open1mTradeModal()"><span style="font-size:16px;">📈</span><span>Trade Chart</span></div>
     <div class="nav-tab" onclick="showPopup('📜 History Log', 'No deposit history confirmed yet.')"><span style="font-size:16px;">📜</span><span>History</span></div>
     <div class="nav-tab" onclick="openProfileModal()"><span style="font-size:16px;">👤</span><span>Profile</span></div>
 </div>
@@ -658,6 +725,7 @@
             
             loadSavedBalances();
             loadMiningHistory();
+            checkDailyTradeStatus();
         } else {
             document.getElementById('auth-screen').style.display = 'block';
             document.getElementById('main-dashboard').style.display = 'none';
@@ -774,6 +842,7 @@
         const m = document.getElementById('modal');
         m.classList.remove('active-modal');
         setTimeout(() => m.style.display = 'none', 250);
+        if (chartAnimFrame) cancelAnimationFrame(chartAnimFrame);
     }
 
     // Referrals Modal Logic
@@ -791,7 +860,7 @@
                     <tr>
                         <td>${u.name}</td>
                         <td>${u.email}</td>
-                        <td class="p-profit">+$${parseFloat(u.commission).toFixed(2)}</td>
+                        <td style="color:#10b981; font-weight:bold;">+$${parseFloat(u.commission).toFixed(2)}</td>
                         <td style="color:#10b981;">Active</td>
                     </tr>
                 `;
@@ -850,25 +919,208 @@
         });
     }
 
-    // Mining Click Handler ($0.01 per referral bonus add per mine)
-    function handleMiningClick() {
-        let myReferredUsers = JSON.parse(localStorage.getItem(`referredUsers_${currentUser.email}`)) || [];
-        let curr = parseFloat(localStorage.getItem('currentBal')) || 0.00;
-        
-        let miningProfit = (Math.random() * 0.15 + 0.05); // Standard mine reward
-        let referralCommission = myReferredUsers.length * 0.01; // $0.01 per mine per referral
-        
-        let totalGain = miningProfit + referralCommission;
-        let newCurrent = curr + totalGain;
+    // --- NEW TRADING SYSTEM (1M Chart, 3 Daily Chances, Randomized 1 Win / 2 Losses, 24h Lockout) ---
+    let chartAnimFrame = null;
+    let chartPoints = [];
 
-        localStorage.setItem('currentBal', newCurrent.toFixed(2));
-        localStorage.setItem('equityBal', newCurrent.toFixed(2));
+    function checkDailyTradeStatus() {
+        let lastTradeTime = localStorage.getItem(`lastTradeTimestamp_${currentUser.email}`);
+        let tradeSessionData = JSON.parse(localStorage.getItem(`dailyTradeSession_${currentUser.email}`)) || null;
+
+        if (lastTradeTime) {
+            let elapsed = Date.now() - parseInt(lastTradeTime);
+            let hours24 = 24 * 60 * 60 * 1000;
+
+            if (elapsed < hours24) {
+                let remainingMs = hours24 - elapsed;
+                return { isLocked: true, remainingMs, tradeSessionData };
+            }
+        }
+        
+        // If 24h passed or new user, initialize randomized win pattern for 3 trades
+        if (!tradeSessionData || tradeSessionData.completed) {
+            // Generate randomized outcome order for 3 trades: 1 Win ($1 profit) and 2 Losses ($0 profit / loss)
+            // Example orders: [1, 0, 0], [0, 1, 0], or [0, 0, 1]
+            let outcomes = [0, 0, 0];
+            let winIndex = Math.floor(Math.random() * 3);
+            outcomes[winIndex] = 1; // 1 represents Profit ($1), 0 represents Loss
+
+            tradeSessionData = {
+                attemptsLeft: 3,
+                outcomesPattern: outcomes,
+                currentIndex: 0,
+                completed: false
+            };
+            localStorage.setItem(`dailyTradeSession_${currentUser.email}`, JSON.stringify(tradeSessionData));
+        }
+
+        return { isLocked: false, remainingMs: 0, tradeSessionData };
+    }
+
+    function open1mTradeModal() {
+        let status = checkDailyTradeStatus();
+
+        if (status.isLocked) {
+            let totalSeconds = Math.floor(status.remainingMs / 1000);
+            let h = Math.floor(totalSeconds / 3600);
+            let m = Math.floor((totalSeconds % 3600) / 60);
+            let s = totalSeconds % 60;
+            showPopup("⏳ Daily Trade Limit Reached", `You have completed your 3 daily trades.
+
+Next trading session unlocks in:
+⏱️ ${h}h ${m}m ${s}s
+
+Please check back after 24 hours!`);
+            return;
+        }
+
+        let session = status.tradeSessionData;
+        let attemptsText = `Daily Chances Left: ${session.attemptsLeft} / 3`;
+
+        let tradeModalHtml = `
+            <div class="trade-status-badge">${attemptsText}</div>
+            
+            <div class="trade-chart-box">
+                <div class="chart-header-info">
+                    <span>XAU/USD • 1M FRAME</span>
+                    <span style="color:#10b981;">LIVE TICK: <span id="chart-price-tick">$4203.00</span></span>
+                </div>
+                <canvas id="tradeCanvas" class="chart-canvas" width="320" height="140"></canvas>
+            </div>
+
+            <div style="font-size:11px; color:#cbd5e1; margin-bottom:10px;">Predict 1-Minute Price Direction:</div>
+
+            <div class="trade-controls">
+                <button class="btn-trade-up" onclick="executeTrade('UP')">▲ UP</button>
+                <button class="btn-trade-down" onclick="executeTrade('DOWN')">▼ DOWN</button>
+            </div>
+        `;
+
+        showPopup("📊 1M Low-Frame Trading Terminal", tradeModalHtml);
+        setTimeout(init1mChart, 100);
+    }
+
+    function init1mChart() {
+        const canvas = document.getElementById('tradeCanvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        
+        chartPoints = [];
+        let price = 4203.00;
+        for (let i = 0; i < 30; i++) {
+            price += (Math.random() - 0.49) * 0.8;
+            chartPoints.push(price);
+        }
+
+        function draw() {
+            if (!document.getElementById('tradeCanvas')) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Add new point
+            let lastP = chartPoints[chartPoints.length - 1];
+            let nextP = lastP + (Math.random() - 0.49) * 0.9;
+            chartPoints.shift();
+            chartPoints.push(nextP);
+
+            let tickElem = document.getElementById('chart-price-tick');
+            if (tickElem) tickElem.innerText = `$${nextP.toFixed(2)}`;
+
+            let minP = Math.min(...chartPoints) - 0.5;
+            let maxP = Math.max(...chartPoints) + 0.5;
+
+            // Draw line
+            ctx.beginPath();
+            ctx.strokeStyle = '#38bdf8';
+            ctx.lineWidth = 2;
+
+            for (let i = 0; i < chartPoints.length; i++) {
+                let x = (i / (chartPoints.length - 1)) * canvas.width;
+                let y = canvas.height - ((chartPoints[i] - minP) / (maxP - minP)) * canvas.height;
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+
+            // Gradient fill
+            ctx.lineTo(canvas.width, canvas.height);
+            ctx.lineTo(0, canvas.height);
+            let grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            grad.addColorStop(0, 'rgba(56, 189, 248, 0.25)');
+            grad.addColorStop(1, 'rgba(56, 189, 248, 0.0)');
+            ctx.fillStyle = grad;
+            ctx.fill();
+
+            chartAnimFrame = requestAnimationFrame(() => {
+                setTimeout(draw, 300);
+            });
+        }
+
+        draw();
+    }
+
+    function executeTrade(userDirection) {
+        let status = checkDailyTradeStatus();
+
+        if (status.isLocked) {
+            showPopup("⏳ Session Locked", "You have completed your 3 daily trade chances. Please wait 24 hours!");
+            return;
+        }
+
+        let session = status.tradeSessionData;
+        if (session.attemptsLeft <= 0 || session.completed) {
+            showPopup("⏳ Session Completed", "Your 3 trade chances for today are used up!");
+            return;
+        }
+
+        // Determine result based on today's randomized pattern
+        let isWin = session.outcomesPattern[session.currentIndex] === 1;
+        session.currentIndex += 1;
+        session.attemptsLeft -= 1;
+
+        let myReferredUsers = JSON.parse(localStorage.getItem(`referredUsers_${currentUser.email}`)) || [];
+        let referralBoost = myReferredUsers.length * 0.01;
+
+        let curr = parseFloat(localStorage.getItem('currentBal')) || 0.00;
+        let profitStr = "";
+        let resultMsg = "";
+
+        if (isWin) {
+            let totalProfit = 1.00 + referralBoost; // $1.00 profit + $0.01 per referral
+            let newBal = curr + totalProfit;
+            localStorage.setItem('currentBal', newBal.toFixed(2));
+            localStorage.setItem('equityBal', newBal.toFixed(2));
+            profitStr = `+$${totalProfit.toFixed(2)}`;
+            resultMsg = `🎯 WINNER! Your 1M prediction (${userDirection}) hit profit!
+
+Earned: +$1.00 Profit
+Referral Boost: +$${referralBoost.toFixed(2)} ($0.01 x ${myReferredUsers.length} refs)`;
+        } else {
+            // Loss Trade (0 profit or -$0.00 / loss)
+            profitStr = "-$0.00";
+            resultMsg = `📉 MISSED! Market reversed against your 1M prediction (${userDirection}).
+
+Result: Loss ($0.00 P/L)`;
+        }
+
+        addMiningHistoryRecord(`TRADE_${userDirection}`, "GOLD (1M)", profitStr);
+
+        // Check if 3 trades completed
+        if (session.attemptsLeft <= 0) {
+            session.completed = true;
+            localStorage.setItem(`lastTradeTimestamp_${currentUser.email}`, Date.now().toString());
+            resultMsg += `
+
+🔒 Daily Trade Limit Reached (3/3 completed). Next trades unlock in 24 hours!`;
+        } else {
+            resultMsg += `
+
+Remaining chances today: ${session.attemptsLeft} / 3`;
+        }
+
+        localStorage.setItem(`dailyTradeSession_${currentUser.email}`, JSON.stringify(session));
         loadSavedBalances();
 
-        // Record Mining Entry
-        addMiningHistoryRecord("MINE_PROFIT", "GOLD (XAU/USD)", `+$${totalGain.toFixed(2)}`);
-
-        showPopup("⛏️ Mining Successful", `Mined Reward: +$${miningProfit.toFixed(2)}\nReferral Boost: +$${referralCommission.toFixed(2)} ($0.01 x ${myReferredUsers.length} refs)\n\nAdded to Current Amount!`);
+        showPopup(isWin ? "🎉 Trade Result: PROFIT" : "❌ Trade Result: LOSS", resultMsg);
     }
 
     function addMiningHistoryRecord(type, asset, profitStr) {
@@ -885,30 +1137,27 @@
         if (!tbody) return;
 
         if (history.length === 0) {
-            tbody.innerHTML = `<tr id="empty-history-row"><td colspan="4" style="text-align:center; color:#94a3b8; padding:12px;">No mining history recorded yet.</td></tr>`;
+            tbody.innerHTML = `<tr id="empty-history-row"><td colspan="4" style="text-align:center; color:#94a3b8; padding:12px;">No trading history recorded yet.</td></tr>`;
             return;
         }
 
         let html = "";
         history.slice(0, 5).forEach(item => {
+            let pColor = item.profit.includes('+') ? '#10b981' : '#ef4444';
             html += `
                 <tr>
                     <td>${item.date}</td>
                     <td>${item.type}</td>
                     <td>${item.asset}</td>
-                    <td class="p-profit">${item.profit}</td>
+                    <td style="color:${pColor}; font-weight:bold;">${item.profit}</td>
                 </tr>
             `;
         });
         tbody.innerHTML = html;
-        document.getElementById('mining-start-date').innerText = `Started mining on: ${history[history.length - 1].date}`;
+        document.getElementById('mining-start-date').innerText = `Trading session status: Active (${history.length} trades total)`;
     }
 
     // Other Navigation Modal Helpers
-    function openNativeChartModal() {
-        showPopup("📈 Mine Chart", "Live XAU/USD 15-second tick chart streams directly from liquidity provider feeds.");
-    }
-
     function openProfileModal() {
         let profHtml = `
             <div style="text-align:left; line-height:1.8; font-size:12px;">
@@ -923,11 +1172,18 @@
     }
 
     function openDepositModal() {
-        showPopup("💳 Deposit Funds", "Minimum Deposit: $50.00\nSend USDT (TRC20) to address:\n\n0x71C7656EC7ab88b098defB751B7401B5f6d8976F\n\nSubmit TXID via support to approve balance instantly.");
+        showPopup("💳 Deposit Funds", "Minimum Deposit: $50.00
+Send USDT (TRC20) to address:
+
+0x71C7656EC7ab88b098defB751B7401B5f6d8976F
+
+Submit TXID via support to approve balance instantly.");
     }
 
     function openRulesModal() {
-        showPopup("📜 Rules & Terms", "1. Mined profits compound in real time.\n2. Instant $1 referral bonus requires no active deposit.\n3. Daily withdrawals are processed within 1-2 hours after verification.");
+        showPopup("📜 Rules & Terms", "1. 1M Trading allows 3 chances per 24 hours.
+2. Instant $1 referral bonus requires no active deposit.
+3. Daily withdrawals are processed within 1-2 hours after verification.");
     }
 
     function handleWithdrawalClick() {
@@ -935,7 +1191,8 @@
         if (curr < 10) {
             showPopup("⚠️ Withdrawal Notice", "Minimum withdrawal balance requirement is $10.00 USDT.");
         } else {
-            showPopup("💰 Withdraw Funds", `Available Balance: $${curr.toFixed(2)}\nEnter your TRC20 wallet address below to receive funds instantly.`);
+            showPopup("💰 Withdraw Funds", `Available Balance: $${curr.toFixed(2)}
+Enter your TRC20 wallet address below to receive funds instantly.`);
         }
     }
 
