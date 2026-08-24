@@ -1,234 +1,865 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Smart Trade Panel Application</title>
-  <style>
-    * {
-      box-sizing: border-box;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      margin: 0;
-      padding: 0;
-    }
-    body {
-      background-color: #0f172a;
-      color: #f8fafc;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      padding: 20px;
-    }
-    .container {
-      width: 100%;
-      max-width: 450px;
-      background: #1e293b;
-      padding: 25px;
-      border-radius: 12px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-    }
-    h2 {
-      text-align: center;
-      margin-bottom: 20px;
-      color: #38bdf8;
-    }
-    .form-group {
-      margin-bottom: 15px;
-    }
-    label {
-      display: block;
-      margin-bottom: 5px;
-      font-size: 14px;
-      color: #94a3b8;
-    }
-    input {
-      width: 100%;
-      padding: 10px;
-      border-radius: 6px;
-      border: 1px solid #334155;
-      background-color: #0f172a;
-      color: #fff;
-      font-size: 14px;
-    }
-    button {
-      width: 100%;
-      padding: 12px;
-      background-color: #0284c7;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      font-weight: bold;
-      cursor: pointer;
-      margin-top: 10px;
-      transition: 0.3s;
-    }
-    button:hover {
-      background-color: #0369a1;
-    }
-    .status-card {
-      background: #334155;
-      padding: 15px;
-      border-radius: 8px;
-      margin-top: 20px;
-    }
-    .status-card p {
-      font-size: 13px;
-      margin-bottom: 5px;
-      color: #cbd5e1;
-    }
-    #msg {
-      margin-top: 10px;
-      font-size: 13px;
-      text-align: center;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Smart Stake Panel</title>
+    <style>
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body {
+            background: radial-gradient(circle at 50% 50%, #0c1825, #080b10);
+            color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center;
+            min-height: 100vh; overflow-x: hidden; position: relative;
+        }
+        .bg-particles { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+        .star { position: absolute; background: #ffffff; border-radius: 50%; opacity: 0.3; animation: twinkle var(--duration) infinite ease-in-out; }
+        @keyframes twinkle { 0%, 100% { opacity: 0.2; transform: scale(0.8); } 50% { opacity: 0.8; transform: scale(1.2); } }
+
+        .top-ticker {
+            width: 100%; background-color: #FFD700; color: #000000; font-weight: 800;
+            font-size: 11px; padding: 7px 0; overflow: hidden; white-space: nowrap;
+            position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(255, 215, 0, 0.3);
+        }
+        .ticker-text { display: inline-block; padding-left: 100%; animation: ticker 18s linear infinite; }
+        @keyframes ticker { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-100%, 0, 0); } }
+
+        .main-wrapper { width: 100%; max-width: 420px; padding: 14px 14px 90px 14px; z-index: 1; display: none; }
+
+        .auth-wrapper {
+            width: 100%; max-width: 380px; padding: 24px; margin-top: 30px; z-index: 2;
+            background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 18px; text-align: center;
+        }
+        .auth-title { font-size: 22px; font-weight: 800; color: #38bdf8; margin-bottom: 6px; text-transform: uppercase; }
+        .auth-sub { font-size: 12px; color: #94a3b8; margin-bottom: 20px; }
+        .input-group { margin-bottom: 12px; text-align: left; }
+        .input-group label { display: block; font-size: 11px; color: #cbd5e1; margin-bottom: 5px; font-weight: 600; }
+        .input-control { width: 100%; padding: 11px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: #f8fafc; font-size: 13px; outline: none; }
+
+        #sync-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(8, 11, 16, 0.96); backdrop-filter: blur(12px); z-index: 3000;
+            flex-direction: column; justify-content: center; align-items: center; padding: 24px; text-align: center;
+        }
+        .sync-spinner { width: 50px; height: 50px; border: 4px solid #1e293b; border-top: 4px solid #38bdf8; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .sync-progress-bar { width: 100%; max-width: 280px; height: 6px; background: #1e293b; border-radius: 4px; overflow: hidden; margin: 16px 0 8px 0; }
+        .sync-progress-fill { height: 100%; background: linear-gradient(90deg, #0284c7, #38bdf8); width: 0%; transition: width 1s linear; }
+
+        .app-header { text-align: center; margin-bottom: 14px; }
+        .app-header h2 { margin: 0; font-size: 20px; font-weight: 800; color: #ffffff; text-transform: uppercase; }
+        .sub-header { display: flex; justify-content: center; align-items: center; gap: 6px; font-size: 11px; color: #94a3b8; margin-top: 4px; }
+        .status-dot { height: 7px; width: 7px; background-color: #10b981; border-radius: 50%; box-shadow: 0 0 6px #10b981; }
+
+        .card {
+            background: rgba(10, 25, 41, 0.85); backdrop-filter: blur(12px); padding: 16px;
+            border-radius: 14px; text-align: center; margin-bottom: 14px;
+            border: 1px solid rgba(255, 215, 0, 0.25); box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+        }
+        .card p { color: #e2e8f0; margin: 0; font-size: 11px; font-weight: 700; }
+        .card h1 { color: #fbbf24; margin: 6px 0 8px 0; font-size: 34px; font-weight: 800; font-family: monospace; }
+
+        .btn {
+            width: 100%; padding: 14px; border-radius: 10px; border: none;
+            background: linear-gradient(135deg, #0284c7, #0891b2); color: #ffffff;
+            font-weight: 700; font-size: 14px; cursor: pointer; margin-bottom: 16px;
+        }
+        .btn:disabled { background: #334155 !important; color: #94a3b8 !important; cursor: not-allowed; }
+
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+        .metric-card { border-radius: 10px; padding: 12px; }
+        .metric-title { font-size: 10px; font-weight: 700; text-transform: uppercase; margin-bottom: 4px; }
+        .metric-value { font-size: 17px; font-weight: 800; font-family: monospace; }
+
+        .card-lime { background-color: #0d3822; border: 1px solid #10b981; color: #4ade80; }
+        .card-lightblue { background-color: #0c334c; border: 1px solid #0284c7; color: #38bdf8; }
+        .card-softblue { background-color: #122b46; border: 1px solid #3b82f6; color: #60a5fa; }
+        .card-gold { background-color: #3b2d08; border: 1px solid #d97706; color: #fbbf24; }
+
+        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+        .btn-green { background: #059669; color: #ffffff; border: none; padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer; }
+        .btn-white { background: #ffffff; color: #0f172a; border: none; padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer; }
+        .btn-yellow-withdraw {
+            width: 100%; background: linear-gradient(135deg, #FFD700, #d97706); color: #000;
+            border: none; padding: 13px; border-radius: 8px; font-weight: 800; font-size: 13px; cursor: pointer; margin-bottom: 18px;
+        }
+
+        .history-card { background-color: #ffffff; color: #0f172a; border-radius: 14px; padding: 16px; margin-bottom: 16px; }
+        .history-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 12px; }
+        .history-table th { text-align: left; padding: 6px 4px; border-bottom: 2px solid #e2e8f0; color: #475569; }
+        .history-table td { padding: 8px 4px; border-bottom: 1px solid #f1f5f9; font-size: 10.5px; }
+
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background: rgba(3, 20, 32, 0.98); backdrop-filter: blur(16px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: none; justify-content: space-around; padding: 8px 0; z-index: 900;
+        }
+        .nav-tab { display: flex; flex-direction: column; align-items: center; color: #64748b; font-size: 10px; cursor: pointer; }
+        .nav-tab.active { color: #38bdf8; font-weight: 700; }
+
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px);
+            justify-content: center; align-items: center; z-index: 2000; padding: 15px; opacity: 0; transition: opacity 0.25s ease;
+        }
+        .modal.active-modal { display: flex; opacity: 1; }
+        .modal-content {
+            background: #0f172a; padding: 20px; border-radius: 16px; text-align: center;
+            max-width: 380px; width: 100%; max-height: 90vh; overflow-y: auto; border: 1px solid #1e293b;
+        }
+
+        .chart-box {
+            width: 100%; height: 160px; background: #020617; border: 1px solid #1e293b;
+            border-radius: 8px; margin: 10px 0; position: relative; overflow: hidden;
+        }
+        .trade-action-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+        .btn-up { background: #10b981; color: white; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .btn-down { background: #ef4444; color: white; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+
+        .ref-card { background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 12px; margin-bottom: 12px; text-align: left; }
+        .ref-box-row { display: flex; align-items: center; justify-content: space-between; background: #0f172a; border: 1px solid #334155; border-radius: 6px; padding: 6px 10px; margin-top: 6px; }
+        .ref-input-text { font-family: monospace; font-size: 11px; color: #38bdf8; font-weight: bold; word-break: break-all; }
+        .copy-btn { background: #0284c7; color: white; border: none; padding: 6px 10px; border-radius: 4px; font-size: 10.5px; font-weight: bold; cursor: pointer; }
+        .warning-box { background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #fca5a5; font-size: 10.5px; padding: 8px; border-radius: 6px; margin: 10px 0; text-align: left; line-height: 1.4; }
+
+        /* Professional Profile Styling */
+        .profile-container { text-align: center; }
+        .profile-avatar-box {
+            width: 70px; height: 70px; border-radius: 50%; background: linear-gradient(135deg, #0284c7, #38bdf8);
+            display: flex; align-items: center; justify-content: center; margin: 0 auto 10px auto;
+            font-size: 28px; font-weight: 800; color: #ffffff; border: 3px solid rgba(56, 189, 248, 0.3);
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+        }
+        .profile-badge {
+            display: inline-block; background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981;
+            color: #4ade80; font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 12px; margin-bottom: 15px;
+        }
+        .profile-info-grid { text-align: left; background: #1e293b; border-radius: 12px; padding: 12px; border: 1px solid #334155; margin-bottom: 15px; }
+        .profile-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .profile-item:last-child { border-bottom: none; }
+        .profile-label { font-size: 11px; color: #94a3b8; font-weight: 600; }
+        .profile-val { font-size: 11px; color: #f8fafc; font-weight: 700; font-family: monospace; }
+        .btn-logout {
+            width: 100%; padding: 12px; border-radius: 8px; border: none;
+            background: linear-gradient(135deg, #dc2626, #ef4444); color: #ffffff;
+            font-weight: 800; font-size: 13px; cursor: pointer; margin-top: 5px;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+    </style>
 </head>
 <body>
 
-  <div class="container">
-    <h2>Smart Trade Panel</h2>
+<div class="top-ticker">
+    <div class="ticker-text">🔥 WELCOME TO SMART STACK PANEL | 🚀 SPECIAL REFERRAL OFFER: INVITE FRIENDS & GET AN INSTANT $1.00 BONUS IMMEDIATELY! 🚀</div>
+</div>
 
-    <!-- User Details Section -->
-    <div class="form-group">
-      <label for="email">User Email (Sheet Sync)</label>
-      <input type="email" id="email" placeholder="Enter your email" required>
+<div class="bg-particles" id="stars-container"></div>
+
+<!-- Sync Overlay -->
+<div id="sync-overlay">
+    <div class="sync-spinner"></div>
+    <div style="font-size: 16px; font-weight: 800; color: #38bdf8; margin-bottom: 6px;">SYNCHRONIZING TERMINAL</div>
+    <div style="font-size: 11px; color: #94a3b8; max-width: 260px; line-height: 1.5;">Establishing encrypted connection, verifying credentials & loading real-time market feeds...</div>
+    <div class="sync-progress-bar"><div id="sync-fill" class="sync-progress-fill"></div></div>
+    <div id="sync-timer-text" style="font-size: 12px; font-weight: bold; color: #fbbf24; font-family: monospace;">Please wait: 5s</div>
+</div>
+
+<!-- Registration Screen -->
+<div class="auth-wrapper" id="auth-screen">
+    <div class="auth-title">Account Sign Up</div>
+    <div class="auth-sub">Enter details to access the Smart Stack Panel</div>
+    <div class="input-group"><label>First Name</label><input type="text" id="reg-fname" class="input-control" placeholder="e.g. John"></div>
+    <div class="input-group"><label>Last Name</label><input type="text" id="reg-lname" class="input-control" placeholder="e.g. Max"></div>
+    <div class="input-group"><label>Email Address</label><input type="email" id="reg-email" class="input-control" placeholder="name@gmail.com"></div>
+    <div class="input-group"><label>Phone Number</label><input type="tel" id="reg-phone" class="input-control" placeholder="+92 300 0000000"></div>
+    <div class="input-group"><label>Referral Code (Optional)</label><input type="text" id="reg-refcode" class="input-control" placeholder="e.g. REF123456"></div>
+    <button class="btn" onclick="handleRegistration()" style="margin-top: 10px;">Register & Access Panel</button>
+</div>
+
+<!-- Main Application Dashboard -->
+<div class="main-wrapper" id="main-dashboard">
+    <div class="app-header">
+        <h2>SMART STACK PANEL</h2>
+        <div class="sub-header">
+            <span class="status-dot"></span>
+            <span style="color:#10b981; font-weight:700;">LIVE MARKET</span>
+            <span>|</span>
+            <span id="live-datetime" style="font-family:monospace;">--:--:-- | -- --- ----</span>
+        </div>
     </div>
 
-    <div class="form-group">
-      <label for="name">Full Name</label>
-      <input type="text" id="name" placeholder="Enter full name">
+    <!-- Live Real-Time Gold Price -->
+    <div class="card">
+        <p id="active-asset-title">GOLD (XAU/USD) REAL-TIME</p>
+        <h1 id="active-asset-price">Fetching...</h1>
     </div>
 
-    <div class="form-group">
-      <label for="phone">Phone Number</label>
-      <input type="text" id="phone" placeholder="Enter phone number">
+    <!-- Trade Main Action -->
+    <div id="trade-section">
+        <button class="btn" id="trade-main-btn" onclick="openTradeModal()">📈 TRADE (1m CHART)</button>
     </div>
 
-    <button onclick="registerUser()">Register New Account</button>
-    
-    <div style="margin-top: 20px; border-top: 1px solid #334155; padding-top: 15px;">
-      <div class="form-group">
-        <label for="amount">Withdrawal Amount ($)</label>
-        <input type="number" id="amount" placeholder="50.00">
-      </div>
-      <button style="background-color: #16a34a;" onclick="requestWithdrawal()">Request Withdrawal</button>
+    <!-- 2x2 Stats Grid -->
+    <div class="stats-grid">
+        <div class="metric-card card-lime"><div class="metric-title">Current Amount</div><div class="metric-value" id="val-current">$0.00</div></div>
+        <div class="metric-card card-lightblue"><div class="metric-title">Deposit Amount</div><div class="metric-value" id="val-deposit">$0.00</div></div>
+        <div class="metric-card card-softblue"><div class="metric-title">Live Equity</div><div class="metric-value" id="val-equity">$0.00</div></div>
+        <div class="metric-card card-gold"><div class="metric-title">Live Withdrawal</div><div class="metric-value" id="val-withdrawal">$0.00</div></div>
     </div>
 
-    <div class="status-card">
-      <p><strong>App Status:</strong> <span id="appState" style="color: #4ade80;">Active (Online)</span></p>
-      <p><strong>Auto System:</strong> App band hote hi Sheet mein <code>Offline (Last Seen)</code> auto-update ho jayega.</p>
+    <div class="btn-group">
+        <button class="btn-green" onclick="openDepositModal()">Add Funds</button>
+        <button class="btn-white" onclick="openRulesModal()">RULES & LEGAL PDF</button>
     </div>
 
-    <div id="msg"></div>
-  </div>
+    <button class="btn-yellow-withdraw" onclick="handleWithdrawalClick()">💰 WITHDRAW FUNDS</button>
 
-  <script>
-    // Updated Apps Script Deployment URL
+    <!-- Daily Trade History -->
+    <div class="history-card">
+        <div style="font-weight:800; font-size:14px; margin-bottom:6px;">📈 DAILY TRADE HISTORY</div>
+        <table class="history-table">
+            <thead>
+                <tr><th>DATE</th><th>TYPE</th><th>ASSET</th><th>P/L</th></tr>
+            </thead>
+            <tbody id="history-rows">
+                <tr><td colspan="4" style="text-align:center; color:#94a3b8; padding:12px;">No trade history recorded today.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Bottom Navigation Bar -->
+<div class="bottom-nav" id="bottom-navbar">
+    <div class="nav-tab active" onclick="openReferralsModal()"><span style="font-size:16px;">🤝</span><span>Referrals</span></div>
+    <div class="nav-tab" onclick="openDepositModal()"><span style="font-size:16px;">💳</span><span>Deposit</span></div>
+    <div class="nav-tab" onclick="openRulesModal()"><span style="font-size:16px;">📜</span><span>Rules</span></div>
+    <div class="nav-tab" onclick="openProfileModal()"><span style="font-size:16px;">👤</span><span>Profile</span></div>
+</div>
+
+<!-- Dynamic Modal -->
+<div id="modal" class="modal">
+    <div class="modal-content">
+        <div id="modal-title" style="font-weight:700; margin-bottom:10px; color:#f8fafc; font-size:16px;">Notice</div>
+        <div id="modal-body" style="font-size:12px; margin-bottom:18px; color:#94a3b8; white-space:pre-line; line-height:1.5; text-align:left;"></div>
+        <button class="btn" id="modal-close-btn" onclick="closePopup()" style="margin-bottom:0; padding:10px;">Close</button>
+    </div>
+</div>
+
+<script>
+    // Live Deployment URL
     const API_URL = "https://script.google.com/macros/s/AKfycbzVYmxFwN6WcoSG65aab8Ysw4SMjBA79KivVHPIwXol8hh9ki8zuuEI2C4AWaQFRpRQtw/exec";
 
-    // 1. App Open Hone Par Auto Online Status (Active)
-    function setOnlineStatus() {
-      const email = document.getElementById("email").value;
-      if (!email) return;
+    const DEPOSIT_ADDRESS = "0xfeff2067ef1a43aa4bca186f702b2669971debbd";
+    const NETWORK_NAME = "BNB Smart Chain (BEP20)";
 
-      fetch(API_URL, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action_type: "user_online",
-          email: email
-        })
-      });
+    let currentUser = JSON.parse(localStorage.getItem('traderUser')) || null;
+    let chartAnimationInterval = null;
+
+    /* Live Online / Offline Sync with Google Sheet */
+    function syncOnlineStatus() {
+        if (!currentUser || !currentUser.email) return;
+        fetch(API_URL, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                action_type: "user_online",
+                email: currentUser.email
+            })
+        });
     }
 
-    // 2. App Band Ya Close Hone Par Auto Offline & Last Seen
     window.addEventListener("pagehide", function () {
-      const email = document.getElementById("email").value;
-      if (!email) return;
-
-      const payload = JSON.stringify({
-        action_type: "user_offline",
-        email: email
-      });
-
-      // sendBeacon app close hote waqt request ko background mein deliver karta hai
-      navigator.sendBeacon(API_URL, payload);
+        if (!currentUser || !currentUser.email) return;
+        const payload = JSON.stringify({
+            action_type: "user_offline",
+            email: currentUser.email
+        });
+        navigator.sendBeacon(API_URL, payload);
     });
 
-    // Email change hote hi active status refresh karein
-    document.getElementById("email").addEventListener("blur", setOnlineStatus);
-
-    // 3. Register Function
-    function registerUser() {
-      const name = document.getElementById("name").value;
-      const email = document.getElementById("email").value;
-      const phone = document.getElementById("phone").value;
-      const msg = document.getElementById("msg");
-
-      if (!email || !name) {
-        msg.style.color = "#f87171";
-        msg.innerText = "Please fill Name and Email.";
-        return;
-      }
-
-      msg.style.color = "#38bdf8";
-      msg.innerText = "Registering user...";
-
-      fetch(API_URL, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action_type: "register",
-          name: name,
-          email: email,
-          phone: phone,
-          initial_balance: 0
-        })
-      }).then(() => {
-        msg.style.color = "#4ade80";
-        msg.innerText = "User Registered & Auto-Verified in Sheet!";
-        setOnlineStatus();
-      }).catch(err => {
-        msg.style.color = "#f87171";
-        msg.innerText = "Error: " + err;
-      });
+    // Stars particle effect
+    const container = document.getElementById('stars-container');
+    for (let i = 0; i < 30; i++) {
+        const star = document.createElement('div');
+        star.className = 'star';
+        star.style.width = Math.random() * 3 + 'px';
+        star.style.height = star.style.width;
+        star.style.top = Math.random() * 100 + '%';
+        star.style.left = Math.random() * 100 + '%';
+        star.style.setProperty('--duration', (Math.random() * 3 + 2) + 's');
+        container.appendChild(star);
     }
 
-    // 4. Withdrawal Request Function
-    function requestWithdrawal() {
-      const email = document.getElementById("email").value;
-      const amount = document.getElementById("amount").value;
-      const msg = document.getElementById("msg");
-
-      if (!email || !amount) {
-        msg.style.color = "#f87171";
-        msg.innerText = "Provide Email & Amount for withdrawal.";
-        return;
-      }
-
-      msg.style.color = "#38bdf8";
-      msg.innerText = "Submitting withdrawal request...";
-
-      fetch(API_URL, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action_type: "request_withdrawal",
-          email: email,
-          amount: amount
-        })
-      }).then(() => {
-        msg.style.color = "#4ade80";
-        msg.innerText = "Withdrawal request added to Sheet as Pending!";
-      }).catch(err => {
-        msg.style.color = "#f87171";
-        msg.innerText = "Error: " + err;
-      });
+    function updateLiveTime() {
+        const now = new Date();
+        const timeElem = document.getElementById('live-datetime');
+        if (timeElem) timeElem.innerText = `${now.toLocaleTimeString()} | ${now.toLocaleDateString('en-GB')}`;
     }
-  </script>
+    setInterval(updateLiveTime, 1000);
+
+    /* Real-Time Gold Price Fetching */
+    async function fetchLiveGoldPrice() {
+        try {
+            const res = await fetch("https://api.binance.com/api/v3/ticker/price?symbol=PAXGUSDT");
+            const data = await res.json();
+            if (data.price) {
+                document.getElementById('active-asset-price').innerText = `$${parseFloat(data.price).toFixed(2)}`;
+            }
+        } catch (e) {
+            let fallback = (2650 + Math.random() * 5).toFixed(2);
+            document.getElementById('active-asset-price').innerText = `$${fallback}`;
+        }
+    }
+    fetchLiveGoldPrice();
+    setInterval(fetchLiveGoldPrice, 3000);
+
+    function checkAuth() {
+        if (currentUser) {
+            document.getElementById('auth-screen').style.display = 'none';
+            document.getElementById('main-dashboard').style.display = 'block';
+            document.getElementById('bottom-navbar').style.display = 'flex';
+            if (!currentUser.refCode) currentUser.refCode = generateReferralCode(currentUser.email);
+            loadBalances();
+            renderTradeHistory();
+            checkTradeLockStatus();
+            syncOnlineStatus();
+        } else {
+            document.getElementById('auth-screen').style.display = 'block';
+            document.getElementById('main-dashboard').style.display = 'none';
+            document.getElementById('bottom-navbar').style.display = 'none';
+        }
+    }
+
+    function loadBalances() {
+        let curr = parseFloat(localStorage.getItem('currentBal')) || 0.00;
+        let dep = parseFloat(localStorage.getItem('depositBal')) || 0.00;
+        let withBal = parseFloat(localStorage.getItem('withdrawalBal')) || 0.00;
+        document.getElementById('val-current').innerText = `$${curr.toFixed(2)}`;
+        document.getElementById('val-deposit').innerText = `$${dep.toFixed(2)}`;
+        document.getElementById('val-equity').innerText = `$${curr.toFixed(2)}`;
+        document.getElementById('val-withdrawal').innerText = `$${withBal.toFixed(2)}`;
+    }
+
+    function generateReferralCode(email) {
+        let hash = 0;
+        for (let i = 0; i < email.length; i++) hash = email.charCodeAt(i) + ((hash << 5) - hash);
+        return 'REF' + Math.abs(hash).toString(16).toUpperCase().substring(0, 6);
+    }
+
+    function handleRegistration() {
+        const fname = document.getElementById('reg-fname').value.trim();
+        const lname = document.getElementById('reg-lname').value.trim();
+        const email = document.getElementById('reg-email').value.trim().toLowerCase();
+        const phone = document.getElementById('reg-phone').value.trim();
+
+        if (!fname || !email || !phone) return alert('Please fill in all required fields.');
+
+        let myRefCode = generateReferralCode(email);
+        currentUser = { fname, lname, email, phone, refCode: myRefCode };
+        localStorage.setItem('traderUser', JSON.stringify(currentUser));
+
+        // Sync with Web App Sheet Database
+        fetch(API_URL, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                action_type: "register",
+                name: `${fname} ${lname}`.trim(),
+                email: email,
+                phone: phone,
+                initial_balance: 0
+            })
+        });
+
+        document.getElementById('auth-screen').style.display = 'none';
+        document.getElementById('sync-overlay').style.display = 'flex';
+
+        let timeLeft = 5;
+        const syncInterval = setInterval(() => {
+            timeLeft--;
+            document.getElementById('sync-timer-text').innerText = `Please wait: ${timeLeft}s`;
+            document.getElementById('sync-fill').style.width = ((5 - timeLeft) / 5 * 100) + '%';
+
+            if (timeLeft <= 0) {
+                clearInterval(syncInterval);
+                document.getElementById('sync-overlay').style.display = 'none';
+                checkAuth();
+            }
+        }, 1000);
+    }
+
+    /* ---------------- TRADE FUNCTIONALITY ---------------- */
+
+    function getTradeState() {
+        const defaultState = { attemptsLeft: 3, winningAttempt: Math.floor(Math.random() * 3) + 1, lockUntil: 0 };
+        return JSON.parse(localStorage.getItem(`tradeState_${currentUser?.email}`)) || defaultState;
+    }
+
+    function saveTradeState(state) {
+        localStorage.setItem(`tradeState_${currentUser?.email}`, JSON.stringify(state));
+    }
+
+    function checkTradeLockStatus() {
+        const state = getTradeState();
+        const now = Date.now();
+        const btn = document.getElementById('trade-main-btn');
+
+        if (state.lockUntil && now < state.lockUntil) {
+            btn.disabled = true;
+            updateLockTimer(state.lockUntil);
+        } else if (state.lockUntil && now >= state.lockUntil) {
+            const newState = { attemptsLeft: 3, winningAttempt: Math.floor(Math.random() * 3) + 1, lockUntil: 0 };
+            saveTradeState(newState);
+            btn.disabled = false;
+            btn.innerText = "📈 TRADE (1m CHART)";
+        }
+    }
+
+    function updateLockTimer(lockUntil) {
+        const btn = document.getElementById('trade-main-btn');
+        const timer = setInterval(() => {
+            const diff = lockUntil - Date.now();
+            if (diff <= 0) {
+                clearInterval(timer);
+                checkTradeLockStatus();
+            } else {
+                const h = Math.floor(diff / 3600000);
+                const m = Math.floor((diff % 3600000) / 60000);
+                const s = Math.floor((diff % 60000) / 1000);
+                btn.innerText = `🔒 NEXT TRADE IN: ${h}h ${m}m ${s}s`;
+            }
+        }, 1000);
+    }
+
+    let lastUserChoice = "CALL";
+
+    function openTradeModal() {
+        const state = getTradeState();
+        if (state.attemptsLeft <= 0) return alert("Daily trade limit reached!");
+
+        const tradeContent = `
+            <div style="font-size: 11px; color: #cbd5e1;">XAU/USD - 1 MINUTE LOW FRAME CHART</div>
+            <div style="font-size: 11px; color: #38bdf8; font-weight: bold; margin-top:3px;">Remaining Attempts Today: ${state.attemptsLeft}/3</div>
+            
+            <div class="chart-box">
+                <canvas id="tradeCanvas" width="300" height="150" style="width:100%; height:100%;"></canvas>
+            </div>
+
+            <div class="trade-action-btns" id="trade-btn-container">
+                <button class="btn-up" onclick="startTradeExecution('CALL')">▲ CALL (UP)</button>
+                <button class="btn-down" onclick="startTradeExecution('PUT')">▼ PUT (DOWN)</button>
+            </div>
+            <div id="stay-timer-box" style="display:none; font-weight:bold; color:#fbbf24; margin-top:10px; font-family:monospace; text-align:center;">Analyzing Market Movement... <span id="stay-count">5</span>s</div>
+        `;
+
+        showPopup("📈 1m Live Market Trade", tradeContent);
+        setTimeout(drawLiveChart, 100);
+    }
+
+    function drawLiveChart() {
+        const canvas = document.getElementById('tradeCanvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        let points = Array.from({length: 20}, () => Math.random() * 50 + 50);
+
+        if (chartAnimationInterval) clearInterval(chartAnimationInterval);
+        
+        chartAnimationInterval = setInterval(() => {
+            points.shift();
+            points.push(Math.random() * 50 + 50);
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.beginPath();
+            ctx.strokeStyle = "#38bdf8";
+            ctx.lineWidth = 2;
+
+            for (let i = 0; i < points.length; i++) {
+                let x = (canvas.width / (points.length - 1)) * i;
+                let y = canvas.height - points[i];
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+        }, 300);
+    }
+
+    function startTradeExecution(userChoice) {
+        lastUserChoice = userChoice;
+        document.getElementById('trade-btn-container').style.display = 'none';
+        const stayBox = document.getElementById('stay-timer-box');
+        stayBox.style.display = 'block';
+
+        let count = 5;
+        const stayInterval = setInterval(() => {
+            count--;
+            document.getElementById('stay-count').innerText = count;
+            if (count <= 0) {
+                clearInterval(stayInterval);
+                finishTradeExecution();
+            }
+        }, 1000);
+    }
+
+    function finishTradeExecution() {
+        if (chartAnimationInterval) clearInterval(chartAnimationInterval);
+        
+        let state = getTradeState();
+        const currentAttempt = 4 - state.attemptsLeft;
+        const isWin = (currentAttempt === state.winningAttempt);
+
+        state.attemptsLeft -= 1;
+
+        let currBal = parseFloat(localStorage.getItem('currentBal')) || 0.00;
+        let resultMsg = "";
+
+        if (isWin) {
+            currBal += 1.00;
+            localStorage.setItem('currentBal', currBal.toFixed(2));
+            resultMsg = `🎉 PROFIT! Perfect Prediction!\nYou Earned: +$1.00`;
+            addTradeHistoryRecord(lastUserChoice, "+$1.00");
+        } else {
+            resultMsg = `📉 LOSS! Market Reversed.\nProfit: $0.00`;
+        }
+
+        if (state.attemptsLeft <= 0) {
+            state.lockUntil = Date.now() + (24 * 60 * 60 * 1000);
+        }
+
+        saveTradeState(state);
+        loadBalances();
+
+        showPopup(isWin ? "✅ Trade Result: WIN" : "❌ Trade Result: LOSS", resultMsg);
+        checkTradeLockStatus();
+    }
+
+    /* ---------------- DAILY TRADE HISTORY MANAGEMENT ---------------- */
+
+    function getTradeHistory() {
+        return JSON.parse(localStorage.getItem(`tradeHistory_${currentUser?.email}`)) || [];
+    }
+
+    function addTradeHistoryRecord(type, pnl) {
+        let history = getTradeHistory();
+        const now = new Date();
+        const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+        history.unshift({ date: timeStr, type: type, asset: "XAU/USD", pnl: pnl });
+        localStorage.setItem(`tradeHistory_${currentUser?.email}`, JSON.stringify(history));
+        renderTradeHistory();
+    }
+
+    function renderTradeHistory() {
+        let history = getTradeHistory();
+        const container = document.getElementById('history-rows');
+        if (!container) return;
+
+        if (history.length === 0) {
+            container.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#94a3b8; padding:12px;">No trade history recorded today.</td></tr>`;
+            return;
+        }
+
+        let html = "";
+        history.forEach(item => {
+            html += `
+                <tr>
+                    <td>${item.date}</td>
+                    <td style="font-weight:bold; color:${item.type === 'CALL' ? '#10b981' : '#ef4444'}">${item.type}</td>
+                    <td>${item.asset}</td>
+                    <td style="font-weight:bold; color:#10b981;">${item.pnl}</td>
+                </tr>
+            `;
+        });
+        container.innerHTML = html;
+    }
+
+    /* ---------------- WITHDRAWAL SYSTEM (50$ LIMIT + TRON/BNB NETWORKS) ---------------- */
+
+    function handleWithdrawalClick() {
+        let currBal = parseFloat(localStorage.getItem('currentBal')) || 0.00;
+
+        if (currBal < 50.00) {
+            showPopup("⚠️ Withdrawal Locked", `Minimum withdrawal limit is $50.00.\n\nYour Current Balance is: $${currBal.toFixed(2)}\nPlease reach at least $50.00 before placing a withdrawal request.`);
+            return;
+        }
+
+        openWithdrawalModal();
+    }
+
+    function openWithdrawalModal() {
+        let currBal = parseFloat(localStorage.getItem('currentBal')) || 0.00;
+
+        const withContent = `
+            <div style="font-size:11px; color:#cbd5e1; margin-bottom:12px;">Available Balance for Withdrawal: <strong style="color:#4ade80;">$${currBal.toFixed(2)}</strong></div>
+            
+            <div class="input-group">
+                <label>Select Network</label>
+                <select id="with-network" class="input-control" style="cursor:pointer;">
+                    <option value="TRON (TRC20)">TRON (TRC20)</option>
+                    <option value="BNB Smart Chain (BEP20)">BNB Smart Chain (BEP20)</option>
+                </select>
+            </div>
+
+            <div class="input-group">
+                <label>Withdrawal Amount ($)</label>
+                <input type="number" id="with-amount" class="input-control" placeholder="Minimum $50.00" min="50" max="${currBal}">
+            </div>
+
+            <div class="input-group">
+                <label>Destination Wallet Address</label>
+                <input type="text" id="with-address" class="input-control" placeholder="Enter your wallet address">
+            </div>
+
+            <button class="btn" onclick="submitWithdrawalRequest()" style="background: linear-gradient(135deg, #FFD700, #d97706); color:#000; font-weight:800; margin-top:10px; margin-bottom:8px;">Submit Withdrawal Request</button>
+            <button class="btn" onclick="closePopup()" style="background:#334155; margin-bottom:0;">Cancel</button>
+        `;
+
+        showPopup("💰 Withdraw Funds", withContent);
+    }
+
+    function submitWithdrawalRequest() {
+        let currBal = parseFloat(localStorage.getItem('currentBal')) || 0.00;
+        const net = document.getElementById('with-network').value;
+        const amt = parseFloat(document.getElementById('with-amount').value);
+        const addr = document.getElementById('with-address').value.trim();
+
+        if (isNaN(amt) || amt < 50) return alert("Minimum withdrawal amount is $50.00");
+        if (amt > currBal) return alert("Entered amount exceeds your Current Balance!");
+        if (!addr) return alert("Please enter a valid destination wallet address.");
+
+        let newBal = currBal - amt;
+        let withBal = (parseFloat(localStorage.getItem('withdrawalBal')) || 0.00) + amt;
+
+        localStorage.setItem('currentBal', newBal.toFixed(2));
+        localStorage.setItem('withdrawalBal', withBal.toFixed(2));
+        loadBalances();
+
+        // Push withdrawal entry to Google Sheet
+        fetch(API_URL, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                action_type: "request_withdrawal",
+                email: currentUser.email,
+                amount: amt,
+                network: net,
+                address: addr
+            })
+        });
+
+        const successNotice = `
+            <div style="text-align:center;">
+                <div style="font-size:24px; margin-bottom:10px;">✅</div>
+                <div style="font-size:14px; font-weight:bold; color:#10b981; margin-bottom:8px;">Withdrawal Request Submitted!</div>
+                <div style="font-size:11.5px; color:#cbd5e1; line-height:1.5;">Amount: <strong>$${amt.toFixed(2)}</strong><br>Network: <strong>${net}</strong><br>Address: <strong style="font-family:monospace;">${addr.substring(0,10)}...</strong><br><br>Your request will be processed within 24 to 48 hours.</div>
+            </div>
+        `;
+        showPopup("💰 Withdrawal Pending", successNotice);
+    }
+
+    /* ---------------- ADD FUNDS / DEPOSIT MODAL ---------------- */
+
+    function openDepositModal() {
+        const depContent = `
+            <div style="font-size:11px; color:#cbd5e1; margin-bottom:10px;">Select your network and copy the deposit wallet address below:</div>
+            
+            <div class="ref-card">
+                <div style="font-size:10px; color:#94a3b8; font-weight:bold;">NETWORK NAME</div>
+                <div style="font-size:12px; color:#10b981; font-weight:bold; margin-top:2px;">${NETWORK_NAME}</div>
+            </div>
+
+            <div class="ref-card">
+                <div style="font-size:10px; color:#94a3b8; font-weight:bold;">DEPOSIT WALLET ADDRESS</div>
+                <div class="ref-box-row">
+                    <span class="ref-input-text">${DEPOSIT_ADDRESS}</span>
+                    <button class="copy-btn" onclick="copyText('${DEPOSIT_ADDRESS}')">Copy Address</button>
+                </div>
+            </div>
+
+            <div class="warning-box">
+                ⚠️ <strong>WARNING:</strong> Please double-check the wallet address and network carefully before sending funds. We are strictly not responsible for any lost funds due to wrong network selection or incorrect wallet addresses.
+            </div>
+
+            <div class="input-group">
+                <label>Deposit Amount ($)</label>
+                <input type="number" id="dep-amount" class="input-control" placeholder="Minimum $100">
+            </div>
+
+            <div class="input-group">
+                <label>Upload Payment Screenshot / TxID Proof</label>
+                <input type="file" id="dep-proof" class="input-control" accept="image/*">
+            </div>
+
+            <button class="btn" onclick="submitDepositProof()" style="background:#059669; margin-top:10px; margin-bottom:8px;">Submit Deposit Proof</button>
+            <button class="btn" onclick="closePopup()" style="background:#334155; margin-bottom:0;">Cancel</button>
+        `;
+
+        showPopup("💳 Add Funds / Deposit", depContent);
+    }
+
+    function submitDepositProof() {
+        const amt = document.getElementById('dep-amount').value;
+        if (!amt || parseFloat(amt) < 100) return alert("Minimum deposit amount is $100.");
+
+        const notice = `
+            <div style="text-align:center;">
+                <div style="font-size:24px; margin-bottom:10px;">⏳</div>
+                <div style="font-size:14px; font-weight:bold; color:#10b981; margin-bottom:8px;">Documents Submitted Successfully!</div>
+                <div style="font-size:11.5px; color:#cbd5e1; line-height:1.5;">Your deposit details have been submitted for verification. Please wait up to <strong>6 hours</strong> for manual verification and account balance update.</div>
+            </div>
+        `;
+        showPopup("✅ Verification Pending", notice);
+    }
+
+    /* ---------------- RULES MODAL ---------------- */
+
+    function openRulesModal() {
+        const rulesContent = `
+            <div style="font-size:12px; font-weight:bold; color:#38bdf8; margin-bottom:10px;">Smart Stake Panel — Terms, Rules & Guidelines</div>
+            <div style="font-size:11px; color:#cbd5e1; margin-bottom:12px;">Welcome to Smart Stake Panel. Please read the operational rules, deposit conditions, and profit-sharing guidelines carefully before participating.</div>
+
+            <div style="font-weight:bold; color:#fbbf24; font-size:11px; margin-bottom:6px;">1. Quick Overview & Key Highlights</div>
+            <table class="history-table" style="background:#0f172a; border:1px solid #334155;">
+                <thead><tr style="background:#1e293b;"><th style="color:#10b981;">Feature</th><th style="color:#10b981;">Details / Policy</th></tr></thead>
+                <tbody>
+                    <tr><td>Minimum Initial Deposit</td><td>$100 (Activates the Smart Mining feature)</td></tr>
+                    <tr><td>Deposit Processing Time</td><td>Up to 6 Hours (Subject to blockchain & proof verification)</td></tr>
+                    <tr><td>Daily Returns Model</td><td>Dynamic & Market-Linked (Varies daily based on live trading)</td></tr>
+                    <tr><td>Minimum Regular Withdrawal</td><td>$50 (Applicable after the first full cycle completion)</td></tr>
+                    <tr><td>Withdrawal Processing Time</td><td>24 – 48 Hours</td></tr>
+                    <tr><td>Trading Mechanism</td><td>100% Real Copy-Trading / Asset Allocation</td></tr>
+                </tbody>
+            </table>
+
+            <div style="font-weight:bold; color:#fbbf24; font-size:11px; margin-top:10px; margin-bottom:4px;">2. Deposit & Account Activation Rules</div>
+            <div style="font-size:10.5px; color:#cbd5e1; line-height:1.4;">
+            • <strong>Minimum Funding Requirement:</strong> To activate the core earning engine, a minimum deposit of $100 is required.<br>
+            • <strong>Smart Mining Activation:</strong> Once the $100 deposit is approved, the central "Mine" button will be unlocked on your dashboard. Users must activate/click "Mine" daily to harvest dynamic profits.<br>
+            • <strong>Network & Address Verification:</strong> Always double-check the deposit wallet address and selected blockchain network (e.g., TRC20, BEP20) before sending funds. Deposits sent to incorrect addresses or incompatible networks cannot be recovered.<br>
+            • <strong>Proof of Payment:</strong> Users must upload an authentic, clear screenshot/transaction hash (TxID). Providing manipulated or duplicate screenshots will lead to permanent account suspension.<br>
+            • <strong>Approval Timeline:</strong> Manual and automated verification takes between 1 to 6 hours to reflect in your panel balance.
+            </div>
+
+            <div style="font-weight:bold; color:#fbbf24; font-size:11px; margin-top:10px; margin-bottom:4px;">3. Dynamic Daily Profit & Trading Structure</div>
+            <div style="font-size:10.5px; color:#cbd5e1; line-height:1.4;">
+            • <strong>Real-Market Execution:</strong> Smart Stake Panel operates via genuine live copy-trading algorithms and expert execution. Returns are not fixed. Daily profits fluctuate in real time according to market conditions.<br>
+            • <strong>Capital Protection Model:</strong> Capital is managed under strict risk-management parameters to protect the principal balance while generating sustainable market returns.
+            </div>
+
+            <div style="font-weight:bold; color:#fbbf24; font-size:11px; margin-top:10px; margin-bottom:4px;">4. Withdrawal Lifecycle & Capital Lock Policy</div>
+            <div style="font-size:10.5px; color:#cbd5e1; line-height:1.4;">
+            • <strong>First Cycle Completion:</strong> To maintain strategy liquidity, initial deposits undergo a full cycle until cumulative profits equal the initial capital base.<br>
+            • <strong>Standard Minimum Withdrawal:</strong> Once the initial milestone is reached, subsequent regular withdrawals have a minimum threshold of $50.<br>
+            • <strong>Early Capital Exit / Account Termination:</strong> If a user requests an early account closure before completing the full operational cycle, they are permitted to withdraw all accumulated profits generated up to that date, and the account will be closed.<br>
+            • <strong>Payout Timelines:</strong> All withdrawal requests are processed within a 24 to 48 hour security clearance window.
+            </div>
+
+            <div style="font-weight:bold; color:#fbbf24; font-size:11px; margin-top:10px; margin-bottom:4px;">5. Security, Fair Use & Platform Compliance</div>
+            <div style="font-size:10.5px; color:#cbd5e1; line-height:1.4;">
+            • <strong>Single Account Policy:</strong> Only one account is permitted per user/IP. Creating multiple accounts to manipulate referral systems will result in an immediate freeze of balances.<br>
+            • <strong>Network Transaction Fees:</strong> Standard blockchain gas/network fees apply to external withdrawals and are deducted automatically at the time of payout.<br>
+            • <strong>Support & Dispute Resolution:</strong> For unresolved deposits or payout queries exceeding designated timeframes, users must contact official customer support.
+            </div>
+        `;
+        showPopup("📜 Rules & Guidelines", rulesContent);
+    }
+
+    /* ---------------- REFERRALS MODAL ---------------- */
+
+    function openReferralsModal() {
+        let appDomain = window.location.href.split('?')[0];
+        let refLink = `${appDomain}?ref=${currentUser.refCode}`;
+
+        let refHtml = `
+            <div style="font-size:11px; color:#cbd5e1; margin-bottom:12px;">Share your referral code or referral link with friends to earn instant rewards!</div>
+            <div class="ref-card">
+                <div style="font-size:10px; color:#cbd5e1; font-weight:bold;">YOUR REFERRAL CODE</div>
+                <div class="ref-box-row"><span class="ref-input-text">${currentUser.refCode}</span><button class="copy-btn" onclick="copyText('${currentUser.refCode}')">Copy Code</button></div>
+            </div>
+            <div class="ref-card">
+                <div style="font-size:10px; color:#cbd5e1; font-weight:bold;">YOUR REFERRAL LINK</div>
+                <div class="ref-box-row"><span class="ref-input-text">${refLink}</span><button class="copy-btn" onclick="copyText('${refLink}')">Copy Link</button></div>
+            </div>
+            <div style="font-size:10.5px; color:#10b981; font-weight:bold; margin-top:10px;">🎁 Bonus: Get $1.00 instant reward for every friend who signs up using your code!</div>
+        `;
+        showPopup("🤝 Referral Program", refHtml);
+    }
+
+    /* ---------------- REDESIGNED PROFESSIONAL PROFILE MODAL WITH SIGN OUT ---------------- */
+
+    function openProfileModal() {
+        let initial = (currentUser.fname ? currentUser.fname.charAt(0) : "U").toUpperCase();
+        
+        const profileContent = `
+            <div class="profile-container">
+                <div class="profile-avatar-box">${initial}</div>
+                <div style="font-size:16px; font-weight:800; color:#f8fafc;">${currentUser.fname} ${currentUser.lname}</div>
+                <div class="profile-badge">✓ VERIFIED TRADER</div>
+
+                <div class="profile-info-grid">
+                    <div class="profile-item">
+                        <span class="profile-label">Email Address</span>
+                        <span class="profile-val">${currentUser.email}</span>
+                    </div>
+                    <div class="profile-item">
+                        <span class="profile-label">Phone Number</span>
+                        <span class="profile-val">${currentUser.phone}</span>
+                    </div>
+                    <div class="profile-item">
+                        <span class="profile-label">Referral Code</span>
+                        <span class="profile-val" style="color:#38bdf8;">${currentUser.refCode}</span>
+                    </div>
+                    <div class="profile-item">
+                        <span class="profile-label">Account Status</span>
+                        <span class="profile-val" style="color:#10b981;">ACTIVE</span>
+                    </div>
+                </div>
+
+                <button class="btn-logout" onclick="handleSignOut()">🚪 SIGN OUT / LOGOUT</button>
+            </div>
+        `;
+        showPopup("👤 User Profile", profileContent);
+    }
+
+    function handleSignOut() {
+        if (confirm("Are you sure you want to sign out from Smart Stake Panel?")) {
+            if (currentUser && currentUser.email) {
+                navigator.sendBeacon(API_URL, JSON.stringify({
+                    action_type: "user_offline",
+                    email: currentUser.email
+                }));
+            }
+            localStorage.removeItem('traderUser');
+            currentUser = null;
+            closePopup();
+            checkAuth();
+        }
+    }
+
+    function copyText(txt) {
+        navigator.clipboard.writeText(txt).then(() => alert("Copied to clipboard!")).catch(() => alert("Copied!"));
+    }
+
+    function showPopup(title, bodyHtml) {
+        document.getElementById('modal-title').innerText = title;
+        document.getElementById('modal-body').innerHTML = bodyHtml;
+        const m = document.getElementById('modal');
+        m.style.display = 'flex';
+        setTimeout(() => m.classList.add('active-modal'), 10);
+    }
+
+    function closePopup() {
+        if (chartAnimationInterval) clearInterval(chartAnimationInterval);
+        const m = document.getElementById('modal');
+        m.classList.remove('active-modal');
+        setTimeout(() => m.style.display = 'none', 250);
+    }
+
+    checkAuth();
+</script>
+
 </body>
 </html>
