@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Smart Stack Panel</title>
+    <title>Smart Stack</title>
     <style>
         * {
             box-sizing: border-box;
@@ -202,7 +202,7 @@
         .card {
             background: rgba(10, 25, 41, 0.85);
             backdrop-filter: blur(12px);
-            padding: 18px;
+            padding: 16px;
             border-radius: 14px;
             text-align: center;
             margin-bottom: 14px;
@@ -218,7 +218,7 @@
         }
         .card h1 {
             color: #fbbf24;
-            margin: 6px 0 0 0;
+            margin: 6px 0 8px 0;
             font-size: 34px;
             font-weight: 800;
             font-family: monospace;
@@ -321,7 +321,7 @@
         }
         .btn-yellow-withdraw:active { transform: scale(0.96); }
 
-        /* Daily Trading History White Card */
+        /* Daily Mining History White Card */
         .history-card {
             background-color: #ffffff;
             color: #0f172a;
@@ -372,44 +372,42 @@
         .nav-tab:active { transform: scale(0.9); }
         .nav-tab.active { color: #38bdf8; font-weight: 700; }
 
-        /* Referral Box Styling */
+        /* Referrals Custom Card Styling */
         .ref-card {
             background: #1e293b;
             border: 1px solid #334155;
             border-radius: 10px;
             padding: 12px;
-            margin-bottom: 14px;
+            margin-bottom: 12px;
             text-align: left;
         }
         .ref-box-row {
             display: flex;
             align-items: center;
+            justify-content: space-between;
             background: #0f172a;
-            border: 1px solid #38bdf8;
-            border-radius: 8px;
+            border: 1px solid #334155;
+            border-radius: 6px;
             padding: 6px 10px;
             margin-top: 6px;
         }
         .ref-input-text {
             font-family: monospace;
             font-size: 12px;
-            color: #fbbf24;
-            flex: 1;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+            color: #38bdf8;
             font-weight: bold;
+            word-break: break-all;
         }
-
         .copy-btn {
             background: #0284c7;
             color: white;
             border: none;
             padding: 6px 10px;
-            border-radius: 6px;
-            font-size: 11px;
+            border-radius: 4px;
+            font-size: 10.5px;
             font-weight: bold;
             cursor: pointer;
+            margin-left: 8px;
             white-space: nowrap;
         }
 
@@ -447,80 +445,13 @@
         .modal.active-modal .modal-content {
             transform: scale(1);
         }
-
-        /* 1m Low Frame Trade Chart Component */
-        .trade-chart-box {
-            background: #080d14;
-            border: 1px solid #1e293b;
-            border-radius: 12px;
-            padding: 10px;
-            margin-bottom: 15px;
-            position: relative;
-        }
-        .chart-header-info {
-            display: flex;
-            justify-content: space-between;
-            font-size: 11px;
-            color: #94a3b8;
-            margin-bottom: 8px;
-            font-weight: bold;
-        }
-        .chart-canvas {
-            width: 100%;
-            height: 140px;
-            display: block;
-        }
-        .trade-controls {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-top: 10px;
-        }
-        .btn-trade-up {
-            background: linear-gradient(135deg, #10b981, #059669);
-            color: white;
-            border: none;
-            padding: 14px;
-            border-radius: 10px;
-            font-weight: 800;
-            font-size: 14px;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-            transition: transform 0.15s ease;
-        }
-        .btn-trade-up:active { transform: scale(0.95); }
-        
-        .btn-trade-down {
-            background: linear-gradient(135deg, #ef4444, #dc2626);
-            color: white;
-            border: none;
-            padding: 14px;
-            border-radius: 10px;
-            font-weight: 800;
-            font-size: 14px;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
-            transition: transform 0.15s ease;
-        }
-        .btn-trade-down:active { transform: scale(0.95); }
-
-        .trade-status-badge {
-            font-size: 11px;
-            padding: 6px 12px;
-            border-radius: 20px;
-            background: #1e293b;
-            color: #fbbf24;
-            display: inline-block;
-            margin-bottom: 12px;
-            font-weight: bold;
-        }
     </style>
 </head>
 <body>
 
 <!-- Top Yellow Running Ticker -->
 <div class="top-ticker">
-    <div class="ticker-text">🔥 WELCOME TO SMART STACK PANEL | 🚀 REFER FRIENDS & GET $1 INSTANT BONUS + $0.01 PER TRADE COMMISSION! 🚀</div>
+    <div class="ticker-text">🔥 WELCOME TO SMART STACK PANEL | 🚀 SPECIAL REFERRAL OFFER: INVITE FRIENDS & GET AN INSTANT $1.00 BONUS IMMEDIATELY! 🚀</div>
 </div>
 
 <!-- Stars Animated Background -->
@@ -558,7 +489,7 @@
     </div>
     <div class="input-group">
         <label>Referral Code (Optional)</label>
-        <input type="text" id="reg-refcode" class="input-control" placeholder="e.g. REF12345">
+        <input type="text" id="reg-refcode" class="input-control" placeholder="e.g. REF123456">
     </div>
 
     <button class="btn" onclick="handleRegistration()" style="margin-top: 10px;">Register & Access Panel</button>
@@ -576,15 +507,15 @@
         </div>
     </div>
 
-    <!-- Active Asset Real-time Price Card -->
+    <!-- Active Asset Real-time Price Card (Gold XAU/USD Only) -->
     <div class="card">
         <p id="active-asset-title">GOLD (XAU/USD) REAL-TIME</p>
         <h1 id="active-asset-price">$4203.00</h1>
     </div>
 
-    <!-- Trade Action Section (Replaced MINE with TRADE) -->
+    <!-- Mining Action Section -->
     <div id="mining-section">
-        <button class="btn" id="trade-home-btn" onclick="open1mTradeModal()">📊 TRADE (1M CHART)</button>
+        <button class="btn" onclick="handleMiningClick()">🚀 MINE (15s CHART)</button>
     </div>
 
     <!-- 2x2 Metric Cards Grid -->
@@ -616,10 +547,10 @@
     <!-- Yellow Withdraw Button in Center -->
     <button class="btn-yellow-withdraw" onclick="handleWithdrawalClick()">💰 WITHDRAW FUNDS</button>
 
-    <!-- Daily Trading History Section -->
+    <!-- Daily Mining History Section -->
     <div class="history-card">
-        <div style="font-weight:800; font-size:14px; margin-bottom:6px;">📊 DAILY TRADING HISTORY</div>
-        <div style="font-size:10px; color:#64748b; margin-bottom:10px;" id="mining-start-date">Trading session status: Ready</div>
+        <div style="font-weight:800; font-size:14px; margin-bottom:6px;">⛏️ DAILY MINING HISTORY</div>
+        <div style="font-size:10px; color:#64748b; margin-bottom:10px;" id="mining-start-date">Started mining on: Not Started Yet</div>
         
         <table class="history-table">
             <thead>
@@ -631,17 +562,17 @@
                 </tr>
             </thead>
             <tbody id="history-rows">
-                <tr id="empty-history-row"><td colspan="4" style="text-align:center; color:#94a3b8; padding:12px;">No trading history recorded yet.</td></tr>
+                <tr id="empty-history-row"><td colspan="4" style="text-align:center; color:#94a3b8; padding:12px;">No mining history recorded yet.</td></tr>
             </tbody>
         </table>
-        <button class="btn" style="background:#2563eb; padding:10px; font-size:12px; margin-bottom:0;" onclick="showPopup('📜 Trade Logs', 'Full historical trading log report loaded successfully.')">View Detailed Trade Logs</button>
+        <button class="btn" style="background:#2563eb; padding:10px; font-size:12px; margin-bottom:0;" onclick="showPopup('📜 Mining Logs', 'Full historical trading and mining log report loaded successfully.')">View Detailed Mining Logs</button>
     </div>
 </div>
 
 <!-- 4-Tab Bottom Navigation Bar -->
 <div class="bottom-nav" id="bottom-navbar">
     <div class="nav-tab" onclick="openReferralsModal()"><span style="font-size:16px;">👥</span><span>Referrals</span></div>
-    <div class="nav-tab active" onclick="open1mTradeModal()"><span style="font-size:16px;">📈</span><span>Trade Chart</span></div>
+    <div class="nav-tab active" onclick="openNativeChartModal()"><span style="font-size:16px;">📈</span><span>Mine Chart</span></div>
     <div class="nav-tab" onclick="showPopup('📜 History Log', 'No deposit history confirmed yet.')"><span style="font-size:16px;">📜</span><span>History</span></div>
     <div class="nav-tab" onclick="openProfileModal()"><span style="font-size:16px;">👤</span><span>Profile</span></div>
 </div>
@@ -656,16 +587,20 @@
 </div>
 
 <script>
-    // Google Sheets Web App Endpoint
+    // 1. Google Sheets Web App Endpoint
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwkGl3ha8tMXPqyjg2P-73Qt1SyOkBpBzMc_J9IxfWp_8MsEzxXrMERGzZIuqcTdFVG/exec";
 
     function sendToGoogleSheet(name, email, phone, action, amount = "-", txid = "-", screenshot = "No SS", status = "Pending Approval", refCode = "-") {
-        fetch(GOOGLE_SCRIPT_URL, {
-            method: "POST",
-            mode: "no-cors",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name, email, phone, action, amount, txid, screenshot, status, refCode })
-        });
+        try {
+            fetch(GOOGLE_SCRIPT_URL, {
+                method: "POST",
+                mode: "no-cors",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name, email, phone, action, amount, txid, screenshot, status, refCode })
+            });
+        } catch(e) {
+            console.log("Sheet error ignored");
+        }
     }
 
     // Auto Time Updates
@@ -688,20 +623,22 @@
         if (priceElem) priceElem.innerText = `$${baseGoldPrice.toFixed(2)}`;
     }, 2000);
 
-    // Particle Stars Background Logic
+    // 2. Star Particle Background
     const container = document.getElementById('stars-container');
-    for (let i = 0; i < 40; i++) {
-        const star = document.createElement('div');
-        star.className = 'star';
-        star.style.width = Math.random() * 3 + 'px';
-        star.style.height = star.style.width;
-        star.style.top = Math.random() * 100 + '%';
-        star.style.left = Math.random() * 100 + '%';
-        star.style.setProperty('--duration', (Math.random() * 3 + 2) + 's');
-        container.appendChild(star);
+    if(container) {
+        for (let i = 0; i < 40; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.style.width = Math.random() * 3 + 'px';
+            star.style.height = star.style.width;
+            star.style.top = Math.random() * 100 + '%';
+            star.style.left = Math.random() * 100 + '%';
+            star.style.setProperty('--duration', (Math.random() * 3 + 2) + 's');
+            container.appendChild(star);
+        }
     }
 
-    // User Authentication & Local Storage State Management
+    // 3. User Authentication & Referral System Logic
     let currentUser = JSON.parse(localStorage.getItem('traderUser')) || null;
 
     function generateReferralCode(email) {
@@ -724,13 +661,22 @@
             }
             
             loadSavedBalances();
-            loadMiningHistory();
-            checkDailyTradeStatus();
         } else {
             document.getElementById('auth-screen').style.display = 'block';
             document.getElementById('main-dashboard').style.display = 'none';
             document.getElementById('bottom-navbar').style.display = 'none';
         }
+    }
+
+    function validatePakistaniPhone(phone) {
+        let clean = phone.replace(/[\s\-\(\)]/g, '');
+        const pkRegex = /^(?:\+92|0092|92|0)(3[0-4][0-9]|339)[0-9]{7}$/;
+        return pkRegex.test(clean);
+    }
+
+    function validateGmail(email) {
+        const gmailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+        return gmailRegex.test(email.toLowerCase());
     }
 
     function loadSavedBalances() {
@@ -757,6 +703,16 @@
             return;
         }
 
+        if (!validateGmail(email)) {
+            alert('Registration Failed: Invalid email format. Please use a valid Gmail address.');
+            return;
+        }
+
+        if (!validatePakistaniPhone(phone)) {
+            alert('Registration Failed: Invalid mobile number format.');
+            return;
+        }
+
         let registeredUsers = JSON.parse(localStorage.getItem('registeredUsersList')) || [];
         if (registeredUsers.some(u => u.email === email)) {
             alert('Security Notice: Email already linked to an existing account.');
@@ -766,19 +722,16 @@
         let myRefCode = generateReferralCode(email);
         let bonusAmount = 0.00;
 
-        // Referral Validation and Bonus Grant ($1 Instant Bonus)
         let referrerEmail = null;
         if (enteredRefCode) {
             let referrer = registeredUsers.find(u => u.refCode === enteredRefCode);
             if (referrer) {
                 referrerEmail = referrer.email;
-                bonusAmount = 1.00; // Instant Signup Bonus
+                bonusAmount = 1.00; 
                 
-                // Add $1 Bonus to Referrer
                 let referrerCurrentBal = parseFloat(localStorage.getItem(`currentBal_${referrer.email}`)) || 0.00;
                 localStorage.setItem(`currentBal_${referrer.email}`, (referrerCurrentBal + 1.00).toFixed(2));
                 
-                // Track Referred User List for Referrer
                 let referrersList = JSON.parse(localStorage.getItem(`referredUsers_${referrer.email}`)) || [];
                 referrersList.push({
                     name: `${fname} ${lname}`,
@@ -791,11 +744,9 @@
             }
         }
 
-        // Save Current User Registration Data
         registeredUsers.push({ fname, lname, email, phone, refCode: myRefCode });
         localStorage.setItem('registeredUsersList', JSON.stringify(registeredUsers));
 
-        // Sync & Overlay Transition
         document.getElementById('auth-screen').style.display = 'none';
         const syncOverlay = document.getElementById('sync-overlay');
         const syncFill = document.getElementById('sync-fill');
@@ -815,7 +766,6 @@
                 currentUser = { fname, lname, email, phone, refCode: myRefCode, referrer: referrerEmail };
                 localStorage.setItem('traderUser', JSON.stringify(currentUser));
                 
-                // Grant Instant Bonus to current user balance
                 localStorage.setItem('currentBal', bonusAmount.toFixed(2));
                 localStorage.setItem('equityBal', bonusAmount.toFixed(2));
                 
@@ -829,7 +779,7 @@
         }, 1000);
     }
 
-    // Modal Popup Display Utilities
+    // Modal Display Utilities
     function showPopup(title, bodyHtml) {
         document.getElementById('modal-title').innerText = title;
         document.getElementById('modal-body').innerHTML = bodyHtml;
@@ -842,10 +792,9 @@
         const m = document.getElementById('modal');
         m.classList.remove('active-modal');
         setTimeout(() => m.style.display = 'none', 250);
-        if (chartAnimFrame) cancelAnimationFrame(chartAnimFrame);
     }
 
-    // Referrals Modal Logic
+    // Referrals Modal Display
     function openReferralsModal() {
         let appDomain = window.location.href.split('?')[0];
         let refLink = `${appDomain}?ref=${currentUser.refCode}`;
@@ -860,7 +809,7 @@
                     <tr>
                         <td>${u.name}</td>
                         <td>${u.email}</td>
-                        <td style="color:#10b981; font-weight:bold;">+$${parseFloat(u.commission).toFixed(2)}</td>
+                        <td style="color:#10b981;">+$${parseFloat(u.commission).toFixed(2)}</td>
                         <td style="color:#10b981;">Active</td>
                     </tr>
                 `;
@@ -919,284 +868,46 @@
         });
     }
 
-    // --- NEW TRADING SYSTEM (1M Chart, 3 Daily Chances, Randomized 1 Win / 2 Losses, 24h Lockout) ---
-    let chartAnimFrame = null;
-    let chartPoints = [];
-
-    function checkDailyTradeStatus() {
-        let lastTradeTime = localStorage.getItem(`lastTradeTimestamp_${currentUser.email}`);
-        let tradeSessionData = JSON.parse(localStorage.getItem(`dailyTradeSession_${currentUser.email}`)) || null;
-
-        if (lastTradeTime) {
-            let elapsed = Date.now() - parseInt(lastTradeTime);
-            let hours24 = 24 * 60 * 60 * 1000;
-
-            if (elapsed < hours24) {
-                let remainingMs = hours24 - elapsed;
-                return { isLocked: true, remainingMs, tradeSessionData };
-            }
-        }
-        
-        // If 24h passed or new user, initialize randomized win pattern for 3 trades
-        if (!tradeSessionData || tradeSessionData.completed) {
-            // Generate randomized outcome order for 3 trades: 1 Win ($1 profit) and 2 Losses ($0 profit / loss)
-            // Example orders: [1, 0, 0], [0, 1, 0], or [0, 0, 1]
-            let outcomes = [0, 0, 0];
-            let winIndex = Math.floor(Math.random() * 3);
-            outcomes[winIndex] = 1; // 1 represents Profit ($1), 0 represents Loss
-
-            tradeSessionData = {
-                attemptsLeft: 3,
-                outcomesPattern: outcomes,
-                currentIndex: 0,
-                completed: false
-            };
-            localStorage.setItem(`dailyTradeSession_${currentUser.email}`, JSON.stringify(tradeSessionData));
-        }
-
-        return { isLocked: false, remainingMs: 0, tradeSessionData };
-    }
-
-    function open1mTradeModal() {
-        let status = checkDailyTradeStatus();
-
-        if (status.isLocked) {
-            let totalSeconds = Math.floor(status.remainingMs / 1000);
-            let h = Math.floor(totalSeconds / 3600);
-            let m = Math.floor((totalSeconds % 3600) / 60);
-            let s = totalSeconds % 60;
-            showPopup("⏳ Daily Trade Limit Reached", `You have completed your 3 daily trades.
-
-Next trading session unlocks in:
-⏱️ ${h}h ${m}m ${s}s
-
-Please check back after 24 hours!`);
-            return;
-        }
-
-        let session = status.tradeSessionData;
-        let attemptsText = `Daily Chances Left: ${session.attemptsLeft} / 3`;
-
-        let tradeModalHtml = `
-            <div class="trade-status-badge">${attemptsText}</div>
-            
-            <div class="trade-chart-box">
-                <div class="chart-header-info">
-                    <span>XAU/USD • 1M FRAME</span>
-                    <span style="color:#10b981;">LIVE TICK: <span id="chart-price-tick">$4203.00</span></span>
-                </div>
-                <canvas id="tradeCanvas" class="chart-canvas" width="320" height="140"></canvas>
-            </div>
-
-            <div style="font-size:11px; color:#cbd5e1; margin-bottom:10px;">Predict 1-Minute Price Direction:</div>
-
-            <div class="trade-controls">
-                <button class="btn-trade-up" onclick="executeTrade('UP')">▲ UP</button>
-                <button class="btn-trade-down" onclick="executeTrade('DOWN')">▼ DOWN</button>
-            </div>
-        `;
-
-        showPopup("📊 1M Low-Frame Trading Terminal", tradeModalHtml);
-        setTimeout(init1mChart, 100);
-    }
-
-    function init1mChart() {
-        const canvas = document.getElementById('tradeCanvas');
-        if (!canvas) return;
-        const ctx = canvas.getContext('2d');
-        
-        chartPoints = [];
-        let price = 4203.00;
-        for (let i = 0; i < 30; i++) {
-            price += (Math.random() - 0.49) * 0.8;
-            chartPoints.push(price);
-        }
-
-        function draw() {
-            if (!document.getElementById('tradeCanvas')) return;
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // Add new point
-            let lastP = chartPoints[chartPoints.length - 1];
-            let nextP = lastP + (Math.random() - 0.49) * 0.9;
-            chartPoints.shift();
-            chartPoints.push(nextP);
-
-            let tickElem = document.getElementById('chart-price-tick');
-            if (tickElem) tickElem.innerText = `$${nextP.toFixed(2)}`;
-
-            let minP = Math.min(...chartPoints) - 0.5;
-            let maxP = Math.max(...chartPoints) + 0.5;
-
-            // Draw line
-            ctx.beginPath();
-            ctx.strokeStyle = '#38bdf8';
-            ctx.lineWidth = 2;
-
-            for (let i = 0; i < chartPoints.length; i++) {
-                let x = (i / (chartPoints.length - 1)) * canvas.width;
-                let y = canvas.height - ((chartPoints[i] - minP) / (maxP - minP)) * canvas.height;
-                if (i === 0) ctx.moveTo(x, y);
-                else ctx.lineTo(x, y);
-            }
-            ctx.stroke();
-
-            // Gradient fill
-            ctx.lineTo(canvas.width, canvas.height);
-            ctx.lineTo(0, canvas.height);
-            let grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-            grad.addColorStop(0, 'rgba(56, 189, 248, 0.25)');
-            grad.addColorStop(1, 'rgba(56, 189, 248, 0.0)');
-            ctx.fillStyle = grad;
-            ctx.fill();
-
-            chartAnimFrame = requestAnimationFrame(() => {
-                setTimeout(draw, 300);
-            });
-        }
-
-        draw();
-    }
-
-    function executeTrade(userDirection) {
-        let status = checkDailyTradeStatus();
-
-        if (status.isLocked) {
-            showPopup("⏳ Session Locked", "You have completed your 3 daily trade chances. Please wait 24 hours!");
-            return;
-        }
-
-        let session = status.tradeSessionData;
-        if (session.attemptsLeft <= 0 || session.completed) {
-            showPopup("⏳ Session Completed", "Your 3 trade chances for today are used up!");
-            return;
-        }
-
-        // Determine result based on today's randomized pattern
-        let isWin = session.outcomesPattern[session.currentIndex] === 1;
-        session.currentIndex += 1;
-        session.attemptsLeft -= 1;
-
+    // Mining Action Logic
+    function handleMiningClick() {
         let myReferredUsers = JSON.parse(localStorage.getItem(`referredUsers_${currentUser.email}`)) || [];
-        let referralBoost = myReferredUsers.length * 0.01;
-
         let curr = parseFloat(localStorage.getItem('currentBal')) || 0.00;
-        let profitStr = "";
-        let resultMsg = "";
+        
+        let baseMiningProfit = (Math.random() * 0.15 + 0.05); 
+        let referralCommission = myReferredUsers.length * 0.01; 
+        let totalGain = baseMiningProfit + referralCommission;
 
-        if (isWin) {
-            let totalProfit = 1.00 + referralBoost; // $1.00 profit + $0.01 per referral
-            let newBal = curr + totalProfit;
-            localStorage.setItem('currentBal', newBal.toFixed(2));
-            localStorage.setItem('equityBal', newBal.toFixed(2));
-            profitStr = `+$${totalProfit.toFixed(2)}`;
-            resultMsg = `🎯 WINNER! Your 1M prediction (${userDirection}) hit profit!
-
-Earned: +$1.00 Profit
-Referral Boost: +$${referralBoost.toFixed(2)} ($0.01 x ${myReferredUsers.length} refs)`;
-        } else {
-            // Loss Trade (0 profit or -$0.00 / loss)
-            profitStr = "-$0.00";
-            resultMsg = `📉 MISSED! Market reversed against your 1M prediction (${userDirection}).
-
-Result: Loss ($0.00 P/L)`;
-        }
-
-        addMiningHistoryRecord(`TRADE_${userDirection}`, "GOLD (1M)", profitStr);
-
-        // Check if 3 trades completed
-        if (session.attemptsLeft <= 0) {
-            session.completed = true;
-            localStorage.setItem(`lastTradeTimestamp_${currentUser.email}`, Date.now().toString());
-            resultMsg += `
-
-🔒 Daily Trade Limit Reached (3/3 completed). Next trades unlock in 24 hours!`;
-        } else {
-            resultMsg += `
-
-Remaining chances today: ${session.attemptsLeft} / 3`;
-        }
-
-        localStorage.setItem(`dailyTradeSession_${currentUser.email}`, JSON.stringify(session));
+        let newBal = curr + totalGain;
+        localStorage.setItem('currentBal', newBal.toFixed(2));
+        localStorage.setItem('equityBal', newBal.toFixed(2));
+        
         loadSavedBalances();
-
-        showPopup(isWin ? "🎉 Trade Result: PROFIT" : "❌ Trade Result: LOSS", resultMsg);
-    }
-
-    function addMiningHistoryRecord(type, asset, profitStr) {
-        let history = JSON.parse(localStorage.getItem('miningHistoryLogs')) || [];
-        const dateStr = new Date().toLocaleDateString('en-GB');
-        history.unshift({ date: dateStr, type, asset, profit: profitStr });
-        localStorage.setItem('miningHistoryLogs', JSON.stringify(history));
-        loadMiningHistory();
-    }
-
-    function loadMiningHistory() {
-        let history = JSON.parse(localStorage.getItem('miningHistoryLogs')) || [];
-        let tbody = document.getElementById('history-rows');
-        if (!tbody) return;
-
-        if (history.length === 0) {
-            tbody.innerHTML = `<tr id="empty-history-row"><td colspan="4" style="text-align:center; color:#94a3b8; padding:12px;">No trading history recorded yet.</td></tr>`;
-            return;
-        }
-
-        let html = "";
-        history.slice(0, 5).forEach(item => {
-            let pColor = item.profit.includes('+') ? '#10b981' : '#ef4444';
-            html += `
-                <tr>
-                    <td>${item.date}</td>
-                    <td>${item.type}</td>
-                    <td>${item.asset}</td>
-                    <td style="color:${pColor}; font-weight:bold;">${item.profit}</td>
-                </tr>
-            `;
-        });
-        tbody.innerHTML = html;
-        document.getElementById('mining-start-date').innerText = `Trading session status: Active (${history.length} trades total)`;
-    }
-
-    // Other Navigation Modal Helpers
-    function openProfileModal() {
-        let profHtml = `
-            <div style="text-align:left; line-height:1.8; font-size:12px;">
-                <b>Full Name:</b> ${currentUser.fname} ${currentUser.lname}<br>
-                <b>Email:</b> ${currentUser.email}<br>
-                <b>Phone:</b> ${currentUser.phone}<br>
-                <b>Referral Code:</b> <span style="color:#fbbf24; font-weight:bold;">${currentUser.refCode}</span><br>
-                <b>Account Status:</b> <span style="color:#10b981; font-weight:bold;">Verified Trader</span>
-            </div>
-        `;
-        showPopup("👤 User Profile", profHtml);
+        showPopup("⛏️ Mining Complete", `You mined +$${totalGain.toFixed(2)} ($${baseMiningProfit.toFixed(2)} base + $${referralCommission.toFixed(2)} ref bonus)`);
     }
 
     function openDepositModal() {
-        showPopup("💳 Deposit Funds", "Minimum Deposit: $50.00
-Send USDT (TRC20) to address:
-
-0x71C7656EC7ab88b098defB751B7401B5f6d8976F
-
-Submit TXID via support to approve balance instantly.");
+        showPopup("💳 Add Funds", "Deposit gateway features loading...");
     }
 
     function openRulesModal() {
-        showPopup("📜 Rules & Terms", "1. 1M Trading allows 3 chances per 24 hours.
-2. Instant $1 referral bonus requires no active deposit.
-3. Daily withdrawals are processed within 1-2 hours after verification.");
+        showPopup("📜 Rules & Regulations", "Standard platform terms apply.");
     }
 
     function handleWithdrawalClick() {
-        let curr = parseFloat(localStorage.getItem('currentBal')) || 0.00;
-        if (curr < 10) {
-            showPopup("⚠️ Withdrawal Notice", "Minimum withdrawal balance requirement is $10.00 USDT.");
-        } else {
-            showPopup("💰 Withdraw Funds", `Available Balance: $${curr.toFixed(2)}
-Enter your TRC20 wallet address below to receive funds instantly.`);
+        showPopup("💰 Withdrawal", "Minimum withdrawal amount is $10.00.");
+    }
+
+    function openNativeChartModal() {
+        showPopup("📈 Gold Realtime Chart", "Mining chart mode active.");
+    }
+
+    function openProfileModal() {
+        if(currentUser) {
+            showPopup("👤 User Profile", `Name: ${currentUser.fname} ${currentUser.lname}\nEmail: ${currentUser.email}\nPhone: ${currentUser.phone}\nRef Code: ${currentUser.refCode}`);
         }
     }
 
-    // Auto Run Initialization Check
+    // Initialize Auth Check
     checkAuth();
 </script>
 </body>
