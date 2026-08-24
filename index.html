@@ -190,7 +190,7 @@
         <button class="btn-white" onclick="openRulesModal()">RULES & LEGAL PDF</button>
     </div>
 
-    <button class="btn-yellow-withdraw" onclick="showPopup('💰 Withdrawal', 'Minimum withdrawal threshold is $50.00 after first cycle.')">💰 WITHDRAW FUNDS</button>
+    <button class="btn-yellow-withdraw" onclick="handleWithdrawalClick()">💰 WITHDRAW FUNDS</button>
 
     <!-- Daily Trade History -->
     <div class="history-card">
@@ -204,14 +204,11 @@
             </tbody>
         </table>
     </div>
-
-    <!-- Referral System Section at Bottom -->
-    <div id="referrals-container"></div>
 </div>
 
 <!-- Bottom Navigation Bar -->
 <div class="bottom-nav" id="bottom-navbar">
-    <div class="nav-tab active" onclick="window.scrollTo(0,0)"><span style="font-size:16px;">📈</span><span>Trade</span></div>
+    <div class="nav-tab active" onclick="openReferralsModal()"><span style="font-size:16px;">🤝</span><span>Referrals</span></div>
     <div class="nav-tab" onclick="openDepositModal()"><span style="font-size:16px;">💳</span><span>Deposit</span></div>
     <div class="nav-tab" onclick="openRulesModal()"><span style="font-size:16px;">📜</span><span>Rules</span></div>
     <div class="nav-tab" onclick="openProfileModal()"><span style="font-size:16px;">👤</span><span>Profile</span></div>
@@ -227,7 +224,6 @@
 </div>
 
 <script>
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwkGl3ha8tMXPqyjg2P-73Qt1SyOkBpBzMc_J9IxfWp_8MsEzxXrMERGzZIuqcTdFVG/exec";
     const DEPOSIT_ADDRESS = "0xfeff2067ef1a43aa4bca186f702b2669971debbd";
     const NETWORK_NAME = "BNB Smart Chain (BEP20)";
 
@@ -277,7 +273,7 @@
             document.getElementById('bottom-navbar').style.display = 'flex';
             if (!currentUser.refCode) currentUser.refCode = generateReferralCode(currentUser.email);
             loadBalances();
-            renderReferralsBottomSection();
+            renderTradeHistory();
             checkTradeLockStatus();
         } else {
             document.getElementById('auth-screen').style.display = 'block';
@@ -288,10 +284,11 @@
     function loadBalances() {
         let curr = parseFloat(localStorage.getItem('currentBal')) || 0.00;
         let dep = parseFloat(localStorage.getItem('depositBal')) || 0.00;
+        let withBal = parseFloat(localStorage.getItem('withdrawalBal')) || 0.00;
         document.getElementById('val-current').innerText = `$${curr.toFixed(2)}`;
         document.getElementById('val-deposit').innerText = `$${dep.toFixed(2)}`;
         document.getElementById('val-equity').innerText = `$${curr.toFixed(2)}`;
-        document.getElementById('val-withdrawal').innerText = `$0.00`;
+        document.getElementById('val-withdrawal').innerText = `$${withBal.toFixed(2)}`;
     }
 
     function generateReferralCode(email) {
@@ -305,7 +302,6 @@
         const lname = document.getElementById('reg-lname').value.trim();
         const email = document.getElementById('reg-email').value.trim().toLowerCase();
         const phone = document.getElementById('reg-phone').value.trim();
-        const enteredRefCode = document.getElementById('reg-refcode').value.trim().toUpperCase();
 
         if (!fname || !email || !phone) return alert('Please fill in all required fields.');
 
@@ -330,7 +326,7 @@
         }, 1000);
     }
 
-    /* ---------------- TRADE FUNCTIONALITY (5s STAY TIMER) ---------------- */
+    /* ---------------- TRADE FUNCTIONALITY ---------------- */
 
     function getTradeState() {
         const defaultState = { attemptsLeft: 3, winningAttempt: Math.floor(Math.random() * 3) + 1, lockUntil: 0 };
@@ -373,6 +369,8 @@
         }, 1000);
     }
 
+    let lastUserChoice = "CALL";
+
     function openTradeModal() {
         const state = getTradeState();
         if (state.attemptsLeft <= 0) return alert("Daily trade limit reached!");
@@ -386,8 +384,8 @@
             </div>
 
             <div class="trade-action-btns" id="trade-btn-container">
-                <button class="btn-up" onclick="startTradeExecution('UP')">▲ CALL (UP)</button>
-                <button class="btn-down" onclick="startTradeExecution('DOWN')">▼ PUT (DOWN)</button>
+                <button class="btn-up" onclick="startTradeExecution('CALL')">▲ CALL (UP)</button>
+                <button class="btn-down" onclick="startTradeExecution('PUT')">▼ PUT (DOWN)</button>
             </div>
             <div id="stay-timer-box" style="display:none; font-weight:bold; color:#fbbf24; margin-top:10px; font-family:monospace; text-align:center;">Analyzing Market Movement... <span id="stay-count">5</span>s</div>
         `;
@@ -424,6 +422,7 @@
     }
 
     function startTradeExecution(userChoice) {
+        lastUserChoice = userChoice;
         document.getElementById('trade-btn-container').style.display = 'none';
         const stayBox = document.getElementById('stay-timer-box');
         stayBox.style.display = 'block';
@@ -455,6 +454,7 @@
             currBal += 1.00;
             localStorage.setItem('currentBal', currBal.toFixed(2));
             resultMsg = `🎉 PROFIT! Perfect Prediction!\nYou Earned: +$1.00`;
+            addTradeHistoryRecord(lastUserChoice, "+$1.00");
         } else {
             resultMsg = `📉 LOSS! Market Reversed.\nProfit: $0.00`;
         }
@@ -468,6 +468,117 @@
 
         showPopup(isWin ? "✅ Trade Result: WIN" : "❌ Trade Result: LOSS", resultMsg);
         checkTradeLockStatus();
+    }
+
+    /* ---------------- DAILY TRADE HISTORY MANAGEMENT ---------------- */
+
+    function getTradeHistory() {
+        return JSON.parse(localStorage.getItem(`tradeHistory_${currentUser?.email}`)) || [];
+    }
+
+    function addTradeHistoryRecord(type, pnl) {
+        let history = getTradeHistory();
+        const now = new Date();
+        const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+        history.unshift({ date: timeStr, type: type, asset: "XAU/USD", pnl: pnl });
+        localStorage.setItem(`tradeHistory_${currentUser?.email}`, JSON.stringify(history));
+        renderTradeHistory();
+    }
+
+    function renderTradeHistory() {
+        let history = getTradeHistory();
+        const container = document.getElementById('history-rows');
+        if (!container) return;
+
+        if (history.length === 0) {
+            container.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#94a3b8; padding:12px;">No trade history recorded today.</td></tr>`;
+            return;
+        }
+
+        let html = "";
+        history.forEach(item => {
+            html += `
+                <tr>
+                    <td>${item.date}</td>
+                    <td style="font-weight:bold; color:${item.type === 'CALL' ? '#10b981' : '#ef4444'}">${item.type}</td>
+                    <td>${item.asset}</td>
+                    <td style="font-weight:bold; color:#10b981;">${item.pnl}</td>
+                </tr>
+            `;
+        });
+        container.innerHTML = html;
+    }
+
+    /* ---------------- WITHDRAWAL SYSTEM (50$ LIMIT + TRON/BNB NETWORKS) ---------------- */
+
+    function handleWithdrawalClick() {
+        let currBal = parseFloat(localStorage.getItem('currentBal')) || 0.00;
+
+        if (currBal < 50.00) {
+            showPopup("⚠️ Withdrawal Locked", `Minimum withdrawal limit is $50.00.\n\nYour Current Balance is: $${currBal.toFixed(2)}\nPlease reach at least $50.00 before placing a withdrawal request.`);
+            return;
+        }
+
+        openWithdrawalModal();
+    }
+
+    function openWithdrawalModal() {
+        let currBal = parseFloat(localStorage.getItem('currentBal')) || 0.00;
+
+        const withContent = `
+            <div style="font-size:11px; color:#cbd5e1; margin-bottom:12px;">Available Balance for Withdrawal: <strong style="color:#4ade80;">$${currBal.toFixed(2)}</strong></div>
+            
+            <div class="input-group">
+                <label>Select Network</label>
+                <select id="with-network" class="input-control" style="cursor:pointer;">
+                    <option value="TRON (TRC20)">TRON (TRC20)</option>
+                    <option value="BNB Smart Chain (BEP20)">BNB Smart Chain (BEP20)</option>
+                </select>
+            </div>
+
+            <div class="input-group">
+                <label>Withdrawal Amount ($)</label>
+                <input type="number" id="with-amount" class="input-control" placeholder="Minimum $50.00" min="50" max="${currBal}">
+            </div>
+
+            <div class="input-group">
+                <label>Destination Wallet Address</label>
+                <input type="text" id="with-address" class="input-control" placeholder="Enter your wallet address">
+            </div>
+
+            <button class="btn" onclick="submitWithdrawalRequest()" style="background: linear-gradient(135deg, #FFD700, #d97706); color:#000; font-weight:800; margin-top:10px; margin-bottom:8px;">Submit Withdrawal Request</button>
+            <button class="btn" onclick="closePopup()" style="background:#334155; margin-bottom:0;">Cancel</button>
+        `;
+
+        showPopup("💰 Withdraw Funds", withContent);
+    }
+
+    function submitWithdrawalRequest() {
+        let currBal = parseFloat(localStorage.getItem('currentBal')) || 0.00;
+        const net = document.getElementById('with-network').value;
+        const amt = parseFloat(document.getElementById('with-amount').value);
+        const addr = document.getElementById('with-address').value.trim();
+
+        if (isNaN(amt) || amt < 50) return alert("Minimum withdrawal amount is $50.00");
+        if (amt > currBal) return alert("Entered amount exceeds your Current Balance!");
+        if (!addr) return alert("Please enter a valid destination wallet address.");
+
+        // Deduct current balance and increase withdrawal counter
+        let newBal = currBal - amt;
+        let withBal = (parseFloat(localStorage.getItem('withdrawalBal')) || 0.00) + amt;
+
+        localStorage.setItem('currentBal', newBal.toFixed(2));
+        localStorage.setItem('withdrawalBal', withBal.toFixed(2));
+        loadBalances();
+
+        const successNotice = `
+            <div style="text-align:center;">
+                <div style="font-size:24px; margin-bottom:10px;">✅</div>
+                <div style="font-size:14px; font-weight:bold; color:#10b981; margin-bottom:8px;">Withdrawal Request Submitted!</div>
+                <div style="font-size:11.5px; color:#cbd5e1; line-height:1.5;">Amount: <strong>$${amt.toFixed(2)}</strong><br>Network: <strong>${net}</strong><br>Address: <strong style="font-family:monospace;">${addr.substring(0,10)}...</strong><br><br>Your request will be processed within 24 to 48 hours.</div>
+            </div>
+        `;
+        showPopup("💰 Withdrawal Pending", successNotice);
     }
 
     /* ---------------- ADD FUNDS / DEPOSIT MODAL ---------------- */
@@ -555,7 +666,7 @@
 
             <div style="font-weight:bold; color:#fbbf24; font-size:11px; margin-top:10px; margin-bottom:4px;">3. Dynamic Daily Profit & Trading Structure</div>
             <div style="font-size:10.5px; color:#cbd5e1; line-height:1.4;">
-            • <strong>Real-Market Execution:</strong> Smart Stake Panel operates via genuine live copy-trading algorithms and expert execution. Returns are not fixed. Daily profits fluctuate in real time according to market conditions (e.g., $1.00 on Day 1, $2.00 on Day 2, $0.50 on Day 3, etc.).<br>
+            • <strong>Real-Market Execution:</strong> Smart Stake Panel operates via genuine live copy-trading algorithms and expert execution. Returns are not fixed. Daily profits fluctuate in real time according to market conditions.<br>
             • <strong>Capital Protection Model:</strong> Capital is managed under strict risk-management parameters to protect the principal balance while generating sustainable market returns.
             </div>
 
@@ -569,22 +680,22 @@
 
             <div style="font-weight:bold; color:#fbbf24; font-size:11px; margin-top:10px; margin-bottom:4px;">5. Security, Fair Use & Platform Compliance</div>
             <div style="font-size:10.5px; color:#cbd5e1; line-height:1.4;">
-            • <strong>Single Account Policy:</strong> Only one account is permitted per user/IP. Creating multiple accounts to manipulate referral or mining systems will result in an immediate freeze of balances.<br>
+            • <strong>Single Account Policy:</strong> Only one account is permitted per user/IP. Creating multiple accounts to manipulate referral systems will result in an immediate freeze of balances.<br>
             • <strong>Network Transaction Fees:</strong> Standard blockchain gas/network fees apply to external withdrawals and are deducted automatically at the time of payout.<br>
-            • <strong>Support & Dispute Resolution:</strong> For unresolved deposits or payout queries exceeding the designated timeframes (6 hours for deposits / 48 hours for withdrawals), users must contact official customer support with their registered email and Transaction Hash (TxID).
+            • <strong>Support & Dispute Resolution:</strong> For unresolved deposits or payout queries exceeding designated timeframes, users must contact official customer support.
             </div>
         `;
         showPopup("📜 Rules & Guidelines", rulesContent);
     }
 
-    /* ---------------- REFERRALS BOTTOM SECTION ---------------- */
+    /* ---------------- REFERRALS MODAL (REPLACING OLD TRADE TAB IN BOTTOM NAV) ---------------- */
 
-    function renderReferralsBottomSection() {
+    function openReferralsModal() {
         let appDomain = window.location.href.split('?')[0];
         let refLink = `${appDomain}?ref=${currentUser.refCode}`;
 
         let refHtml = `
-            <div style="margin-top:20px; font-weight:800; font-size:14px; color:#38bdf8; text-align:left; margin-bottom:8px;">🤝 REFERRALS CENTER</div>
+            <div style="font-size:11px; color:#cbd5e1; margin-bottom:12px;">Share your referral code or referral link with friends to earn instant rewards!</div>
             <div class="ref-card">
                 <div style="font-size:10px; color:#cbd5e1; font-weight:bold;">YOUR REFERRAL CODE</div>
                 <div class="ref-box-row"><span class="ref-input-text">${currentUser.refCode}</span><button class="copy-btn" onclick="copyText('${currentUser.refCode}')">Copy Code</button></div>
@@ -593,8 +704,9 @@
                 <div style="font-size:10px; color:#cbd5e1; font-weight:bold;">YOUR REFERRAL LINK</div>
                 <div class="ref-box-row"><span class="ref-input-text">${refLink}</span><button class="copy-btn" onclick="copyText('${refLink}')">Copy Link</button></div>
             </div>
+            <div style="font-size:10.5px; color:#10b981; font-weight:bold; margin-top:10px;">🎁 Bonus: Get $1.00 instant reward for every friend who signs up using your code!</div>
         `;
-        document.getElementById('referrals-container').innerHTML = refHtml;
+        showPopup("🤝 Referral Program", refHtml);
     }
 
     function openProfileModal() {
