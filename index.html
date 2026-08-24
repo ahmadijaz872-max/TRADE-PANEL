@@ -172,7 +172,7 @@
     <div class="input-group"><label>First Name</label><input type="text" id="reg-fname" class="input-control" placeholder="e.g. John"></div>
     <div class="input-group"><label>Last Name</label><input type="text" id="reg-lname" class="input-control" placeholder="e.g. Max"></div>
     <div class="input-group"><label>Email Address</label><input type="email" id="reg-email" class="input-control" placeholder="name@gmail.com"></div>
-    <div class="input-group"><label>Phone Number (Pakistan Only)</label><input type="tel" id="reg-phone" class="input-control" placeholder="03001234567 or +923001234567"></div>
+    <div class="input-group"><label>Phone Number</label><input type="tel" id="reg-phone" class="input-control" placeholder="03001234567"></div>
     <div class="input-group"><label>Referral Code (Optional)</label><input type="text" id="reg-refcode" class="input-control" placeholder="e.g. REF123456"></div>
     <button class="btn" id="reg-btn" onclick="handleRegistration()" style="margin-top: 10px;">Enter Dashboard</button>
 </div>
@@ -195,7 +195,7 @@
     </div>
 
     <div id="trade-section">
-        <button class="btn" id="trade-main-btn" onclick="openTradeModal()">📈 TRADE (1m CHART)</button>
+        <button class="btn" id="trade-main-btn" onclick="handleTradeClick()">📈 TRADE (1m CHART)</button>
     </div>
 
     <div class="stats-grid">
@@ -286,10 +286,9 @@
     fetchLiveGoldPrice();
     setInterval(fetchLiveGoldPrice, 3000);
 
-    /* ---------------- STATUS UPDATE & HEARTBEAT TRACKING ---------------- */
+    /* Status Heartbeat Update */
     function sendUserStatusUpdate(status) {
         if (!currentUser || !currentUser.email) return;
-        
         const payload = JSON.stringify({
             action_type: "update_status",
             email: currentUser.email,
@@ -308,14 +307,10 @@
         }
     }
 
-    // Send "Online" ping every 60 seconds
     setInterval(() => {
-        if (currentUser && currentUser.email) {
-            sendUserStatusUpdate("Online");
-        }
+        if (currentUser && currentUser.email) sendUserStatusUpdate("Online");
     }, 60000);
 
-    // Send "Offline" immediately when app/tab is closed
     window.addEventListener('pagehide', function() {
         sendUserStatusUpdate("Offline");
     });
@@ -353,12 +348,12 @@
         return 'REF' + Math.abs(hash).toString(16).toUpperCase().substring(0, 6);
     }
 
-    /* ---------------- PAKISTANI NUMBER & STRICT REGISTRATION ---------------- */
     function validatePakistaniPhone(phone) {
         const pakRegex = /^((\+92)|(0092)|(0))?3[0-9]{9}$/;
         return pakRegex.test(phone.replace(/[\s\-]/g, ''));
     }
 
+    /* Registration Logic with One-Time $1 Referral Bonus */
     async function handleRegistration() {
         const fname = document.getElementById('reg-fname').value.trim();
         const lname = document.getElementById('reg-lname').value.trim();
@@ -367,11 +362,10 @@
         const refBy = document.getElementById('reg-refcode').value.trim();
 
         if (!email) return alert('Please enter your email address.');
-        if (!phone) return alert('Please enter your Pakistani phone number.');
+        if (!phone) return alert('Please enter your phone number.');
 
-        // Validate Pakistani Operator Network
         if (!validatePakistaniPhone(phone)) {
-            return alert('Invalid Phone Number! Only Pakistani network numbers (Jazz, Zong, Telenor, Ufone, Onic) are allowed (e.g. 03001234567 or +923001234567).');
+            return alert('Invalid Phone Number! Only standard mobile numbers are allowed.');
         }
 
         const regBtn = document.getElementById('reg-btn');
@@ -403,13 +397,23 @@
                 return alert("Registration Failed: " + resData.message);
             }
         } catch (err) {
-            console.log("Proceeding with local registration...");
+            console.log("Proceeding with registration state...");
         }
 
-        // Set initial clean state for new user (0.00 balances)
         currentUser = { fname: fname || "User", lname: lname || "", email: email, phone: phone, refCode: myRefCode };
         localStorage.setItem('traderUser', JSON.stringify(currentUser));
-        localStorage.setItem('currentBal', '0.00');
+
+        // One-time $1 Referral Bonus Logic
+        let initCurrentBal = "0.00";
+        if (refBy && refBy.length > 2) {
+            let bonusKey = `refBonusGiven_${email}`;
+            if (!localStorage.getItem(bonusKey)) {
+                initCurrentBal = "1.00";
+                localStorage.setItem(bonusKey, "true");
+            }
+        }
+
+        localStorage.setItem('currentBal', initCurrentBal);
         localStorage.setItem('depositBal', '0.00');
         localStorage.setItem('withdrawalBal', '0.00');
 
@@ -430,7 +434,21 @@
         }, 1000);
     }
 
-    /* ---------------- TRADE FUNCTIONALITY ---------------- */
+    /* Deposit Restriction check before Trade */
+    function handleTradeClick() {
+        let depositBal = parseFloat(localStorage.getItem('depositBal')) || 0.00;
+
+        if (depositBal <= 0) {
+            showPopup(
+                "⚠️ Trade Access Restricted",
+                "Trading is currently locked for your account.\n\nYou must make an initial deposit first to unlock live trading features.\n\nPlease click on 'Add Funds' to make a deposit and activate your trading panel."
+            );
+            return;
+        }
+
+        openTradeModal();
+    }
+
     function getTradeState() {
         const defaultState = { attemptsLeft: 3, winningAttempt: Math.floor(Math.random() * 3) + 1, lockUntil: 0 };
         return JSON.parse(localStorage.getItem(`tradeState_${currentUser?.email}`)) || defaultState;
@@ -569,7 +587,7 @@
         checkTradeLockStatus();
     }
 
-    /* ---------------- TRADE HISTORY ---------------- */
+    /* Trade History */
     function getTradeHistory() {
         return JSON.parse(localStorage.getItem(`tradeHistory_${currentUser?.email}`)) || [];
     }
@@ -607,7 +625,7 @@
         container.innerHTML = html;
     }
 
-    /* ---------------- WITHDRAWAL ---------------- */
+    /* Withdrawal */
     function handleWithdrawalClick() {
         let currBal = parseFloat(localStorage.getItem('currentBal')) || 0.00;
 
@@ -697,7 +715,7 @@
         showPopup("💰 Withdrawal Pending", successNotice);
     }
 
-    /* ---------------- DEPOSIT ---------------- */
+    /* Deposit */
     function openDepositModal() {
         const depContent = `
             <div style="font-size:11px; color:#cbd5e1; margin-bottom:10px;">Select your network and copy the deposit wallet address below:</div>
@@ -793,7 +811,7 @@
         showPopup("✅ Verification Pending", notice);
     }
 
-    /* ---------------- RULES & MODALS ---------------- */
+    /* Rules & Guidelines */
     function openRulesModal() {
         const rulesContent = `
             <div style="font-size:12px; font-weight:bold; color:#38bdf8; margin-bottom:10px;">Smart Stake Panel — Terms, Rules & Guidelines</div>
@@ -803,22 +821,19 @@
             <table class="history-table" style="background:#0f172a; border:1px solid #334155;">
                 <thead><tr style="background:#1e293b;"><th style="color:#10b981;">Feature</th><th style="color:#10b981;">Details / Policy</th></tr></thead>
                 <tbody>
-                    <tr><td>Minimum Initial Deposit</td><td>$100 (Activates the Smart Mining feature)</td></tr>
-                    <tr><td>Deposit Processing Time</td><td>Up to 6 Hours (Subject to blockchain & proof verification)</td></tr>
-                    <tr><td>Daily Returns Model</td><td>Dynamic & Market-Linked (Varies daily based on live trading)</td></tr>
-                    <tr><td>Minimum Regular Withdrawal</td><td>$50 (Applicable after the first full cycle completion)</td></tr>
+                    <tr><td>Minimum Initial Deposit</td><td>$100 (Activates trading panel)</td></tr>
+                    <tr><td>Deposit Processing Time</td><td>Up to 6 Hours (Subject to verification)</td></tr>
+                    <tr><td>Daily Returns Model</td><td>Dynamic & Market-Linked</td></tr>
+                    <tr><td>Minimum Regular Withdrawal</td><td>$50.00</td></tr>
                     <tr><td>Withdrawal Processing Time</td><td>24 – 48 Hours</td></tr>
-                    <tr><td>Trading Mechanism</td><td>100% Real Copy-Trading / Asset Allocation</td></tr>
                 </tbody>
             </table>
 
-            <div style="font-weight:bold; color:#fbbf24; font-size:11px; margin-top:10px; margin-bottom:4px;">2. Deposit & Account Activation Rules</div>
+            <div style="font-weight:bold; color:#fbbf24; font-size:11px; margin-top:10px; margin-bottom:4px;">2. Account Rules</div>
             <div style="font-size:10.5px; color:#cbd5e1; line-height:1.4;">
-            • <strong>Minimum Funding Requirement:</strong> To activate the core earning engine, a minimum deposit of $100 is required.<br>
-            • <strong>Smart Mining Activation:</strong> Once the $100 deposit is approved, the central "Mine" button will be unlocked on your dashboard.<br>
-            • <strong>Network & Address Verification:</strong> Always double-check the deposit wallet address and selected blockchain network.<br>
-            • <strong>Proof of Payment:</strong> Users must upload an authentic, clear screenshot/transaction hash (TxID).<br>
-            • <strong>Approval Timeline:</strong> Manual and automated verification takes between 1 to 6 hours.
+            • Minimum deposit of $100 is required to unlock real trading feature.<br>
+            • Referral code bonus ($1.00) is awarded once per referred user registration.<br>
+            • Double check wallet address and network before processing deposits.
             </div>
         `;
         showPopup("📜 Rules & Guidelines", rulesContent);
@@ -829,7 +844,7 @@
         let refLink = `${appDomain}?ref=${currentUser.refCode}`;
 
         let refHtml = `
-            <div style="font-size:11px; color:#cbd5e1; margin-bottom:12px;">Share your referral code or referral link with friends to earn instant rewards!</div>
+            <div style="font-size:11px; color:#cbd5e1; margin-bottom:12px;">Share your referral code or link with friends to get instant rewards!</div>
             <div class="ref-card">
                 <div style="font-size:10px; color:#cbd5e1; font-weight:bold;">YOUR REFERRAL CODE</div>
                 <div class="ref-box-row"><span class="ref-input-text">${currentUser.refCode}</span><button class="copy-btn" onclick="copyText('${currentUser.refCode}')">Copy Code</button></div>
@@ -838,7 +853,7 @@
                 <div style="font-size:10px; color:#cbd5e1; font-weight:bold;">YOUR REFERRAL LINK</div>
                 <div class="ref-box-row"><span class="ref-input-text">${refLink}</span><button class="copy-btn" onclick="copyText('${refLink}')">Copy Link</button></div>
             </div>
-            <div style="font-size:10.5px; color:#10b981; font-weight:bold; margin-top:10px;">🎁 Bonus: Get $1.00 instant reward for every friend who signs up using your code!</div>
+            <div style="font-size:10.5px; color:#10b981; font-weight:bold; margin-top:10px;">🎁 Bonus: Get $1.00 instant reward when a new user registers with your code!</div>
         `;
         showPopup("🤝 Referral Program", refHtml);
     }
