@@ -89,14 +89,16 @@
         .history-table th { text-align: left; padding: 6px 4px; border-bottom: 2px solid #e2e8f0; color: #475569; }
         .history-table td { padding: 8px 4px; border-bottom: 1px solid #f1f5f9; font-size: 10.5px; }
 
+        /* Separated & Explicit Bottom Navigation Tabs */
         .bottom-nav {
             position: fixed; bottom: 0; left: 0; width: 100%;
             background: rgba(3, 20, 32, 0.98); backdrop-filter: blur(16px);
             border-top: 1px solid rgba(255, 255, 255, 0.1);
-            display: none; justify-space-around; padding: 8px 0; z-index: 900;
+            display: none; justify-content: space-around; padding: 10px 0; z-index: 900;
         }
-        .nav-tab { display: flex; flex-direction: column; align-items: center; color: #64748b; font-size: 10px; cursor: pointer; }
+        .nav-tab { display: flex; flex-direction: column; align-items: center; color: #64748b; font-size: 10px; cursor: pointer; width: 20%; text-align: center; }
         .nav-tab.active { color: #38bdf8; font-weight: 700; }
+        .nav-tab span:first-child { font-size: 18px; margin-bottom: 2px; }
 
         .modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -114,6 +116,10 @@
         .ref-input-text { font-family: monospace; font-size: 11px; color: #38bdf8; font-weight: bold; word-break: break-all; }
         .copy-btn { background: #0284c7; color: white; border: none; padding: 6px 10px; border-radius: 4px; font-size: 10.5px; font-weight: bold; cursor: pointer; }
         .warning-box { background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #fca5a5; font-size: 10.5px; padding: 8px; border-radius: 6px; margin: 10px 0; text-align: left; line-height: 1.4; }
+        
+        .profile-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #334155; font-size: 12px; }
+        .profile-label { color: #94a3b8; }
+        .profile-val { color: #f8fafc; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -132,7 +138,7 @@
     <div id="sync-timer-text" style="font-size: 12px; font-weight: bold; color: #fbbf24; font-family: monospace;">Please wait: 5s</div>
 </div>
 
-<!-- Auth Screen -->
+<!-- Registration / Sign In Screen -->
 <div class="auth-wrapper" id="auth-screen">
     <div class="auth-title">Account Access</div>
     <div class="auth-sub">Enter details to Sign In or Sign Up</div>
@@ -156,7 +162,7 @@
         </div>
     </div>
 
-    <!-- Exact Gold Rate Live Ticker Card -->
+    <!-- Live Gold Ticker Header -->
     <div class="card">
         <p id="active-asset-title">GOLD (XAU/USD) REAL-TIME</p>
         <h1 id="active-asset-price">$2,514.80</h1>
@@ -189,13 +195,16 @@
     </div>
 </div>
 
+<!-- Unmerged Individual Navigation Options -->
 <div class="bottom-nav" id="bottom-navbar">
-    <div class="nav-tab active" onclick="openReferralsModal()"><span style="font-size:16px;">🤝</span><span>Referrals</span></div>
-    <div class="nav-tab" onclick="openDepositModal()"><span style="font-size:16px;">💳</span><span>Deposit</span></div>
-    <div class="nav-tab" onclick="openRulesModal()"><span style="font-size:16px;">📜</span><span>Rules</span></div>
+    <div class="nav-tab active" onclick="showDashboardHome()"><span>🏠</span><span>Home</span></div>
+    <div class="nav-tab" onclick="openDepositModal()"><span>💳</span><span>Deposit</span></div>
+    <div class="nav-tab" onclick="openReferralsModal()"><span>🤝</span><span>Referral</span></div>
+    <div class="nav-tab" onclick="openRulesModal()"><span>📜</span><span>Rules</span></div>
+    <div class="nav-tab" onclick="openProfileModal()"><span>👤</span><span>Profile</span></div>
 </div>
 
-<!-- Modal Popups -->
+<!-- Modal Popups Base -->
 <div id="modal" class="modal">
     <div class="modal-content">
         <div id="modal-title" style="font-weight:700; margin-bottom:10px; color:#f8fafc; font-size:16px;">Notice</div>
@@ -204,7 +213,7 @@
     </div>
 </div>
 
-<!-- Exact TradingView 1m Gold Live Chart Modal -->
+<!-- TradingView Live Chart Modal -->
 <div id="chart-modal" class="modal">
     <div class="modal-content" style="max-width: 95%; height: 85vh; padding: 10px; display: flex; flex-direction: column;">
         <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
@@ -224,7 +233,6 @@
 
     let currentUser = JSON.parse(localStorage.getItem('traderUser')) || null;
 
-    // Background Stars FX
     function generateStars() {
         const container = document.getElementById('stars-container');
         for (let i = 0; i < 40; i++) {
@@ -240,13 +248,11 @@
     }
     generateStars();
 
-    // Clock FX
     setInterval(() => {
         let d = new Date();
         document.getElementById('live-datetime').innerText = d.toLocaleTimeString();
     }, 1000);
 
-    // Live Market Gold Price Stream
     async function fetchLiveGoldPrice() {
         try {
             const res = await fetch("https://api.binance.com/api/v3/ticker/price?symbol=PAXGUSDT");
@@ -270,7 +276,6 @@
             document.getElementById('main-dashboard').style.display = 'block';
             document.getElementById('bottom-navbar').style.display = 'flex';
             
-            // Auto Sync Balance loop every 10 seconds
             syncBalancesFromSheet();
             setInterval(syncBalancesFromSheet, 10000);
         } else {
@@ -280,7 +285,6 @@
         }
     }
 
-    // Direct Live Balance Fetching from Users Sheet
     async function syncBalancesFromSheet() {
         if (!currentUser || !currentUser.email) return;
         try {
@@ -369,6 +373,11 @@
                 checkAuth();
             }
         }, 1000);
+    }
+
+    function showDashboardHome() {
+        closePopup();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function handleTradeClick() {
@@ -528,7 +537,6 @@
         showPopup("🤝 Referral System", html);
     }
 
-    // Exact Rules & Legal Policy Content
     function openRulesModal() {
         const html = `
             <div class="warning-box">
@@ -540,6 +548,28 @@
             </div>
         `;
         showPopup("📜 Rules & Guidelines", html);
+    }
+
+    /* Unmodified Dedicated Profile View Modal */
+    function openProfileModal() {
+        if (!currentUser) return;
+        const html = `
+            <div class="ref-card" style="margin-bottom:15px;">
+                <div class="profile-row"><span class="profile-label">Name:</span><span class="profile-val">${currentUser.fname} ${currentUser.lname}</span></div>
+                <div class="profile-row"><span class="profile-label">Email:</span><span class="profile-val">${currentUser.email}</span></div>
+                <div class="profile-row"><span class="profile-label">Phone:</span><span class="profile-val">${currentUser.phone}</span></div>
+                <div class="profile-row" style="border-bottom:none;"><span class="profile-label">Referral Code:</span><span class="profile-val" style="color:#38bdf8;">${currentUser.refCode}</span></div>
+            </div>
+            <button class="btn" onclick="logoutUser()" style="background:#ef4444; margin-top:5px;">Logout Account</button>
+        `;
+        showPopup("👤 User Profile", html);
+    }
+
+    function logoutUser() {
+        localStorage.removeItem('traderUser');
+        localStorage.removeItem('currentBal');
+        localStorage.removeItem('depositBal');
+        location.reload();
     }
 
     function showPopup(title, bodyHtml) {
