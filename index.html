@@ -45,7 +45,7 @@
     <button class="tab-btn" onclick="switchTab('register')">Register</button>
   </div>
 
-  <!-- 1. DASHBOARD TAB -->
+  <!-- DASHBOARD TAB -->
   <div id="dashboard" class="tab-content active">
     <div class="form-group">
       <label>Enter Registered Email</label>
@@ -65,7 +65,7 @@
     </div>
   </div>
 
-  <!-- 2. DEPOSIT TAB -->
+  <!-- DEPOSIT TAB -->
   <div id="deposit" class="tab-content">
     <form id="depositForm" onsubmit="handleDepositSubmit(event)">
       <div class="form-group">
@@ -88,14 +88,14 @@
         <input type="text" id="depScreenshot" placeholder="Paste image link or data" required>
       </div>
 
-      <div id="depError" class="error-msg">Teeno fields (Amount, TxID, Screenshot) fill karna zaroori hain.</div>
+      <div id="depError" class="error-msg">Amount, TxID, aur Screenshot teeno fill karna lazmi hain.</div>
       <div id="depSuccess" class="success-msg">Deposit Request Submitted Successfully!</div>
 
       <button type="submit" id="depBtn" class="btn-submit">Submit Deposit Request</button>
     </form>
   </div>
 
-  <!-- 3. WITHDRAWAL TAB -->
+  <!-- WITHDRAWAL TAB -->
   <div id="withdraw" class="tab-content">
     <form id="withdrawForm" onsubmit="handleWithdrawSubmit(event)">
       <div class="form-group">
@@ -124,7 +124,7 @@
     </form>
   </div>
 
-  <!-- 4. REGISTER TAB -->
+  <!-- REGISTER TAB -->
   <div id="register" class="tab-content">
     <form id="regForm" onsubmit="handleRegisterSubmit(event)">
       <div class="form-group">
@@ -171,7 +171,6 @@
     event.currentTarget.classList.add('active');
   }
 
-  // 1. Fetch Live User Data
   function fetchUserData() {
     const email = document.getElementById('dashEmail').value.trim();
     if (!email) {
@@ -198,7 +197,6 @@
     });
   }
 
-  // 2. Handle Deposit Request Submit (Strict Validation Enforced)
   function handleDepositSubmit(e) {
     e.preventDefault();
     
@@ -247,7 +245,6 @@
     });
   }
 
-  // 3. Handle Withdrawal Request
   function handleWithdrawSubmit(e) {
     e.preventDefault();
     
@@ -281,7 +278,6 @@
     });
   }
 
-  // 4. Handle Registration Submit
   function handleRegisterSubmit(e) {
     e.preventDefault();
 
