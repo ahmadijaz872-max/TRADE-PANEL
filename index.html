@@ -1,592 +1,321 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Smart Stake Panel</title>
-    <style>
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body {
-            background: radial-gradient(circle at 50% 50%, #0c1825, #080b10);
-            color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center;
-            min-height: 100vh; overflow-x: hidden; position: relative;
-        }
-        .bg-particles { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
-        .star { position: absolute; background: #ffffff; border-radius: 50%; opacity: 0.3; animation: twinkle var(--duration) infinite ease-in-out; }
-        @keyframes twinkle { 0%, 100% { opacity: 0.2; transform: scale(0.8); } 50% { opacity: 0.8; transform: scale(1.2); } }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Stake Panel</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color: #0f172a; color: #f8fafc; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+    .card { background: #1e293b; width: 100%; max-width: 480px; padding: 25px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); border: 1px solid #334155; }
+    h2 { text-align: center; color: #38bdf8; margin-bottom: 20px; font-size: 22px; font-weight: 600; }
+    
+    .tab-buttons { display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 1px solid #334155; padding-bottom: 10px; }
+    .tab-btn { flex: 1; padding: 10px; background: #334155; border: none; color: #94a3b8; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+    .tab-btn.active { background: #38bdf8; color: #0f172a; }
 
-        .top-ticker {
-            width: 100%; background-color: #FFD700; color: #000000; font-weight: 800;
-            font-size: 11px; padding: 7px 0; overflow: hidden; white-space: nowrap;
-            position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(255, 215, 0, 0.3);
-        }
-        .ticker-text { display: inline-block; padding-left: 100%; animation: ticker 18s linear infinite; }
-        @keyframes ticker { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-100%, 0, 0); } }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
 
-        .main-wrapper { width: 100%; max-width: 420px; padding: 14px 14px 90px 14px; z-index: 1; display: none; }
+    .balance-box { background: #0f172a; padding: 15px; border-radius: 8px; border: 1px solid #334155; margin-bottom: 15px; }
+    .balance-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; color: #94a3b8; }
+    .balance-row span.val { color: #38bdf8; font-weight: bold; font-size: 16px; }
 
-        .auth-wrapper {
-            width: 100%; max-width: 380px; padding: 24px; margin-top: 30px; z-index: 2;
-            background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 18px; text-align: center;
-        }
-        .auth-title { font-size: 22px; font-weight: 800; color: #38bdf8; margin-bottom: 6px; text-transform: uppercase; }
-        .auth-sub { font-size: 12px; color: #94a3b8; margin-bottom: 20px; }
-        .input-group { margin-bottom: 12px; text-align: left; }
-        .input-group label { display: block; font-size: 11px; color: #cbd5e1; margin-bottom: 5px; font-weight: 600; }
-        .input-control { width: 100%; padding: 11px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: #f8fafc; font-size: 13px; outline: none; }
+    .form-group { margin-bottom: 15px; }
+    label { display: block; font-size: 13px; color: #94a3b8; margin-bottom: 5px; }
+    input { width: 100%; padding: 12px; background: #0f172a; border: 1px solid #334155; border-radius: 6px; color: #fff; font-size: 14px; outline: none; }
+    input:focus { border-color: #38bdf8; }
 
-        #sync-overlay {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(8, 11, 16, 0.96); backdrop-filter: blur(12px); z-index: 3000;
-            flex-direction: column; justify-content: center; align-items: center; padding: 24px; text-align: center;
-        }
-        .sync-spinner { width: 50px; height: 50px; border: 4px solid #1e293b; border-top: 4px solid #38bdf8; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .sync-progress-bar { width: 100%; max-width: 280px; height: 6px; background: #1e293b; border-radius: 4px; overflow: hidden; margin: 16px 0 8px 0; }
-        .sync-progress-fill { height: 100%; background: linear-gradient(90deg, #0284c7, #38bdf8); width: 0%; transition: width 1s linear; }
+    button.btn-submit { width: 100%; padding: 12px; background: #38bdf8; color: #0f172a; border: none; border-radius: 6px; font-weight: bold; font-size: 15px; cursor: pointer; margin-top: 10px; transition: 0.2s; }
+    button.btn-submit:hover { background: #0284c7; color: #fff; }
 
-        .app-header { text-align: center; margin-bottom: 14px; }
-        .app-header h2 { margin: 0; font-size: 20px; font-weight: 800; color: #ffffff; text-transform: uppercase; }
-        .sub-header { display: flex; justify-content: center; align-items: center; gap: 6px; font-size: 11px; color: #94a3b8; margin-top: 4px; }
-        .status-dot { height: 7px; width: 7px; background-color: #10b981; border-radius: 50%; box-shadow: 0 0 6px #10b981; }
-
-        .card {
-            background: rgba(10, 25, 41, 0.85); backdrop-filter: blur(12px); padding: 16px;
-            border-radius: 14px; text-align: center; margin-bottom: 14px;
-            border: 1px solid rgba(255, 215, 0, 0.25); box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-        }
-        .card p { color: #e2e8f0; margin: 0; font-size: 11px; font-weight: 700; }
-        .card h1 { color: #fbbf24; margin: 6px 0 8px 0; font-size: 34px; font-weight: 800; font-family: monospace; }
-
-        .btn {
-            width: 100%; padding: 14px; border-radius: 10px; border: none;
-            background: linear-gradient(135deg, #0284c7, #0891b2); color: #ffffff;
-            font-weight: 700; font-size: 14px; cursor: pointer; margin-bottom: 16px;
-        }
-
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
-        .metric-card { border-radius: 10px; padding: 12px; }
-        .metric-title { font-size: 10px; font-weight: 700; text-transform: uppercase; margin-bottom: 4px; }
-        .metric-value { font-size: 17px; font-weight: 800; font-family: monospace; }
-
-        .card-lime { background-color: #0d3822; border: 1px solid #10b981; color: #4ade80; }
-        .card-lightblue { background-color: #0c334c; border: 1px solid #0284c7; color: #38bdf8; }
-        .card-softblue { background-color: #122b46; border: 1px solid #3b82f6; color: #60a5fa; }
-        .card-gold { background-color: #3b2d08; border: 1px solid #d97706; color: #fbbf24; }
-
-        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
-        .btn-green { background: #059669; color: #ffffff; border: none; padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer; }
-        .btn-white { background: #ffffff; color: #0f172a; border: none; padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer; }
-        .btn-yellow-withdraw {
-            width: 100%; background: linear-gradient(135deg, #FFD700, #d97706); color: #000;
-            border: none; padding: 13px; border-radius: 8px; font-weight: 800; font-size: 13px; cursor: pointer; margin-bottom: 18px;
-        }
-
-        .history-card { background-color: #ffffff; color: #0f172a; border-radius: 14px; padding: 16px; margin-bottom: 16px; }
-        .history-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 12px; }
-        .history-table th { text-align: left; padding: 6px 4px; border-bottom: 2px solid #e2e8f0; color: #475569; }
-        .history-table td { padding: 8px 4px; border-bottom: 1px solid #f1f5f9; font-size: 10.5px; }
-
-        /* Separated & Explicit Bottom Navigation Tabs */
-        .bottom-nav {
-            position: fixed; bottom: 0; left: 0; width: 100%;
-            background: rgba(3, 20, 32, 0.98); backdrop-filter: blur(16px);
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            display: none; justify-content: space-around; padding: 10px 0; z-index: 900;
-        }
-        .nav-tab { display: flex; flex-direction: column; align-items: center; color: #64748b; font-size: 10px; cursor: pointer; width: 20%; text-align: center; }
-        .nav-tab.active { color: #38bdf8; font-weight: 700; }
-        .nav-tab span:first-child { font-size: 18px; margin-bottom: 2px; }
-
-        .modal {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px);
-            justify-content: center; align-items: center; z-index: 2000; padding: 15px; opacity: 0; transition: opacity 0.25s ease;
-        }
-        .modal.active-modal { display: flex; opacity: 1; }
-        .modal-content {
-            background: #0f172a; padding: 20px; border-radius: 16px; text-align: center;
-            max-width: 380px; width: 100%; max-height: 90vh; overflow-y: auto; border: 1px solid #1e293b;
-        }
-
-        .ref-card { background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 12px; margin-bottom: 12px; text-align: left; }
-        .ref-box-row { display: flex; align-items: center; justify-content: space-between; background: #0f172a; border: 1px solid #334155; border-radius: 6px; padding: 6px 10px; margin-top: 6px; }
-        .ref-input-text { font-family: monospace; font-size: 11px; color: #38bdf8; font-weight: bold; word-break: break-all; }
-        .copy-btn { background: #0284c7; color: white; border: none; padding: 6px 10px; border-radius: 4px; font-size: 10.5px; font-weight: bold; cursor: pointer; }
-        .warning-box { background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #fca5a5; font-size: 10.5px; padding: 8px; border-radius: 6px; margin: 10px 0; text-align: left; line-height: 1.4; }
-        
-        .profile-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #334155; font-size: 12px; }
-        .profile-label { color: #94a3b8; }
-        .profile-val { color: #f8fafc; font-weight: bold; }
-    </style>
+    .error-msg { color: #ef4444; font-size: 13px; margin-top: 8px; display: none; text-align: center; }
+    .success-msg { color: #22c55e; font-size: 13px; margin-top: 8px; display: none; text-align: center; }
+  </style>
 </head>
 <body>
 
-<div class="top-ticker">
-    <div class="ticker-text">🔥 WELCOME TO SMART STAKE PANEL | 🚀 SPECIAL REFERRAL OFFER: INVITE FRIENDS & GET AN INSTANT $1.00 BONUS IMMEDIATELY! 🚀</div>
-</div>
+<div class="card">
+  <h2>Smart Stake Panel</h2>
 
-<div class="bg-particles" id="stars-container"></div>
+  <div class="tab-buttons">
+    <button class="tab-btn active" onclick="switchTab('dashboard')">Dashboard</button>
+    <button class="tab-btn" onclick="switchTab('deposit')">Deposit</button>
+    <button class="tab-btn" onclick="switchTab('withdraw')">Withdraw</button>
+    <button class="tab-btn" onclick="switchTab('register')">Register</button>
+  </div>
 
-<div id="sync-overlay">
-    <div class="sync-spinner"></div>
-    <div style="font-size: 16px; font-weight: 800; color: #38bdf8; margin-bottom: 6px;">SYNCHRONIZING TERMINAL</div>
-    <div style="font-size: 11px; color: #94a3b8; max-width: 260px; line-height: 1.5;">Establishing encrypted connection & fetching live balance...</div>
-    <div class="sync-progress-bar"><div id="sync-fill" class="sync-progress-fill"></div></div>
-    <div id="sync-timer-text" style="font-size: 12px; font-weight: bold; color: #fbbf24; font-family: monospace;">Please wait: 5s</div>
-</div>
-
-<!-- Registration / Sign In Screen -->
-<div class="auth-wrapper" id="auth-screen">
-    <div class="auth-title">Account Access</div>
-    <div class="auth-sub">Enter details to Sign In or Sign Up</div>
-    <div class="input-group"><label>First Name</label><input type="text" id="reg-fname" class="input-control" placeholder="e.g. John"></div>
-    <div class="input-group"><label>Last Name</label><input type="text" id="reg-lname" class="input-control" placeholder="e.g. Max"></div>
-    <div class="input-group"><label>Email Address</label><input type="email" id="reg-email" class="input-control" placeholder="name@gmail.com"></div>
-    <div class="input-group"><label>Phone Number</label><input type="tel" id="reg-phone" class="input-control" placeholder="03001234567"></div>
-    <div class="input-group"><label>Referral Code (Optional)</label><input type="text" id="reg-refcode" class="input-control" placeholder="e.g. REF123456"></div>
-    <button class="btn" id="reg-btn" onclick="handleRegistration()" style="margin-top: 10px;">Enter Dashboard</button>
-</div>
-
-<!-- Main Dashboard -->
-<div class="main-wrapper" id="main-dashboard">
-    <div class="app-header">
-        <h2>SMART STAKE PANEL</h2>
-        <div class="sub-header">
-            <span class="status-dot"></span>
-            <span style="color:#10b981; font-weight:700;">LIVE MARKET</span>
-            <span>|</span>
-            <span id="live-datetime" style="font-family:monospace;">--:--:--</span>
-        </div>
+  <!-- 1. DASHBOARD TAB -->
+  <div id="dashboard" class="tab-content active">
+    <div class="form-group">
+      <label>Enter Registered Email</label>
+      <input type="email" id="dashEmail" placeholder="user@example.com">
+      <button class="btn-submit" onclick="fetchUserData()">Check Balance</button>
     </div>
 
-    <!-- Live Gold Ticker Header -->
-    <div class="card">
-        <p id="active-asset-title">GOLD (XAU/USD) REAL-TIME</p>
-        <h1 id="active-asset-price">$2,514.80</h1>
+    <div class="balance-box">
+      <div class="balance-row">
+        <span>Approved Deposit:</span>
+        <span class="val" id="depBal">$0.00</span>
+      </div>
+      <div class="balance-row">
+        <span>Current Balance:</span>
+        <span class="val" id="currBal">$0.00</span>
+      </div>
     </div>
+  </div>
 
-    <button class="btn" id="trade-main-btn" onclick="handleTradeClick()">📈 TRADE (1m CHART)</button>
+  <!-- 2. DEPOSIT TAB -->
+  <div id="deposit" class="tab-content">
+    <form id="depositForm" onsubmit="handleDepositSubmit(event)">
+      <div class="form-group">
+        <label>User Email *</label>
+        <input type="email" id="depEmail" placeholder="Your account email" required>
+      </div>
 
-    <div class="stats-grid">
-        <div class="metric-card card-lime"><div class="metric-title">Current Amount</div><div class="metric-value" id="val-current">$0.00</div></div>
-        <div class="metric-card card-lightblue"><div class="metric-title">Deposit Amount</div><div class="metric-value" id="val-deposit">$0.00</div></div>
-        <div class="metric-card card-softblue"><div class="metric-title">Live Equity</div><div class="metric-value" id="val-equity">$0.00</div></div>
-        <div class="metric-card card-gold"><div class="metric-title">Live Withdrawal</div><div class="metric-value" id="val-withdrawal">$0.00</div></div>
-    </div>
+      <div class="form-group">
+        <label>Amount ($) *</label>
+        <input type="number" id="depAmount" min="1" step="any" placeholder="Enter deposit amount" required>
+      </div>
 
-    <div class="btn-group">
-        <button class="btn-green" onclick="openDepositModal()">Add Funds</button>
-        <button class="btn-white" onclick="openRulesModal()">RULES & LEGAL PDF</button>
-    </div>
+      <div class="form-group">
+        <label>TxID / Hash *</label>
+        <input type="text" id="depTxid" placeholder="Transaction Hash" required>
+      </div>
 
-    <button class="btn-yellow-withdraw" onclick="handleWithdrawalClick()">💰 WITHDRAW FUNDS</button>
+      <div class="form-group">
+        <label>Screenshot Link / Data *</label>
+        <input type="text" id="depScreenshot" placeholder="Paste image link or data" required>
+      </div>
 
-    <div class="history-card">
-        <div style="font-weight: 800; font-size: 13px; margin-bottom: 10px;">Recent Activity</div>
-        <table class="history-table">
-            <thead><tr><th>Type</th><th>Amount</th><th>Status</th></tr></thead>
-            <tbody id="history-tbody">
-                <tr><td colspan="3" style="text-align:center; color:#94a3b8;">No recent transactions</td></tr>
-            </tbody>
-        </table>
-    </div>
-</div>
+      <div id="depError" class="error-msg">Teeno fields (Amount, TxID, Screenshot) fill karna zaroori hain.</div>
+      <div id="depSuccess" class="success-msg">Deposit Request Submitted Successfully!</div>
 
-<!-- Unmerged Individual Navigation Options -->
-<div class="bottom-nav" id="bottom-navbar">
-    <div class="nav-tab active" onclick="showDashboardHome()"><span>🏠</span><span>Home</span></div>
-    <div class="nav-tab" onclick="openDepositModal()"><span>💳</span><span>Deposit</span></div>
-    <div class="nav-tab" onclick="openReferralsModal()"><span>🤝</span><span>Referral</span></div>
-    <div class="nav-tab" onclick="openRulesModal()"><span>📜</span><span>Rules</span></div>
-    <div class="nav-tab" onclick="openProfileModal()"><span>👤</span><span>Profile</span></div>
-</div>
+      <button type="submit" id="depBtn" class="btn-submit">Submit Deposit Request</button>
+    </form>
+  </div>
 
-<!-- Modal Popups Base -->
-<div id="modal" class="modal">
-    <div class="modal-content">
-        <div id="modal-title" style="font-weight:700; margin-bottom:10px; color:#f8fafc; font-size:16px;">Notice</div>
-        <div id="modal-body" style="font-size:12px; margin-bottom:18px; color:#94a3b8; white-space:pre-line; line-height:1.5; text-align:left;"></div>
-        <button class="btn" onclick="closePopup()" style="margin-bottom:0; padding:10px;">Close</button>
-    </div>
-</div>
+  <!-- 3. WITHDRAWAL TAB -->
+  <div id="withdraw" class="tab-content">
+    <form id="withdrawForm" onsubmit="handleWithdrawSubmit(event)">
+      <div class="form-group">
+        <label>User Email *</label>
+        <input type="email" id="wdEmail" placeholder="Your account email" required>
+      </div>
 
-<!-- TradingView Live Chart Modal -->
-<div id="chart-modal" class="modal">
-    <div class="modal-content" style="max-width: 95%; height: 85vh; padding: 10px; display: flex; flex-direction: column;">
-        <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-            <div style="font-weight: 800; font-size: 14px; color: #38bdf8;">LIVE XAU/USD 1m CHART</div>
-            <button onclick="closeChartModal()" style="background:#ef4444; color:white; border:none; padding:4px 10px; border-radius:4px; font-weight:bold; cursor:pointer;">X</button>
-        </div>
-        <div style="flex:1; width:100%;">
-            <iframe src="https://s.tradingview.com/widgetembed/?frameElementId=tradingview_1&symbol=OANDA%3AXAUUSD&interval=1&hidesidetoolbar=1&symboledit=1&saveimage=1&toolbarbg=f1f3f6&studies=%5B%5D&theme=dark&style=1&timezone=Etc%2FUTC" style="width:100%; height:100%; border:none; border-radius:8px;"></iframe>
-        </div>
-    </div>
+      <div class="form-group">
+        <label>Amount ($) *</label>
+        <input type="number" id="wdAmount" min="1" step="any" placeholder="Enter amount" required>
+      </div>
+
+      <div class="form-group">
+        <label>Network *</label>
+        <input type="text" id="wdNetwork" placeholder="TRC20 / BEP20 / USDT" required>
+      </div>
+
+      <div class="form-group">
+        <label>Wallet Address *</label>
+        <input type="text" id="wdAddress" placeholder="Your wallet address" required>
+      </div>
+
+      <div id="wdSuccess" class="success-msg">Withdrawal Request Submitted!</div>
+
+      <button type="submit" id="wdBtn" class="btn-submit">Submit Withdrawal</button>
+    </form>
+  </div>
+
+  <!-- 4. REGISTER TAB -->
+  <div id="register" class="tab-content">
+    <form id="regForm" onsubmit="handleRegisterSubmit(event)">
+      <div class="form-group">
+        <label>Full Name *</label>
+        <input type="text" id="regName" placeholder="Full Name" required>
+      </div>
+
+      <div class="form-group">
+        <label>Email *</label>
+        <input type="email" id="regEmail" placeholder="Email Address" required>
+      </div>
+
+      <div class="form-group">
+        <label>Phone *</label>
+        <input type="text" id="regPhone" placeholder="Phone Number" required>
+      </div>
+
+      <div class="form-group">
+        <label>Ref Code</label>
+        <input type="text" id="regRefCode" placeholder="Your Referral Code">
+      </div>
+
+      <div class="form-group">
+        <label>Referred By</label>
+        <input type="text" id="regReferredBy" placeholder="Sponsor Code (Optional)">
+      </div>
+
+      <div id="regSuccess" class="success-msg">Registration Successful!</div>
+
+      <button type="submit" id="regBtn" class="btn-submit">Register Account</button>
+    </form>
+  </div>
+
 </div>
 
 <script>
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxbnJtSb5uMwV0n16CHUmqxn50wN4aVyDhbTCnXl3XqBzKMgqTgLtuclMOdA_kN8wdQFw/exec";
-    const DEPOSIT_ADDRESS = "0xfeff2067ef1a43aa4bca186f702b2669971debbd";
-    const NETWORK_NAME = "BNB Smart Chain (BEP20)";
+  const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwSRP8pT1qIvWw5cSJ3gJKiqkz4NQEPmCwqUaioeJi7N2hewBipsmW3J2WbRCj02hpPJg/exec";
 
-    let currentUser = JSON.parse(localStorage.getItem('traderUser')) || null;
+  function switchTab(tabId) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    
+    document.getElementById(tabId).classList.add('active');
+    event.currentTarget.classList.add('active');
+  }
 
-    function generateStars() {
-        const container = document.getElementById('stars-container');
-        for (let i = 0; i < 40; i++) {
-            let star = document.createElement('div');
-            star.className = 'star';
-            star.style.width = `${Math.random() * 3 + 1}px`;
-            star.style.height = star.style.width;
-            star.style.left = `${Math.random() * 100}%`;
-            star.style.top = `${Math.random() * 100}%`;
-            star.style.setProperty('--duration', `${Math.random() * 3 + 2}s`);
-            container.appendChild(star);
-        }
-    }
-    generateStars();
-
-    setInterval(() => {
-        let d = new Date();
-        document.getElementById('live-datetime').innerText = d.toLocaleTimeString();
-    }, 1000);
-
-    async function fetchLiveGoldPrice() {
-        try {
-            const res = await fetch("https://api.binance.com/api/v3/ticker/price?symbol=PAXGUSDT");
-            const data = await res.json();
-            if (data && data.price) {
-                let price = parseFloat(data.price).toFixed(2);
-                document.getElementById('active-asset-price').innerText = `$${price}`;
-            }
-        } catch(e) {
-            let currentP = parseFloat(document.getElementById('active-asset-price').innerText.replace('$','')) || 2514.80;
-            let change = (Math.random() - 0.48) * 0.40;
-            document.getElementById('active-asset-price').innerText = `$${(currentP + change).toFixed(2)}`;
-        }
-    }
-    fetchLiveGoldPrice();
-    setInterval(fetchLiveGoldPrice, 3000);
-
-    function checkAuth() {
-        if (currentUser) {
-            document.getElementById('auth-screen').style.display = 'none';
-            document.getElementById('main-dashboard').style.display = 'block';
-            document.getElementById('bottom-navbar').style.display = 'flex';
-            
-            syncBalancesFromSheet();
-            setInterval(syncBalancesFromSheet, 10000);
-        } else {
-            document.getElementById('auth-screen').style.display = 'block';
-            document.getElementById('main-dashboard').style.display = 'none';
-            document.getElementById('bottom-navbar').style.display = 'none';
-        }
+  // 1. Fetch Live User Data
+  function fetchUserData() {
+    const email = document.getElementById('dashEmail').value.trim();
+    if (!email) {
+      alert("Email enter karein");
+      return;
     }
 
-    async function syncBalancesFromSheet() {
-        if (!currentUser || !currentUser.email) return;
-        try {
-            const res = await fetch(GOOGLE_SCRIPT_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({ action_type: "fetch_user_data", email: currentUser.email })
-            });
-            const data = await res.json();
-            if (data.status === "success") {
-                localStorage.setItem('depositBal', data.depositBal.toFixed(2));
-                localStorage.setItem('currentBal', data.currentBal.toFixed(2));
-                loadBalances();
-            }
-        } catch (e) {
-            loadBalances();
-        }
+    fetch(GOOGLE_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action_type: "fetch_user_data", email: email })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.status === "success") {
+        document.getElementById('depBal').innerText = "$" + (data.depositBal || 0).toFixed(2);
+        document.getElementById('currBal').innerText = "$" + (data.currentBal || 0).toFixed(2);
+      } else {
+        alert("User data fetch nahi ho saka");
+      }
+    })
+    .catch(err => {
+      alert("Error fetching balance: " + err);
+    });
+  }
+
+  // 2. Handle Deposit Request Submit (Strict Validation Enforced)
+  function handleDepositSubmit(e) {
+    e.preventDefault();
+    
+    const email = document.getElementById('depEmail').value.trim();
+    const amount = document.getElementById('depAmount').value.trim();
+    const txid = document.getElementById('depTxid').value.trim();
+    const screenshot = document.getElementById('depScreenshot').value.trim();
+    
+    const errBox = document.getElementById('depError');
+    const successBox = document.getElementById('depSuccess');
+
+    if (!email || !amount || !txid || !screenshot) {
+      errBox.style.display = 'block';
+      successBox.style.display = 'none';
+      return;
     }
 
-    function loadBalances() {
-        let curr = parseFloat(localStorage.getItem('currentBal')) || 0.00;
-        let dep = parseFloat(localStorage.getItem('depositBal')) || 0.00;
-        let withBal = parseFloat(localStorage.getItem('withdrawalBal')) || 0.00;
+    errBox.style.display = 'none';
+    const btn = document.getElementById('depBtn');
+    btn.innerText = "Submitting...";
+    btn.disabled = true;
 
-        document.getElementById('val-current').innerText = `$${curr.toFixed(2)}`;
-        document.getElementById('val-deposit').innerText = `$${dep.toFixed(2)}`;
-        document.getElementById('val-equity').innerText = `$${curr.toFixed(2)}`;
-        document.getElementById('val-withdrawal').innerText = `$${withBal.toFixed(2)}`;
-    }
+    const payload = {
+      action_type: "request_deposit",
+      email: email,
+      amount: amount,
+      txid: txid,
+      screenshot: screenshot
+    };
 
-    async function handleRegistration() {
-        const fname = document.getElementById('reg-fname').value.trim();
-        const lname = document.getElementById('reg-lname').value.trim();
-        const email = document.getElementById('reg-email').value.trim().toLowerCase();
-        const phone = document.getElementById('reg-phone').value.trim();
-        const refBy = document.getElementById('reg-refcode').value.trim();
+    fetch(GOOGLE_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    })
+    .then(() => {
+      successBox.style.display = 'block';
+      document.getElementById('depositForm').reset();
+      btn.innerText = "Submit Deposit Request";
+      btn.disabled = false;
+    })
+    .catch(err => {
+      alert("Submission Error: " + err);
+      btn.innerText = "Submit Deposit Request";
+      btn.disabled = false;
+    });
+  }
 
-        if (!email || !phone) return alert('Please enter Email & Phone Number.');
+  // 3. Handle Withdrawal Request
+  function handleWithdrawSubmit(e) {
+    e.preventDefault();
+    
+    const btn = document.getElementById('wdBtn');
+    btn.innerText = "Submitting...";
+    btn.disabled = true;
 
-        const btn = document.getElementById('reg-btn');
-        btn.innerText = "Registering..."; btn.disabled = true;
+    const payload = {
+      action_type: "request_withdrawal",
+      email: document.getElementById('wdEmail').value.trim(),
+      amount: document.getElementById('wdAmount').value.trim(),
+      network: document.getElementById('wdNetwork').value.trim(),
+      address: document.getElementById('wdAddress').value.trim()
+    };
 
-        let userRefCode = "REF" + Math.floor(100000 + Math.random() * 900000);
-        currentUser = { fname: fname || "User", lname: lname || "", email: email, phone: phone, refCode: userRefCode };
-        
-        localStorage.setItem('traderUser', JSON.stringify(currentUser));
-        if (refBy && refBy.length > 2) {
-            localStorage.setItem('currentBal', '1.00');
-        }
+    fetch(GOOGLE_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    })
+    .then(() => {
+      document.getElementById('wdSuccess').style.display = 'block';
+      document.getElementById('withdrawForm').reset();
+      btn.innerText = "Submit Withdrawal";
+      btn.disabled = false;
+    })
+    .catch(err => {
+      alert("Error: " + err);
+      btn.innerText = "Submit Withdrawal";
+      btn.disabled = false;
+    });
+  }
 
-        try {
-            await fetch(GOOGLE_SCRIPT_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({
-                    action_type: "register",
-                    name: `${fname} ${lname}`.trim(),
-                    email: email,
-                    phone: phone,
-                    ref_code: userRefCode,
-                    referred_by: refBy
-                })
-            });
-        } catch (e) {}
+  // 4. Handle Registration Submit
+  function handleRegisterSubmit(e) {
+    e.preventDefault();
 
-        startSyncAnimation();
-    }
+    const btn = document.getElementById('regBtn');
+    btn.innerText = "Registering...";
+    btn.disabled = true;
 
-    function startSyncAnimation() {
-        document.getElementById('auth-screen').style.display = 'none';
-        const overlay = document.getElementById('sync-overlay');
-        overlay.style.display = 'flex';
+    const payload = {
+      action_type: "register",
+      name: document.getElementById('regName').value.trim(),
+      email: document.getElementById('regEmail').value.trim(),
+      phone: document.getElementById('regPhone').value.trim(),
+      ref_code: document.getElementById('regRefCode').value.trim(),
+      referred_by: document.getElementById('regReferredBy').value.trim()
+    };
 
-        let count = 5;
-        let fill = document.getElementById('sync-fill');
-        let txt = document.getElementById('sync-timer-text');
-
-        let interval = setInterval(() => {
-            count--;
-            fill.style.width = `${((5 - count) / 5) * 100}%`;
-            txt.innerText = `Please wait: ${count}s`;
-
-            if (count <= 0) {
-                clearInterval(interval);
-                overlay.style.display = 'none';
-                checkAuth();
-            }
-        }, 1000);
-    }
-
-    function showDashboardHome() {
-        closePopup();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    function handleTradeClick() {
-        let depositBal = parseFloat(localStorage.getItem('depositBal')) || 0.00;
-        if (depositBal <= 0) {
-            showPopup("⚠️ Deposit Required", "Please make a deposit first to unlock the Live Trading Panel.");
-            return;
-        }
-        document.getElementById('chart-modal').classList.add('active-modal');
-    }
-
-    function closeChartModal() {
-        document.getElementById('chart-modal').classList.remove('active-modal');
-    }
-
-    function openDepositModal() {
-        const depContent = `
-            <div style="font-size:11px; color:#cbd5e1; margin-bottom:10px;">Send USDT/Crypto to the official wallet below:</div>
-            <div class="ref-card">
-                <div style="font-size:10px; color:#94a3b8;">WALLET ADDRESS (${NETWORK_NAME})</div>
-                <div class="ref-box-row">
-                    <span class="ref-input-text">${DEPOSIT_ADDRESS}</span>
-                    <button class="copy-btn" onclick="navigator.clipboard.writeText('${DEPOSIT_ADDRESS}')">Copy</button>
-                </div>
-            </div>
-            <div class="input-group">
-                <label>Deposit Amount ($)</label>
-                <input type="number" id="dep-amount" class="input-control" placeholder="Minimum $100">
-            </div>
-            <div class="input-group">
-                <label>TxID / Hash</label>
-                <input type="text" id="dep-txid" class="input-control" placeholder="Transaction Hash">
-            </div>
-            <div class="input-group">
-                <label>Upload Payment Screenshot</label>
-                <input type="file" id="dep-file" accept="image/*" class="input-control">
-            </div>
-            <button class="btn" id="dep-sub-btn" onclick="submitDepositProof()" style="background:#059669; margin-top:10px;">Submit Deposit</button>
-        `;
-        showPopup("💳 Add Funds", depContent);
-    }
-
-    async function submitDepositProof() {
-        const amt = document.getElementById('dep-amount').value;
-        const txid = document.getElementById('dep-txid').value.trim();
-        const fileInput = document.getElementById('dep-file');
-
-        if (!amt || parseFloat(amt) < 100) return alert("Minimum deposit amount is $100.");
-
-        const subBtn = document.getElementById('dep-sub-btn');
-        subBtn.disabled = true; subBtn.innerText = "Uploading & Submitting...";
-
-        let base64Image = "";
-        if (fileInput.files && fileInput.files[0]) {
-            base64Image = await convertFileToBase64(fileInput.files[0]);
-        }
-
-        try {
-            await fetch(GOOGLE_SCRIPT_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({
-                    action_type: "request_deposit",
-                    email: currentUser.email,
-                    amount: amt,
-                    txid: txid,
-                    screenshot: base64Image
-                })
-            });
-            showPopup("✅ Submitted", "Deposit submitted successfully! Status will update to Approved once verified.");
-        } catch (e) {
-            alert("Submission error. Please try again.");
-            subBtn.disabled = false; subBtn.innerText = "Submit Deposit";
-        }
-    }
-
-    function convertFileToBase64(file) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = error => reject(error);
-        });
-    }
-
-    function handleWithdrawalClick() {
-        let curr = parseFloat(localStorage.getItem('currentBal')) || 0.00;
-        const html = `
-            <div style="font-size:11px; color:#94a3b8; margin-bottom:12px;">Available Current Amount: <strong style="color:#fbbf24;">$${curr.toFixed(2)}</strong></div>
-            <div class="input-group">
-                <label>Withdrawal Amount ($)</label>
-                <input type="number" id="with-amount" class="input-control" placeholder="Minimum $50">
-            </div>
-            <div class="input-group">
-                <label>Crypto Network</label>
-                <select id="with-net" class="input-control">
-                    <option>USDT (BEP20)</option>
-                    <option>USDT (TRC20)</option>
-                </select>
-            </div>
-            <div class="input-group">
-                <label>Destination Wallet Address</label>
-                <input type="text" id="with-addr" class="input-control" placeholder="Enter Wallet Address">
-            </div>
-            <button class="btn" id="with-sub-btn" onclick="submitWithdrawal()" style="background:#d97706; margin-top:10px;">Confirm Request</button>
-        `;
-        showPopup("💰 Withdrawal", html);
-    }
-
-    async function submitWithdrawal() {
-        const amt = parseFloat(document.getElementById('with-amount').value);
-        const net = document.getElementById('with-net').value;
-        const addr = document.getElementById('with-addr').value.trim();
-        let curr = parseFloat(localStorage.getItem('currentBal')) || 0.00;
-
-        if (!amt || amt < 50) return alert("Minimum withdrawal is $50.");
-        if (amt > curr) return alert("Insufficient balance.");
-        if (!addr) return alert("Enter withdrawal address.");
-
-        try {
-            await fetch(GOOGLE_SCRIPT_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({
-                    action_type: "request_withdrawal",
-                    email: currentUser.email,
-                    amount: amt,
-                    network: net,
-                    address: addr
-                })
-            });
-            showPopup("✅ Pending Approval", "Withdrawal request submitted successfully.");
-        } catch (e) {
-            alert("Error sending request.");
-        }
-    }
-
-    function openReferralsModal() {
-        let code = currentUser ? currentUser.refCode : "REF123456";
-        let link = window.location.origin + window.location.pathname + "?ref=" + code;
-        const html = `
-            <div class="ref-card">
-                <div style="font-size:10px; color:#94a3b8;">YOUR REFERRAL CODE</div>
-                <div class="ref-box-row">
-                    <span class="ref-input-text">${code}</span>
-                    <button class="copy-btn" onclick="navigator.clipboard.writeText('${code}')">Copy</button>
-                </div>
-            </div>
-            <div class="ref-card">
-                <div style="font-size:10px; color:#94a3b8;">INVITATION LINK</div>
-                <div class="ref-box-row">
-                    <span class="ref-input-text" style="font-size:10px;">${link}</span>
-                    <button class="copy-btn" onclick="navigator.clipboard.writeText('${link}')">Copy</button>
-                </div>
-            </div>
-        `;
-        showPopup("🤝 Referral System", html);
-    }
-
-    function openRulesModal() {
-        const html = `
-            <div class="warning-box">
-                📜 <b>SMART STAKE PANEL - RULES & COMPLIANCE POLICY</b><br><br>
-                1. <b>Minimum Deposit Requirement:</b> Minimum deposit amount is $100. Any deposit below $100 will not be credited.<br><br>
-                2. <b>Manual Approval Verification:</b> All deposits & withdrawals are manually verified via Blockchain TxID and proof screenshot within 1 to 6 hours.<br><br>
-                3. <b>Referral Program:</b> $1.00 Bonus is credited immediately upon successful registration via valid referral code.<br><br>
-                4. <b>Risk Disclosure:</b> Trading financial instruments involves risk. Past performance does not guarantee future results.
-            </div>
-        `;
-        showPopup("📜 Rules & Guidelines", html);
-    }
-
-    /* Unmodified Dedicated Profile View Modal */
-    function openProfileModal() {
-        if (!currentUser) return;
-        const html = `
-            <div class="ref-card" style="margin-bottom:15px;">
-                <div class="profile-row"><span class="profile-label">Name:</span><span class="profile-val">${currentUser.fname} ${currentUser.lname}</span></div>
-                <div class="profile-row"><span class="profile-label">Email:</span><span class="profile-val">${currentUser.email}</span></div>
-                <div class="profile-row"><span class="profile-label">Phone:</span><span class="profile-val">${currentUser.phone}</span></div>
-                <div class="profile-row" style="border-bottom:none;"><span class="profile-label">Referral Code:</span><span class="profile-val" style="color:#38bdf8;">${currentUser.refCode}</span></div>
-            </div>
-            <button class="btn" onclick="logoutUser()" style="background:#ef4444; margin-top:5px;">Logout Account</button>
-        `;
-        showPopup("👤 User Profile", html);
-    }
-
-    function logoutUser() {
-        localStorage.removeItem('traderUser');
-        localStorage.removeItem('currentBal');
-        localStorage.removeItem('depositBal');
-        location.reload();
-    }
-
-    function showPopup(title, bodyHtml) {
-        document.getElementById('modal-title').innerText = title;
-        document.getElementById('modal-body').innerHTML = bodyHtml;
-        const m = document.getElementById('modal');
-        m.style.display = 'flex';
-        setTimeout(() => m.classList.add('active-modal'), 10);
-    }
-
-    function closePopup() {
-        const m = document.getElementById('modal');
-        m.classList.remove('active-modal');
-        setTimeout(() => m.style.display = 'none', 250);
-    }
-
-    checkAuth();
+    fetch(GOOGLE_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    })
+    .then(() => {
+      document.getElementById('regSuccess').style.display = 'block';
+      document.getElementById('regForm').reset();
+      btn.innerText = "Register Account";
+      btn.disabled = false;
+    })
+    .catch(err => {
+      alert("Error: " + err);
+      btn.innerText = "Register Account";
+      btn.disabled = false;
+    });
+  }
 </script>
+
 </body>
 </html>
