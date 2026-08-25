@@ -243,7 +243,7 @@
 </div>
 
 <script>
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxbnJtSb5uMwV0n16CHUmqxn50wN4aVyDhbTCnXl3XqBzKMgqTgLtuclMOdA_kN8wdQFw/exec";
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwSRP8pT1qIvWw5cSJ3gJKiqkz4NQEPmCwqUaioeJi7N2hewBipsmW3J2WbRCj02hpPJg/exec";
     const DEPOSIT_ADDRESS = "0xfeff2067ef1a43aa4bca186f702b2669971debbd";
     const NETWORK_NAME = "BNB Smart Chain (BEP20)";
 
@@ -332,14 +332,42 @@
         }
     }
 
+    /* Synchronized Balances with Google Sheet Approved status */
     function loadBalances() {
         let curr = parseFloat(localStorage.getItem('currentBal')) || 0.00;
         let dep = parseFloat(localStorage.getItem('depositBal')) || 0.00;
         let withBal = parseFloat(localStorage.getItem('withdrawalBal')) || 0.00;
+
         document.getElementById('val-current').innerText = `$${curr.toFixed(2)}`;
         document.getElementById('val-deposit').innerText = `$${dep.toFixed(2)}`;
         document.getElementById('val-equity').innerText = `$${curr.toFixed(2)}`;
         document.getElementById('val-withdrawal').innerText = `$${withBal.toFixed(2)}`;
+
+        if (currentUser && currentUser.email) {
+            fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({ action_type: "fetch_user_data", email: currentUser.email })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === "success") {
+                    let remoteDep = parseFloat(data.depositBal) || 0;
+                    if (remoteDep > dep) {
+                        let diff = remoteDep - dep;
+                        dep = remoteDep;
+                        curr += diff;
+                        localStorage.setItem('depositBal', dep.toFixed(2));
+                        localStorage.setItem('currentBal', curr.toFixed(2));
+
+                        document.getElementById('val-current').innerText = `$${curr.toFixed(2)}`;
+                        document.getElementById('val-deposit').innerText = `$${dep.toFixed(2)}`;
+                        document.getElementById('val-equity').innerText = `$${curr.toFixed(2)}`;
+                    }
+                }
+            })
+            .catch(err => console.log("Balance Sync Wait...", err));
+        }
     }
 
     function generateReferralCode(email) {
@@ -376,7 +404,7 @@
         let fullName = `${fname} ${lname}`.trim();
 
         try {
-            const response = await fetch(GOOGLE_SCRIPT_URL, {
+            await fetch(GOOGLE_SCRIPT_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                 body: JSON.stringify({
@@ -388,14 +416,6 @@
                     referred_by: refBy
                 })
             });
-
-            const resData = await response.json();
-
-            if (resData.status === "error") {
-                regBtn.disabled = false;
-                regBtn.innerText = "Enter Dashboard";
-                return alert("Registration Failed: " + resData.message);
-            }
         } catch (err) {
             console.log("Proceeding with registration state...");
         }
@@ -684,8 +704,7 @@
         try {
             fetch(GOOGLE_SCRIPT_URL, {
                 method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                 body: JSON.stringify({
                     action_type: "request_withdrawal",
                     email: currentUser.email,
@@ -785,10 +804,9 @@
         }
 
         try {
-            fetch(GOOGLE_SCRIPT_URL, {
+            await fetch(GOOGLE_SCRIPT_URL, {
                 method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                 body: JSON.stringify({
                     action_type: "request_deposit",
                     email: currentUser.email,
