@@ -167,14 +167,30 @@
 
 <!-- Registration / Login Screen -->
 <div class="auth-wrapper" id="auth-screen">
-    <div class="auth-title">Account Access</div>
-    <div class="auth-sub">Enter details to Sign In or Sign Up</div>
-    <div class="input-group"><label>First Name</label><input type="text" id="reg-fname" class="input-control" placeholder="e.g. John"></div>
-    <div class="input-group"><label>Last Name</label><input type="text" id="reg-lname" class="input-control" placeholder="e.g. Max"></div>
-    <div class="input-group"><label>Email Address</label><input type="email" id="reg-email" class="input-control" placeholder="name@gmail.com"></div>
-    <div class="input-group"><label>Phone Number</label><input type="tel" id="reg-phone" class="input-control" placeholder="03001234567"></div>
-    <div class="input-group"><label>Referral Code (Optional)</label><input type="text" id="reg-refcode" class="input-control" placeholder="e.g. REF123456"></div>
-    <button class="btn" id="reg-btn" onclick="handleRegistration()" style="margin-top: 10px;">Enter Dashboard</button>
+    <div class="auth-title">SMART STAKE</div>
+    <div class="auth-sub">Secure account access</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px;">
+        <button id="signup-tab" class="btn" onclick="showAuthPanel('signup')" style="margin:0;padding:11px;">SIGN UP</button>
+        <button id="signin-tab" class="btn" onclick="showAuthPanel('signin')" style="margin:0;padding:11px;background:#1e293b;color:#94a3b8;">SIGN IN</button>
+    </div>
+
+    <div id="signup-panel">
+        <div style="font-size:15px;font-weight:800;color:#f8fafc;margin-bottom:14px;">Create New Account</div>
+        <div class="input-group"><label>First Name</label><input type="text" id="reg-fname" class="input-control" placeholder="e.g. John"></div>
+        <div class="input-group"><label>Last Name</label><input type="text" id="reg-lname" class="input-control" placeholder="e.g. Max"></div>
+        <div class="input-group"><label>Gmail Address</label><input type="email" id="reg-email" class="input-control" placeholder="name@gmail.com"></div>
+        <div class="input-group"><label>Pakistani Mobile Number</label><input type="tel" id="reg-phone" class="input-control" placeholder="03001234567"></div>
+        <div class="input-group"><label>Referral Code (Optional)</label><input type="text" id="reg-refcode" class="input-control" placeholder="e.g. REF123456"></div>
+        <button class="btn" id="reg-btn" onclick="handleRegistration()" style="margin-top:10px;">CREATE ACCOUNT</button>
+    </div>
+
+    <div id="signin-panel" style="display:none;">
+        <div style="font-size:15px;font-weight:800;color:#f8fafc;margin-bottom:14px;">Welcome Back</div>
+        <div class="input-group"><label>Gmail Address</label><input type="email" id="login-email" class="input-control" placeholder="name@gmail.com" autocomplete="email"></div>
+        <div class="input-group"><label>Pakistani Mobile Number</label><input type="tel" id="login-phone" class="input-control" placeholder="03001234567" autocomplete="tel"></div>
+        <button class="btn" id="login-btn" onclick="handleLogin()" style="margin-top:10px;">SIGN IN</button>
+        <div style="font-size:10px;color:#64748b;line-height:1.5;margin-top:2px;">Use the same Gmail and Pakistani mobile number you used when registering.</div>
+    </div>
 </div>
 
 <!-- Main Application Dashboard -->
@@ -402,6 +418,58 @@
     function validatePakistaniPhone(phone) {
         const pakRegex = /^((\+92)|(0092)|(0))?3[0-9]{9}$/;
         return pakRegex.test(phone.replace(/[\s\-]/g, ''));
+    }
+
+    function showAuthPanel(panel) {
+        const signup = document.getElementById('signup-panel');
+        const signin = document.getElementById('signin-panel');
+        const signupTab = document.getElementById('signup-tab');
+        const signinTab = document.getElementById('signin-tab');
+        if (panel === 'signin') {
+            signup.style.display='none'; signin.style.display='block';
+            signinTab.style.background='linear-gradient(135deg,#0284c7,#0891b2)'; signinTab.style.color='#fff';
+            signupTab.style.background='#1e293b'; signupTab.style.color='#94a3b8';
+        } else {
+            signup.style.display='block'; signin.style.display='none';
+            signupTab.style.background='linear-gradient(135deg,#0284c7,#0891b2)'; signupTab.style.color='#fff';
+            signinTab.style.background='#1e293b'; signinTab.style.color='#94a3b8';
+        }
+    }
+
+    async function handleLogin() {
+        const email = document.getElementById('login-email').value.trim().toLowerCase();
+        const phone = document.getElementById('login-phone').value.trim();
+        if (!/^[a-z0-9.!#$%&'*+\/=?^_`{|}~-]+@gmail\.com$/i.test(email)) return alert('Only Gmail addresses are allowed.');
+        if (!validatePakistaniPhone(phone)) return alert('Only valid Pakistani mobile numbers are allowed.');
+
+        const btn=document.getElementById('login-btn');
+        btn.disabled=true; btn.innerText='VERIFYING...';
+        try {
+            const res=await fetch(GOOGLE_SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({
+                action_type:'login', email:email, phone:phone
+            })});
+            const data=await res.json();
+            if (data.status!=='success') {
+                alert(data.message || 'Sign in failed. Please check your Gmail and mobile number.');
+                btn.disabled=false; btn.innerText='SIGN IN'; return;
+            }
+            currentUser={
+                fname:data.fname||'', lname:data.lname||'', name:data.name||'',
+                email:data.email||email, phone:data.phone||phone,
+                refCode:data.refCode||'', sessionToken:data.sessionToken||''
+            };
+            localStorage.setItem('traderUser',JSON.stringify(currentUser));
+            ['currentBal','depositBal','withdrawalBal'].forEach(k=>localStorage.removeItem(k));
+            document.getElementById('auth-screen').style.display='none';
+            document.getElementById('sync-overlay').style.display='flex';
+            document.getElementById('sync-timer-text').innerText='Signing in securely...';
+            document.getElementById('sync-fill').style.width='100%';
+            setTimeout(()=>{document.getElementById('sync-overlay').style.display='none';checkAuth();},700);
+        } catch(err) {
+            alert('Sign in server is unavailable. Please try again.');
+        } finally {
+            btn.disabled=false; btn.innerText='SIGN IN';
+        }
     }
 
     /* Registration Logic with One-Time $1 Referral Bonus */
