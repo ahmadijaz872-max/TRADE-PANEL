@@ -243,15 +243,15 @@
 </div>
 
 <script>
-    // Updated Google Web App URL
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwQhoA-HfSrIw9jk3_SzaGJnCsxP7P8Y13YcJws7QBBC22NMdvoylW2llH7b6S__lxTJA/exec";
+    // Updated Web App Deployment URL
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwk-4sRDlqcpEGiFtnu3dXKWT1GTOBuocHBBh_1ZHLxyvHqyn7jiiGUtyJeJkwwaDYl/exec";
     const DEPOSIT_ADDRESS = "0xfeff2067ef1a43aa4bca186f702b2669971debbd";
     const NETWORK_NAME = "BNB Smart Chain (BEP20)";
 
     let currentUser = JSON.parse(localStorage.getItem('traderUser')) || null;
     let chartAnimationInterval = null;
 
-    // Stars particle effect
+    // Background particle generation
     const container = document.getElementById('stars-container');
     for (let i = 0; i < 30; i++) {
         const star = document.createElement('div');
@@ -287,7 +287,7 @@
     fetchLiveGoldPrice();
     setInterval(fetchLiveGoldPrice, 3000);
 
-    /* Status Heartbeat Update */
+    /* Heartbeat Online/Offline Tracking */
     function sendUserStatusUpdate(status) {
         if (!currentUser || !currentUser.email) return;
         const payload = JSON.stringify({
@@ -310,7 +310,7 @@
 
     setInterval(() => {
         if (currentUser && currentUser.email) sendUserStatusUpdate("Online");
-    }, 60000);
+    }, 45000);
 
     window.addEventListener('pagehide', function() {
         sendUserStatusUpdate("Offline");
@@ -333,17 +333,8 @@
         }
     }
 
-    /* Synchronized Balances with Google Sheet Approved status */
+    /* Synchronized Balances with Google Sheet */
     function loadBalances() {
-        let curr = parseFloat(localStorage.getItem('currentBal')) || 0.00;
-        let dep = parseFloat(localStorage.getItem('depositBal')) || 0.00;
-        let withBal = parseFloat(localStorage.getItem('withdrawalBal')) || 0.00;
-
-        document.getElementById('val-current').innerText = `$${curr.toFixed(2)}`;
-        document.getElementById('val-deposit').innerText = `$${dep.toFixed(2)}`;
-        document.getElementById('val-equity').innerText = `$${curr.toFixed(2)}`;
-        document.getElementById('val-withdrawal').innerText = `$${withBal.toFixed(2)}`;
-
         if (currentUser && currentUser.email) {
             fetch(GOOGLE_SCRIPT_URL, {
                 method: 'POST',
@@ -352,22 +343,31 @@
             })
             .then(res => res.json())
             .then(data => {
-                if (data.status === "success") {
-                    let remoteDep = parseFloat(data.depositBal) || 0;
-                    if (remoteDep > dep) {
-                        let diff = remoteDep - dep;
-                        dep = remoteDep;
-                        curr += diff;
-                        localStorage.setItem('depositBal', dep.toFixed(2));
-                        localStorage.setItem('currentBal', curr.toFixed(2));
+                if (data.status === "success" && data.userData) {
+                    let curr = parseFloat(data.userData.currentBal) || 0.00;
+                    let dep = parseFloat(data.userData.totalDeposit) || 0.00;
+                    let withBal = parseFloat(data.userData.totalWithdrawal) || 0.00;
 
-                        document.getElementById('val-current').innerText = `$${curr.toFixed(2)}`;
-                        document.getElementById('val-deposit').innerText = `$${dep.toFixed(2)}`;
-                        document.getElementById('val-equity').innerText = `$${curr.toFixed(2)}`;
-                    }
+                    localStorage.setItem('currentBal', curr.toFixed(2));
+                    localStorage.setItem('depositBal', dep.toFixed(2));
+                    localStorage.setItem('withdrawalBal', withBal.toFixed(2));
+
+                    document.getElementById('val-current').innerText = `$${curr.toFixed(2)}`;
+                    document.getElementById('val-deposit').innerText = `$${dep.toFixed(2)}`;
+                    document.getElementById('val-equity').innerText = `$${curr.toFixed(2)}`;
+                    document.getElementById('val-withdrawal').innerText = `$${withBal.toFixed(2)}`;
                 }
             })
-            .catch(err => console.log("Balance Sync Wait...", err));
+            .catch(err => {
+                let curr = parseFloat(localStorage.getItem('currentBal')) || 0.00;
+                let dep = parseFloat(localStorage.getItem('depositBal')) || 0.00;
+                let withBal = parseFloat(localStorage.getItem('withdrawalBal')) || 0.00;
+
+                document.getElementById('val-current').innerText = `$${curr.toFixed(2)}`;
+                document.getElementById('val-deposit').innerText = `$${dep.toFixed(2)}`;
+                document.getElementById('val-equity').innerText = `$${curr.toFixed(2)}`;
+                document.getElementById('val-withdrawal').innerText = `$${withBal.toFixed(2)}`;
+            });
         }
     }
 
@@ -382,7 +382,7 @@
         return pakRegex.test(phone.replace(/[\s\-]/g, ''));
     }
 
-    /* Registration Logic with One-Time $1 Referral Bonus */
+    /* Registration Logic */
     async function handleRegistration() {
         const fname = document.getElementById('reg-fname').value.trim();
         const lname = document.getElementById('reg-lname').value.trim();
@@ -407,7 +407,6 @@
         try {
             await fetch(GOOGLE_SCRIPT_URL, {
                 method: 'POST',
-                mode: 'no-cors',
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                 body: JSON.stringify({
                     action_type: "register",
@@ -425,7 +424,6 @@
         currentUser = { fname: fname || "User", lname: lname || "", email: email, phone: phone, refCode: myRefCode };
         localStorage.setItem('traderUser', JSON.stringify(currentUser));
 
-        // One-time $1 Referral Bonus Logic
         let initCurrentBal = "0.00";
         if (refBy && refBy.length > 2) {
             let bonusKey = `refBonusGiven_${email}`;
@@ -456,7 +454,6 @@
         }, 1000);
     }
 
-    /* Deposit Restriction check before Trade */
     function handleTradeClick() {
         let depositBal = parseFloat(localStorage.getItem('depositBal')) || 0.00;
 
@@ -609,7 +606,6 @@
         checkTradeLockStatus();
     }
 
-    /* Trade History */
     function getTradeHistory() {
         return JSON.parse(localStorage.getItem(`tradeHistory_${currentUser?.email}`)) || [];
     }
@@ -647,7 +643,7 @@
         container.innerHTML = html;
     }
 
-    /* Withdrawal */
+    /* Withdrawal Request Submission */
     function handleWithdrawalClick() {
         let currBal = parseFloat(localStorage.getItem('currentBal')) || 0.00;
 
@@ -704,9 +700,8 @@
         if (subBtn) { subBtn.disabled = true; subBtn.innerText = "Submitting..."; }
 
         try {
-            fetch(GOOGLE_SCRIPT_URL, {
+            await fetch(GOOGLE_SCRIPT_URL, {
                 method: 'POST',
-                mode: 'no-cors',
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                 body: JSON.stringify({
                     action_type: "request_withdrawal",
@@ -737,7 +732,7 @@
         showPopup("💰 Withdrawal Pending", successNotice);
     }
 
-    /* Deposit Submission with Fixed CORS Handling */
+    /* Deposit Submission */
     function openDepositModal() {
         const depContent = `
             <div style="font-size:11px; color:#cbd5e1; margin-bottom:10px;">Select your network and copy the deposit wallet address below:</div>
@@ -809,7 +804,6 @@
         try {
             await fetch(GOOGLE_SCRIPT_URL, {
                 method: 'POST',
-                mode: 'no-cors',
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                 body: JSON.stringify({
                     action_type: "request_deposit",
@@ -833,7 +827,6 @@
         showPopup("✅ Verification Pending", notice);
     }
 
-    /* Rules & Guidelines */
     function openRulesModal() {
         const rulesContent = `
             <div style="font-size:12px; font-weight:bold; color:#38bdf8; margin-bottom:10px;">Smart Stake Panel — Terms, Rules & Guidelines</div>
