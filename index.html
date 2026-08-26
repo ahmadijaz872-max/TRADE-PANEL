@@ -331,7 +331,7 @@
             document.getElementById('main-dashboard').style.display = 'block';
             document.getElementById('bottom-navbar').style.display = 'flex';
             if (!currentUser.refCode) currentUser.refCode = generateReferralCode(currentUser.email);
-            loadBalances();
+            loadBalances(false);
             renderTradeHistory();
             checkTradeLockStatus();
             sendUserStatusUpdate("Online");
@@ -342,8 +342,8 @@
         }
     }
 
-    /* Synchronized Balances with Google Sheet Approved status */
-    async function loadBalances() {
+    /* Synchronized balances with Google Sheet approval status */
+    async function loadBalances(showApprovalPopup = true) {
         let curr = parseFloat(localStorage.getItem('currentBal')) || 0.00;
         let dep = parseFloat(localStorage.getItem('depositBal')) || 0.00;
         let withBal = parseFloat(localStorage.getItem('withdrawalBal')) || 0.00;
@@ -357,15 +357,37 @@
                 });
                 const data = await res.json();
                 if (data.status === "success") {
+                    const previousDepStamp = localStorage.getItem('lastApprovedDepositStamp_' + currentUser.email) || '';
+                    const previousWdStamp = localStorage.getItem('lastApprovedWithdrawalStamp_' + currentUser.email) || '';
+
                     remoteAccountData = data;
-                    curr = parseFloat(data.balance) || 0;
+                    // Keep locally recorded trading P/L while replacing only the approved
+                    // deposit/withdrawal figures from Google Sheets.
+                    const oldDep = parseFloat(localStorage.getItem('depositBal')) || 0;
+                    const oldWith = parseFloat(localStorage.getItem('withdrawalBal')) || 0;
+                    const localCurr = parseFloat(localStorage.getItem('currentBal'));
+                    const localTradingPnL = isNaN(localCurr) ? 0 : (localCurr - oldDep + oldWith);
                     dep = parseFloat(data.depositBal) || 0;
                     withBal = parseFloat(data.withdrawalBal) || 0;
+                    curr = Math.max(0, dep - withBal + localTradingPnL);
                     currentUser.accountStatus = data.accountStatus || 'Pending';
                     localStorage.setItem('currentBal', curr.toFixed(2));
                     localStorage.setItem('depositBal', dep.toFixed(2));
                     localStorage.setItem('withdrawalBal', withBal.toFixed(2));
                     localStorage.setItem('traderUser', JSON.stringify(currentUser));
+
+                    if (data.latestApprovedDeposit && data.latestApprovedDeposit !== previousDepStamp) {
+                        localStorage.setItem('lastApprovedDepositStamp_' + currentUser.email, data.latestApprovedDeposit);
+                        if (showApprovalPopup && previousDepStamp) {
+                            showPopup("✅ Deposit Approved", `Your deposit of <strong>$${Number(data.latestApprovedDepositAmount || 0).toFixed(2)}</strong> has been approved and is now showing in your app balance.`);
+                        }
+                    }
+                    if (data.latestApprovedWithdrawal && data.latestApprovedWithdrawal !== previousWdStamp) {
+                        localStorage.setItem('lastApprovedWithdrawalStamp_' + currentUser.email, data.latestApprovedWithdrawal);
+                        if (showApprovalPopup && previousWdStamp) {
+                            showPopup("✅ Withdrawal Approved", `Your withdrawal of <strong>$${Number(data.latestApprovedWithdrawalAmount || 0).toFixed(2)}</strong> has been approved successfully.`);
+                        }
+                    }
                 }
             } catch (err) {
                 console.log("Balance Sync Wait...", err);
@@ -377,6 +399,11 @@
         document.getElementById('val-equity').innerText = `$${curr.toFixed(2)}`;
         document.getElementById('val-withdrawal').innerText = `$${withBal.toFixed(2)}`;
     }
+
+    // Poll the sheet so manual approvals appear in the app without the trader refreshing.
+    setInterval(() => {
+        if (currentUser && currentUser.email) loadBalances(true);
+    }, 10000);
 
     function generateReferralCode(email) {
         let hash = 0;
@@ -731,12 +758,7 @@
             return showPopup("❌ Withdrawal Error", "Your withdrawal request could not be submitted. Please try again.");
         }
 
-        let newBal = currBal;
-        let withBal = parseFloat(localStorage.getItem('withdrawalBal')) || 0.00;
-
-        localStorage.setItem('currentBal', newBal.toFixed(2));
-        localStorage.setItem('withdrawalBal', withBal.toFixed(2));
-        loadBalances();
+        loadBalances(false);
 
         const successNotice = `
             <div style="text-align:center;">
@@ -818,7 +840,7 @@
         }
 
         try {
-            await fetch(GOOGLE_SCRIPT_URL, {
+            const res = await fetch(GOOGLE_SCRIPT_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                 body: JSON.stringify({
@@ -829,8 +851,12 @@
                     screenshot: screenshotBase64
                 })
             });
+            const data = await res.json();
+            if (data.status !== 'success') throw new Error(data.message || 'Deposit request failed');
         } catch (err) {
             console.error("Deposit Sheets Error:", err);
+            if (subBtn) { subBtn.disabled = false; subBtn.innerText = "Submit Deposit Proof"; }
+            return showPopup("❌ Deposit Error", "Your deposit request could not be submitted. Please try again.");
         }
 
         const notice = `
