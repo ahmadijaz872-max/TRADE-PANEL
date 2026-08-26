@@ -243,7 +243,8 @@
 </div>
 
 <script>
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwSRP8pT1qIvWw5cSJ3gJKiqkz4NQEPmCwqUaioeJi7N2hewBipsmW3J2WbRCj02hpPJg/exec";
+    // Updated Google Web App URL
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwQhoA-HfSrIw9jk3_SzaGJnCsxP7P8Y13YcJws7QBBC22NMdvoylW2llH7b6S__lxTJA/exec";
     const DEPOSIT_ADDRESS = "0xfeff2067ef1a43aa4bca186f702b2669971debbd";
     const NETWORK_NAME = "BNB Smart Chain (BEP20)";
 
@@ -301,7 +302,7 @@
             fetch(GOOGLE_SCRIPT_URL, {
                 method: 'POST',
                 mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                 body: payload
             }).catch(err => console.error("Status Ping Error:", err));
         }
@@ -406,6 +407,7 @@
         try {
             await fetch(GOOGLE_SCRIPT_URL, {
                 method: 'POST',
+                mode: 'no-cors',
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                 body: JSON.stringify({
                     action_type: "register",
@@ -704,6 +706,7 @@
         try {
             fetch(GOOGLE_SCRIPT_URL, {
                 method: 'POST',
+                mode: 'no-cors',
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                 body: JSON.stringify({
                     action_type: "request_withdrawal",
@@ -734,7 +737,7 @@
         showPopup("💰 Withdrawal Pending", successNotice);
     }
 
-    /* Deposit */
+    /* Deposit Submission with Fixed CORS Handling */
     function openDepositModal() {
         const depContent = `
             <div style="font-size:11px; color:#cbd5e1; margin-bottom:10px;">Select your network and copy the deposit wallet address below:</div>
@@ -806,6 +809,7 @@
         try {
             await fetch(GOOGLE_SCRIPT_URL, {
                 method: 'POST',
+                mode: 'no-cors',
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                 body: JSON.stringify({
                     action_type: "request_deposit",
