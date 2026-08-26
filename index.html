@@ -248,6 +248,16 @@
     const NETWORK_NAME = "BNB Smart Chain (BEP20)";
 
     let currentUser = JSON.parse(localStorage.getItem('traderUser')) || null;
+    let serverBalances = { balance:0, depositBal:0, liveWithdrawal:0, withdrawalBal:0, pendingWithdrawal:0 };
+    function authPayload(extra={}) { return Object.assign({ email: currentUser?.email || '', sessionToken: currentUser?.sessionToken || '' }, extra); }
+    async function getServerBalances() {
+        if (!currentUser?.email || !currentUser?.sessionToken) throw new Error('Secure session expired. Please register again on this device.');
+        const res = await fetch(GOOGLE_SCRIPT_URL, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(authPayload({action_type:'fetch_user_data'}))});
+        const data = await res.json();
+        if (data.status !== 'success') throw new Error(data.message || 'Unable to verify account.');
+        serverBalances = { balance:Number(data.balance)||0, depositBal:Number(data.depositBal)||0, liveWithdrawal:Number(data.liveWithdrawal)||0, withdrawalBal:Number(data.withdrawalBal)||0, pendingWithdrawal:Number(data.pendingWithdrawal)||0 };
+        return data;
+    }
     let chartAnimationInterval = null;
 
     // Stars particle effect
@@ -292,6 +302,7 @@
         const payload = JSON.stringify({
             action_type: "update_status",
             email: currentUser.email,
+            sessionToken: currentUser.sessionToken,
             user_status: status
         });
 
@@ -316,7 +327,7 @@
     });
 
     function checkAuth() {
-        if (currentUser) {
+        if (currentUser && currentUser.email && currentUser.sessionToken) {
             document.getElementById('auth-screen').style.display = 'none';
             document.getElementById('main-dashboard').style.display = 'block';
             document.getElementById('bottom-navbar').style.display = 'flex';
@@ -342,7 +353,7 @@
         try {
             const res = await fetch(GOOGLE_SCRIPT_URL, {
                 method: 'POST', headers: {'Content-Type':'text/plain;charset=utf-8'},
-                body: JSON.stringify({action_type:'fetch_user_data', email:currentUser.email})
+                body: JSON.stringify(authPayload({action_type:'fetch_user_data'}))
             });
             const data = await res.json();
             if (data.status !== 'success') return;
@@ -352,9 +363,8 @@
             const liveW = parseFloat(data.liveWithdrawal) || 0;
             const withBal = parseFloat(data.withdrawalBal) || 0;
 
-            localStorage.setItem('currentBal', curr.toFixed(2));
-            localStorage.setItem('depositBal', dep.toFixed(2));
-            localStorage.setItem('withdrawalBal', withBal.toFixed(2));
+            serverBalances = {balance:curr, depositBal:dep, liveWithdrawal:liveW, withdrawalBal:withBal, pendingWithdrawal:Number(data.pendingWithdrawal)||0};
+            ['currentBal','depositBal','withdrawalBal'].forEach(k=>localStorage.removeItem(k));
 
             document.getElementById('val-current').innerText = `$${curr.toFixed(2)}`;
             document.getElementById('val-deposit').innerText = `$${dep.toFixed(2)}`;
@@ -416,10 +426,9 @@
             const data = await res.json();
             if (data.status !== 'success') { alert(data.message || 'Registration failed.'); regBtn.disabled=false; regBtn.innerText='Enter Dashboard'; return; }
 
-            currentUser={fname,lname,email,phone,refCode:data.refCode||myRefCode};
+            currentUser={fname,lname,email,phone,refCode:data.refCode||myRefCode,sessionToken:data.sessionToken||''};
             localStorage.setItem('traderUser',JSON.stringify(currentUser));
-            localStorage.setItem('currentBal',String(parseFloat(data.bonus||0).toFixed(2)));
-            localStorage.setItem('depositBal','0.00'); localStorage.setItem('withdrawalBal','0.00');
+            ['currentBal','depositBal','withdrawalBal'].forEach(k=>localStorage.removeItem(k));
 
             if (parseFloat(data.bonus||0)>0) {
                 showPopup('🎁 Referral Bonus', 'You received $1.00 referral bonus! The referrer also received $1.00.');
@@ -435,8 +444,9 @@
     }
 
     /* Deposit Restriction check before Trade */
-    function handleTradeClick() {
-        let depositBal = parseFloat(localStorage.getItem('depositBal')) || 0.00;
+    async function handleTradeClick() {
+        try { await getServerBalances(); } catch(e) { return showPopup('🔐 Security Check', e.message); }
+        let depositBal = serverBalances.depositBal;
 
         if (depositBal <= 0) {
             showPopup(
@@ -491,6 +501,7 @@
     }
 
     let lastUserChoice = "CALL";
+    let secureTradeSession = null;
 
     function openTradeModal() {
         const state = getTradeState();
@@ -542,8 +553,15 @@
         }, 300);
     }
 
-    function startTradeExecution(userChoice) {
+    async function startTradeExecution(userChoice) {
         lastUserChoice = userChoice;
+        try {
+            const res = await fetch(GOOGLE_SCRIPT_URL, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(authPayload({action_type:'start_trade', choice:userChoice}))});
+            const data = await res.json();
+            if (data.status !== 'success') return alert(data.message || 'Trade could not be started.');
+            secureTradeSession = { tradeId:data.tradeId, serverWin:Boolean(data.isWin) };
+        } catch(e) { return alert('Secure trade server is unavailable. Please try again.'); }
+
         document.getElementById('trade-btn-container').style.display = 'none';
         const stayBox = document.getElementById('stay-timer-box');
         stayBox.style.display = 'block';
@@ -562,17 +580,17 @@
     async function finishTradeExecution() {
         if (chartAnimationInterval) clearInterval(chartAnimationInterval);
         let state=getTradeState();
-        const currentAttempt=4-state.attemptsLeft;
-        const isWin=(currentAttempt===state.winningAttempt);
-        state.attemptsLeft-=1;
+        state.attemptsLeft=Math.max(0, state.attemptsLeft-1);
         saveTradeState(state);
+        const isWin = secureTradeSession ? Boolean(secureTradeSession.serverWin) : false;
 
-        if (isWin) {
+        if (secureTradeSession) {
             try {
-                const res=await fetch(GOOGLE_SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action_type:'trade_result',email:currentUser.email,profit:1})});
+                const res=await fetch(GOOGLE_SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(authPayload({action_type:'trade_result',tradeId:secureTradeSession.tradeId}))});
                 const data=await res.json();
-                if(data.status==='success') addTradeHistoryRecord(lastUserChoice,'+$1.00');
+                if(data.status==='success' && Number(data.profit||0)>0) addTradeHistoryRecord(lastUserChoice,'+$1.00');
             } catch(e) { console.log('Trade sync failed',e); }
+            secureTradeSession = null;
         }
         await loadBalances(false);
         showPopup(isWin?'✅ Trade Result: WIN':'❌ Trade Result: LOSS',isWin?'🎉 PROFIT! Perfect Prediction!\nYou Earned: +$1.00':'📉 LOSS! Market Reversed.\nProfit: $0.00');
@@ -618,23 +636,21 @@
     }
 
     /* Withdrawal */
-    function handleWithdrawalClick() {
-        let currBal = parseFloat(localStorage.getItem('currentBal')) || 0.00;
-        let depositBal = parseFloat(localStorage.getItem('depositBal')) || 0.00;
-        let available = Math.max(0, currBal - depositBal);
+    async function handleWithdrawalClick() {
+        try { await getServerBalances(); } catch(e) { return showPopup('🔐 Security Check', e.message); }
+        let available = Math.max(0, serverBalances.liveWithdrawal - serverBalances.pendingWithdrawal);
 
         if (available < 50.00) {
-            showPopup("⚠️ Withdrawal Locked", `Minimum withdrawal limit is $50.00.\n\nYour Live Withdrawal is: $${available.toFixed(2)}\nPlease build at least $50.00 of profit before placing a withdrawal request.`);
+            showPopup("⚠️ Withdrawal Locked", `Minimum withdrawal limit is $50.00.\n\nYour available withdrawal is: $${available.toFixed(2)}\nPlease build at least $50.00 of available profit before placing a withdrawal request.`);
             return;
         }
 
         openWithdrawalModal();
     }
 
-    function openWithdrawalModal() {
-        let currBal = parseFloat(localStorage.getItem('currentBal')) || 0.00;
-        let depositBal = parseFloat(localStorage.getItem('depositBal')) || 0.00;
-        let available = Math.max(0, currBal - depositBal);
+    async function openWithdrawalModal() {
+        try { await getServerBalances(); } catch(e) { return showPopup('🔐 Security Check', e.message); }
+        let available = Math.max(0, serverBalances.liveWithdrawal);
 
         const withContent = `
             <div style="font-size:11px; color:#cbd5e1; margin-bottom:12px;">Available Balance for Withdrawal: <strong style="color:#4ade80;">$${available.toFixed(2)}</strong></div>
@@ -668,15 +684,14 @@
         const net=document.getElementById('with-network').value;
         const amt=parseFloat(document.getElementById('with-amount').value);
         const addr=document.getElementById('with-address').value.trim();
-        const curr=parseFloat(localStorage.getItem('currentBal'))||0;
-        const dep=parseFloat(localStorage.getItem('depositBal'))||0;
-        const available=Math.max(0,curr-dep);
+        let available=0;
+        try { const fresh=await getServerBalances(); available=Math.max(0, Number(fresh.liveWithdrawal)||0); } catch(e) { return alert(e.message); }
         if(isNaN(amt)||amt<50)return alert('Minimum withdrawal amount is $50.00');
         if(amt>available)return alert(`You can withdraw only your available profit: $${available.toFixed(2)}.`);
         if(!addr)return alert('Please enter your wallet address.');
         const btn=document.getElementById('with-sub-btn'); btn.disabled=true; btn.innerText='Submitting...';
         try {
-            const res=await fetch(GOOGLE_SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action_type:'request_withdrawal',email:currentUser.email,amount:amt,network:net,address:addr})});
+            const res=await fetch(GOOGLE_SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(authPayload({action_type:'request_withdrawal',amount:amt,network:net,address:addr}))});
             const data=await res.json();
             if(data.status!=='success'){alert(data.message||'Withdrawal request failed.');btn.disabled=false;btn.innerText='Submit Withdrawal Request';return;}
             closePopup();
@@ -740,7 +755,7 @@
         try{screenshotBase64=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(fileInput.files[0]);});}
         catch(e){alert('Could not read screenshot.');if(subBtn){subBtn.disabled=false;subBtn.innerText='Submit Deposit';}return;}
         try{
-            const res=await fetch(GOOGLE_SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action_type:'request_deposit',email:currentUser.email,amount:amt,txid,screenshot:screenshotBase64})});
+            const res=await fetch(GOOGLE_SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(authPayload({action_type:'request_deposit',amount:amt,txid,screenshot:screenshotBase64}))});
             const data=await res.json();
             if(data.status!=='success'){alert(data.message||'Deposit submission failed.');if(subBtn){subBtn.disabled=false;subBtn.innerText='Submit Deposit';}return;}
             showPopup('⏳ Verification Pending',`Your deposit of $${amt.toFixed(2)} has been submitted successfully.\n\nManual review may take 1–6 hours. Once approved, it will automatically be added to your Current Amount.`);
